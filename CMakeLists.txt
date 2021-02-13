@@ -22,8 +22,6 @@ endif(DISABLE_DEBUG_PRINTS)
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
 
-list(APPEND CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
-
 # for pretty printing
 string(ASCII 27 Esc)
 set(ColorReset "${Esc}[m")
@@ -92,7 +90,6 @@ if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION bin)
     install(TARGETS jsd-lib DESTINATION lib)
     install(TARGETS jsd_slaveinfo DESTINATION bin)
-    install(FILES ${CMAKE_SOURCE_DIR}/cmake/FindJSD.cmake DESTINATION /opt/cmake)
 endif()
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
