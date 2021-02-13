@@ -82,7 +82,7 @@ bool jsd_jed_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_jed_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   jsd_slave_config_t* slave_configs =
-      (jsd_slave_config_t*)ecx_context->slave_config_ptr;
+      (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
   // There were initial issues with the Sync Managers having the wrong address

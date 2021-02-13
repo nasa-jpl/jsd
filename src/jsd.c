@@ -38,8 +38,6 @@ jsd_t* jsd_alloc() {
   self->ecx_context.elist     = (ec_eringt*)calloc(1, sizeof(ec_eringt));
   self->ecx_context.idxstack  = (ec_idxstackT*)calloc(1, sizeof(ec_idxstackT));
   self->ecx_context.ecaterror = (boolean*)calloc(1, sizeof(boolean));
-  self->ecx_context.DCtO      = 0;
-  self->ecx_context.DCl       = 0;
   self->ecx_context.DCtime    = (int64*)calloc(1, sizeof(int64));
   self->ecx_context.SMcommtype =
       (ec_SMcommtypet*)calloc(1, EC_MAX_MAPT * sizeof(ec_SMcommtypet));
@@ -53,10 +51,9 @@ jsd_t* jsd_alloc() {
   self->ecx_context.FOEhook           = NULL;
   self->ecx_context.EOEhook           = NULL;
   self->ecx_context.manualstatechange = 0;
-
   // Needed to avoid global variables to pass slave config into the PO2SO
   // callbacks
-  self->ecx_context.slave_config_ptr = (void*)&self->slave_configs;
+  self->ecx_context.userdata = (void*)&self->slave_configs;
 
   return self;
 }

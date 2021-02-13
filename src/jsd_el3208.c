@@ -100,7 +100,7 @@ int jsd_el3208_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   // cast the void* to slave_config
   jsd_slave_config_t* slave_configs =
-      (jsd_slave_config_t*)ecx_context->slave_config_ptr;
+      (jsd_slave_config_t*)ecx_context->userdata;
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 

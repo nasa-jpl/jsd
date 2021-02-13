@@ -96,7 +96,7 @@ int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within th ecx_context and extract it here
   jsd_slave_config_t* slave_configs =
-      (jsd_slave_config_t*)ecx_context->slave_config_ptr;
+      (jsd_slave_config_t*)ecx_context->userdata;
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
