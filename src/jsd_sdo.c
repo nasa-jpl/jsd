@@ -17,7 +17,7 @@ void jsd_sdo_req_cirq_init(jsd_sdo_req_cirq_t* self) {
 
 // non-locking
 static jsd_sdo_req_t queue_pop(jsd_sdo_req_cirq_t* self) {
-  jsd_sdo_req_t new_req = {};
+  jsd_sdo_req_t new_req;
 
   // MSG_DEBUG("[%s] r=%u w=%u", self->name, self->r, self->w);
   new_req = self->buffer[self->r % JSD_SDO_REQ_CIRQ_LEN];
@@ -228,6 +228,11 @@ void jsd_sdo_push_async_request(jsd_t* self, uint16_t slave_id, uint16_t index,
   req.data_type    = data_type;
 
   if (request_type == JSD_SDO_REQ_TYPE_WRITE) {
+    if(data == NULL){
+      WARNING("Slave[%d] Failed write async SDO: 0x%X:%d - Data is NULL", 
+          slave_id, index, subindex);
+      return;
+    }
     int size = jsd_sdo_data_type_size(req.data_type);
     memcpy(&req.data, data, size);
   }
