@@ -44,6 +44,10 @@ foreach(include ${includes})
 endforeach()
 
 ####### Dependencies ########
+
+remove_definitions(-DEC_VER1)
+add_definitions(-DEC_VER2)
+
 include(FetchContent)
 FetchContent_Declare(soem
   GIT_REPOSITORY git@github.com:alex-brinkman/SOEM.git
