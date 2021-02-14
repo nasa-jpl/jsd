@@ -19,9 +19,9 @@ $ sudo apt install libreadline-dev # only used for test programs
 
 # Building
 
-To build jsd from source
-```
-$ git clone git@fornat1.jpl.nasa.gov:ethercat/jsd.git
+To build jsd from source:
+```bash
+$ git clone git@github.com:nasa-jpl/jsd.git
 $ cd jsd
 $ mkdir build
 $ cd build
@@ -33,7 +33,7 @@ $ make
 
 The following commands will execute the unit tests:
 
-```
+```bash
 $ cd build
 $ cmake -DBUILD_JSD_TESTS=ON ..
 $ make
@@ -43,9 +43,7 @@ $ make memcheck  # note valgrind is required to perform memory checking
 
 # Troubleshooting
 
-See the TROUBLESHOOTING.md file for a soon-to-be growing list of tips and tricks
-to help you through common issues. Feel free to open an issue with you problem
-description.
+See the `TROUBLESHOOTING.md` file for a soon-to-be growing list of tips and tricks to help you through common issues. Feel free to open an issue with you problem description.
 
 # Supported Devices
 
@@ -53,47 +51,57 @@ Many devices have been used over the years within JPL, some more useful than oth
 out of favor over time. Three tiers of devices are defined to focus JSD development, prioritizing the 
 most useful devices. The following table represents the latest state of the JSD library:
 
-| Device                    | Tier | Minimum JSD Version Required                                 |
-| ------------------------- | ---- | ------------------------------------------------------------ |
-| EL2124                    | 1    | 1.0.0                                                        |
-| EL3208                    | 1    | 1.0.0Once you have completed your work, Create a pull request to the "master" branch. |
-| EL3602                    | 1    | 1.0.0                                                        |
-| Elmo Gold Drives          | 1    | 1.0.0                                                        |
-| EL3356                    | 2    | 1.1.0                                                        |
-| JED (JPL EtherCat Device) | 2    | 1.2.0                                                        |
-| ATI Force-Torque Sensor   | 2    | 1.4.0                                                        |
-| EL1008                    | 2    | TBD                                                          |
-| EL3202-0010               | 2    | TBD                                                          |
-| EL3255                    | 2    | TBD                                                          |
-| EL3318                    | 2    | TBD                                                          |
-| EL3202                    | 2    | TBD                                                          |
-| EL3104                    | 2    | TBD                                                          |
-| EL2624                    | 3    | By Request Only                                              |
-| EL2809                    | 3    | By Request Only                                              |
-| EL3008                    | 3    | By Request Only                                              |
-| EL3058                    | 3    | By Request Only                                              |
-| EL5101                    | 3    | By Request Only                                              |
-| EL6001                    | 3    | By Request Only                                              |
+| Device                    | Tier | Minimum JSD Version Required |
+| ------------------------- | ---- | ---------------------------- |
+| EL2124                    | 1    | 1.0.0                        |
+| EL3208                    | 1    | 1.0.0                        |
+| EL3602                    | 1    | 1.0.0                        |
+| Elmo Gold Drives          | 1    | 1.0.0                        |
+| EL3356                    | 2    | 1.1.0                        |
+| JED (JPL EtherCat Device) | 2    | 1.2.0                        |
+| ATI Force-Torque Sensor   | 2    | 1.4.0                        |
+| EL1008                    | 2    | TBD                          |
+| EL3202-0010               | 2    | TBD                          |
+| EL3255                    | 2    | TBD                          |
+| EL3318                    | 2    | TBD                          |
+| EL3202                    | 2    | TBD                          |
+| EL3104                    | 2    | TBD                          |
+| EL2624                    | 3    | By Request Only              |
+| EL2809                    | 3    | By Request Only              |
+| EL3008                    | 3    | By Request Only              |
+| EL3058                    | 3    | By Request Only              |
+| EL5101                    | 3    | By Request Only              |
+| EL6001                    | 3    | By Request Only              |
 
 # Using JSD in your Project 
 For the software package to utilize JSD, an alternate way is to fetch JSD while building using FetchContent.
 For the case, include the following to your CMakeLists.txt
 
-```
+```cmake
 include(FetchContent)
 FetchContent_Declare(jsd
     GIT_REPOSITORY git@github.com:nasa-jpl/jsd.git
     GIT_TAG v1.4.0
     )
 FetchContent_MakeAvailable(jsd)
-
 ```
+It is always recommend you specify your jsd dependency to a tagged release (`GIT_TAG v1.4.0`) so updates to master cannot break your build (NOT `GIT_TAG master`). 
+
+### Semantic Versioning
+
+JSD uses Semantic versioning to help applications reason about the software as updates are continuously rolled out. Tailored to JSD, the Semver rules are as follows:
+
+* Major Versions will denote changes to the API, which may break some user applications.
+* Minor Versions will denote new features or driver additions that do not break user applications.
+* Patch Versions will denote bug fixes or minor improvements and will not break user applications.
+
+Violations of these rules will be considered errors and should be patched immediately. Please open an issue if you find a violation.
+
 # JSD Utilities
+
 ## jsd_slaveinfo
 
-A slave introspection tool is provided by JSD. This tool is offered in a version
-of SOEM but we are leveraging a mode of SOEM that avoids global definitions so this tool 
-was migrated to JSD. 
+A slave introspection tool is provided by JSD. This tool is offered in a version of SOEM but we are leveraging a mode of SOEM that avoids global definitions so this tool was migrated to JSD. 
 
 The most useful invocation is shown here.
 
@@ -199,32 +207,22 @@ $ sudo ./bin/jsd_egd_tlc_tty eth0 6
 
 # Device Test Programs
 
-Single device test programs are provided with JSD, used for isolated driver
-development. Test programs are built by default but they can be excluded from 
-the build using the BUILD_JSD_TESTS CMake option. Device tests are not installed
-to the /opt/jsd install space.
+Single device test programs are provided with JSD, used for isolated driver development. Test programs are built by default but they can be excluded from the build using the BUILD_JSD_TESTS CMake option. 
 
-```
+```bash
 # in the build directory
 $ cmake .. -DBUILD_JSD_TESTS=OFF
 $ make
 ...
 ```
 
-Single device tests are created for each of the supported devices mainly for
-driver development on dedicated 'playground' electronics. Each program 
-is created to stress test different parts of the driver so it is not 
-recommended you run these tests on arbritrary hardware. Typically, analog input
-devices should be safe to run but output devices (like EL2124 and EGDs) 
-may output voltages and command actuators in an unsafe way. 
+Single device tests are created for each of the supported devices mainly for driver development on dedicated 'playground' electronics. Each program is created to stress test different parts of the driver so it is **not recommended** you run these tests on arbitrary hardware but only on test articles. Typically, pure input sensing devices tests **should** be safe to run but output devices (like EL2124 and EGDs) **will** output voltages and command actuators in a potentially unsafe way. 
 
-Either way, these programs serve as a minimum working example and allow
-driver developers to test features and fix bugs.
+Either way, these programs serve as a minimum working example and allow driver developers to test features and fix bugs.
 
-For example, The EL3602 test can be queried and called according to 
-the following commands.
+For example, The EL3602 test can be queried and called according to the following commands:
 
-```
+```bash
 $ ./jsd_el3602_test -h
 
 [ERROR] (/home/dev/src/jsd/test/device/jsd_el3602_test.c:63) Expecting exactly 3 arguments
@@ -238,10 +236,7 @@ $ sudo ./jsd_el3602_test eth9 5 2000
 
 The API documentation can be built using the source code locally using doxygen. 
 
-The .doxygen.in file is converted to .doxygen during build to ensure 
-semantic versioning number of the documentation is accurate. The output 
-documentation is created in the directory 'doxygen_html' and can 
-be opened by any web browser from the root index.html webpage.
+The .doxygen.in file is converted to .doxygen during build to ensure semantic versioning number of the documentation is accurate. The output documentation is created in the directory 'doxygen_html' and can be opened by any web browser from the root index.html webpage.
 
 ```bash
 # Install dependencies for Ubuntu 14.04, 16.04, and 18.04 
@@ -254,8 +249,8 @@ $ make doc
 
 # Contributing
 
-* Do all development on a new branch prefixed with <your-username>-* branched from  "master" e.g. ("abrinkma-my-widget")
-  * All enums, structs, and functions should be prefixed with "jsd_" or "jsd_device_" as necessary
+* Do all development on a new branch prefixed with <your-username>-* branched from  "master" e.g. ("USER-my-widget")
+  * All enums, structs, and functions should be prefixed with `jsd_` as necessary
   * Abstract the details of your driver to help users of JSD
     * Expose as little as possible in device_pub.h public API
     * Hide as much as you can in the private device.h header
@@ -263,16 +258,14 @@ $ make doc
     * DO write DOXYGEN preambles to functions, structs, and enums
     * DO Explaining the enums and fixed values used by your driver
     * DO Include references to manufacturer provided documents
-    * DON't write excessively long inline comments in functions (target single line if possible)
+    * DON'T write excessively long inline comments in functions (target single line if possible)
       * Consider refactoring if you find yourself wanting to write paragraphs
     * Strive for brevity after all, "comments aren't compiled"
   * run clang-format before you submit a pull request
 * Once you have completed your work, Create a pull request to the "master" branch.
 * The "master" branch will be occasionally be given a tagged release as required
   * semantic versioning will updated to "master" and the git commit will be tagged
-  * Major Versions will denote changes to the API, which may break some user applications.
-  * Minor Versions will denote new features or driver additions that do not break user applications.
-  * Patch Versions will denote bug fixes or minor improvements and will not break user applications.
+  * 
 
 
 # Code Format
