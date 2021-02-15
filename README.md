@@ -265,19 +265,15 @@ $ make doc
 * Once you have completed your work, Create a pull request to the "master" branch.
 * The "master" branch will be occasionally be given a tagged release as required
   * semantic versioning will updated to "master" and the git commit will be tagged
-  * 
+  
+    
 
 
 # Code Format
 
-before applying a commit, please run clang-format on all files using 
-the default Google style. This can be achieved by running 'make format' in the 
-build directory that uses a CMake command to invoke the shell script from 
-the project root directory. This is the prefered over the shell script since 
-it ensures the working directory is properly set.
+before applying a commit, please run clang-format on all files using the default Google style. This can be achieved by running `make format` in the build directory that uses a CMake command to invoke the shell script from the project root directory. This is the prefered over the shell script since it ensures the working directory is properly set.
 ```
 $ make format
 ```
 
-It is highly recommended you integrate clang-format into your text editor of 
-choice. [Clang Format Integration](https://clang.llvm.org/docs/ClangFormat.html)
+It is highly recommended you integrate clang-format into your text editor of choice. [Clang Format Integration](https://clang.llvm.org/docs/ClangFormat.html)
