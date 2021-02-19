@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(jsd
     DESCRIPTION "JPL SOEM Drivers"
-    VERSION 1.4.0
+    VERSION 1.4.1
     LANGUAGES C CXX
     )
 
@@ -50,7 +50,7 @@ add_definitions(-DEC_VER2)
 
 include(FetchContent)
 FetchContent_Declare(soem
-  GIT_REPOSITORY git@github.com:alex-brinkman/SOEM.git
+  GIT_REPOSITORY https://github.com:alex-brinkman/SOEM.git
     GIT_TAG apb-add-userdata
     )
 FetchContent_MakeAvailable(soem)
