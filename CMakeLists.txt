@@ -50,8 +50,8 @@ add_definitions(-DEC_VER2)
 
 include(FetchContent)
 FetchContent_Declare(soem
-  GIT_REPOSITORY https://github.com/alex-brinkman/SOEM.git
-    GIT_TAG apb-add-userdata
+  GIT_REPOSITORY git@github.com:OpenEtherCATsociety/SOEM.git
+    GIT_TAG f9db4f2b23455e83d9871568e3a69ab124e0c1a0
     )
 FetchContent_MakeAvailable(soem)
 
