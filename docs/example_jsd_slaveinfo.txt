@@ -1,0 +1,2261 @@
+davkim@Devbox-RCTB:~/sandbox/jsd/bin$ sudo ./jsd_slaveinfo eth_bbx1 -map
+jsd (Simple Open EtherCAT Master)
+Slaveinfo
+Starting slaveinfo
+ec_init on eth_bbx1 succeeded.
+46 slaves found and configured.
+Calculated workcounter 52
+
+Slave:1
+ Name:EK1100
+ Output size: 0bits
+ Input size: 0bits
+ State: 4
+ Delay: 0[ns]
+ Has DC: 1
+ DCParentport:0
+ Activeports:1.1.1.0
+ Configured address: 1001
+ Man: 00000002 ID: 044c2c52 Rev: 00120000
+ FMMUfunc 0:0 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: -2000[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+
+Slave:2
+ Name:EL3104
+ Output size: 0bits
+ Input size: 128bits
+ State: 4
+ Delay: 145[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1002
+ Man: 00000002 ID: 0c203052 Rev: 00140000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  16 F:00010020 Type:4
+ FMMU0 Ls:00000057 Ll:  16 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0057.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0057.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0057.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0057.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0057.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0057.7] 0x0000:0x00 0x01
+  [0x0058.0] 0x0000:0x00 0x05
+  [0x0058.5] 0x6000:0x0E 0x01 BOOLEAN      Sync error
+  [0x0058.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0058.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0059.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x005B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x005B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x005B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x005B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x005B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x005B.7] 0x0000:0x00 0x01
+  [0x005C.0] 0x0000:0x00 0x05
+  [0x005C.5] 0x6010:0x0E 0x01 BOOLEAN      Sync error
+  [0x005C.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x005C.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x005D.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x005F.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x005F.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x005F.2] 0x6020:0x03 0x02 BIT2         Limit 1
+  [0x005F.4] 0x6020:0x05 0x02 BIT2         Limit 2
+  [0x005F.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x005F.7] 0x0000:0x00 0x01
+  [0x0060.0] 0x0000:0x00 0x05
+  [0x0060.5] 0x6020:0x0E 0x01 BOOLEAN      Sync error
+  [0x0060.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0060.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0061.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x0063.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x0063.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x0063.2] 0x6030:0x03 0x02 BIT2         Limit 1
+  [0x0063.4] 0x6030:0x05 0x02 BIT2         Limit 2
+  [0x0063.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x0063.7] 0x0000:0x00 0x01
+  [0x0064.0] 0x0000:0x00 0x05
+  [0x0064.5] 0x6030:0x0E 0x01 BOOLEAN      Sync error
+  [0x0064.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0064.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0065.0] 0x6030:0x11 0x10 INTEGER16    Value
+
+Slave:3
+ Name:EL3104
+ Output size: 0bits
+ Input size: 128bits
+ State: 4
+ Delay: 285[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1003
+ Man: 00000002 ID: 0c203052 Rev: 00140000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  16 F:00010020 Type:4
+ FMMU0 Ls:00000067 Ll:  16 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0067.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0067.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0067.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0067.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0067.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0067.7] 0x0000:0x00 0x01
+  [0x0068.0] 0x0000:0x00 0x05
+  [0x0068.5] 0x6000:0x0E 0x01 BOOLEAN      Sync error
+  [0x0068.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0068.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0069.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x006B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x006B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x006B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x006B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x006B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x006B.7] 0x0000:0x00 0x01
+  [0x006C.0] 0x0000:0x00 0x05
+  [0x006C.5] 0x6010:0x0E 0x01 BOOLEAN      Sync error
+  [0x006C.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x006C.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x006D.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x006F.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x006F.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x006F.2] 0x6020:0x03 0x02 BIT2         Limit 1
+  [0x006F.4] 0x6020:0x05 0x02 BIT2         Limit 2
+  [0x006F.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x006F.7] 0x0000:0x00 0x01
+  [0x0070.0] 0x0000:0x00 0x05
+  [0x0070.5] 0x6020:0x0E 0x01 BOOLEAN      Sync error
+  [0x0070.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0070.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0071.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x0073.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x0073.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x0073.2] 0x6030:0x03 0x02 BIT2         Limit 1
+  [0x0073.4] 0x6030:0x05 0x02 BIT2         Limit 2
+  [0x0073.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x0073.7] 0x0000:0x00 0x01
+  [0x0074.0] 0x0000:0x00 0x05
+  [0x0074.5] 0x6030:0x0E 0x01 BOOLEAN      Sync error
+  [0x0074.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0074.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0075.0] 0x6030:0x11 0x10 INTEGER16    Value
+
+Slave:4
+ Name:EL3318
+ Output size: 0bits
+ Input size: 256bits
+ State: 4
+ Delay: 429[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1004
+ Man: 00000002 ID: 0cf63052 Rev: 00150000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000024 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:4
+ FMMU0 Ls:00000077 Ll:  32 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:1 1:2 2:3 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 210[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0077.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0077.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0077.2] 0x0000:0x00 0x04
+  [0x0077.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0077.7] 0x0000:0x00 0x07
+  [0x0078.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0078.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0079.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x007B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x007B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x007B.2] 0x0000:0x00 0x04
+  [0x007B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x007B.7] 0x0000:0x00 0x07
+  [0x007C.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x007C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x007D.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x007F.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x007F.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x007F.2] 0x0000:0x00 0x04
+  [0x007F.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x007F.7] 0x0000:0x00 0x07
+  [0x0080.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0080.7] 0x1802:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0081.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x0083.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x0083.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x0083.2] 0x0000:0x00 0x04
+  [0x0083.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x0083.7] 0x0000:0x00 0x07
+  [0x0084.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0084.7] 0x1803:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0085.0] 0x6030:0x11 0x10 INTEGER16    Value
+  [0x0087.0] 0x6040:0x01 0x01 BOOLEAN      Underrange
+  [0x0087.1] 0x6040:0x02 0x01 BOOLEAN      Overrange
+  [0x0087.2] 0x0000:0x00 0x04
+  [0x0087.6] 0x6040:0x07 0x01 BOOLEAN      Error
+  [0x0087.7] 0x0000:0x00 0x07
+  [0x0088.6] 0x6040:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0088.7] 0x1804:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0089.0] 0x6040:0x11 0x10 INTEGER16    Value
+  [0x008B.0] 0x6050:0x01 0x01 BOOLEAN      Underrange
+  [0x008B.1] 0x6050:0x02 0x01 BOOLEAN      Overrange
+  [0x008B.2] 0x0000:0x00 0x04
+  [0x008B.6] 0x6050:0x07 0x01 BOOLEAN      Error
+  [0x008B.7] 0x0000:0x00 0x07
+  [0x008C.6] 0x6050:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x008C.7] 0x1805:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x008D.0] 0x6050:0x11 0x10 INTEGER16    Value
+  [0x008F.0] 0x6060:0x01 0x01 BOOLEAN      Underrange
+  [0x008F.1] 0x6060:0x02 0x01 BOOLEAN      Overrange
+  [0x008F.2] 0x0000:0x00 0x04
+  [0x008F.6] 0x6060:0x07 0x01 BOOLEAN      Error
+  [0x008F.7] 0x0000:0x00 0x07
+  [0x0090.6] 0x6060:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0090.7] 0x1806:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0091.0] 0x6060:0x11 0x10 INTEGER16    Value
+  [0x0093.0] 0x6070:0x01 0x01 BOOLEAN      Underrange
+  [0x0093.1] 0x6070:0x02 0x01 BOOLEAN      Overrange
+  [0x0093.2] 0x0000:0x00 0x04
+  [0x0093.6] 0x6070:0x07 0x01 BOOLEAN      Error
+  [0x0093.7] 0x0000:0x00 0x07
+  [0x0094.6] 0x6070:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0094.7] 0x1807:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0095.0] 0x6070:0x11 0x10 INTEGER16    Value
+
+Slave:5
+ Name:EL3318
+ Output size: 0bits
+ Input size: 256bits
+ State: 4
+ Delay: 574[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1005
+ Man: 00000002 ID: 0cf63052 Rev: 00150000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000024 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:4
+ FMMU0 Ls:00000097 Ll:  32 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:1 1:2 2:3 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 210[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0097.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0097.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0097.2] 0x0000:0x00 0x04
+  [0x0097.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0097.7] 0x0000:0x00 0x07
+  [0x0098.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0098.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0099.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x009B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x009B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x009B.2] 0x0000:0x00 0x04
+  [0x009B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x009B.7] 0x0000:0x00 0x07
+  [0x009C.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x009C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x009D.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x009F.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x009F.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x009F.2] 0x0000:0x00 0x04
+  [0x009F.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x009F.7] 0x0000:0x00 0x07
+  [0x00A0.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00A0.7] 0x1802:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00A1.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x00A3.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x00A3.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x00A3.2] 0x0000:0x00 0x04
+  [0x00A3.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x00A3.7] 0x0000:0x00 0x07
+  [0x00A4.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00A4.7] 0x1803:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00A5.0] 0x6030:0x11 0x10 INTEGER16    Value
+  [0x00A7.0] 0x6040:0x01 0x01 BOOLEAN      Underrange
+  [0x00A7.1] 0x6040:0x02 0x01 BOOLEAN      Overrange
+  [0x00A7.2] 0x0000:0x00 0x04
+  [0x00A7.6] 0x6040:0x07 0x01 BOOLEAN      Error
+  [0x00A7.7] 0x0000:0x00 0x07
+  [0x00A8.6] 0x6040:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00A8.7] 0x1804:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00A9.0] 0x6040:0x11 0x10 INTEGER16    Value
+  [0x00AB.0] 0x6050:0x01 0x01 BOOLEAN      Underrange
+  [0x00AB.1] 0x6050:0x02 0x01 BOOLEAN      Overrange
+  [0x00AB.2] 0x0000:0x00 0x04
+  [0x00AB.6] 0x6050:0x07 0x01 BOOLEAN      Error
+  [0x00AB.7] 0x0000:0x00 0x07
+  [0x00AC.6] 0x6050:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00AC.7] 0x1805:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00AD.0] 0x6050:0x11 0x10 INTEGER16    Value
+  [0x00AF.0] 0x6060:0x01 0x01 BOOLEAN      Underrange
+  [0x00AF.1] 0x6060:0x02 0x01 BOOLEAN      Overrange
+  [0x00AF.2] 0x0000:0x00 0x04
+  [0x00AF.6] 0x6060:0x07 0x01 BOOLEAN      Error
+  [0x00AF.7] 0x0000:0x00 0x07
+  [0x00B0.6] 0x6060:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00B0.7] 0x1806:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00B1.0] 0x6060:0x11 0x10 INTEGER16    Value
+  [0x00B3.0] 0x6070:0x01 0x01 BOOLEAN      Underrange
+  [0x00B3.1] 0x6070:0x02 0x01 BOOLEAN      Overrange
+  [0x00B3.2] 0x0000:0x00 0x04
+  [0x00B3.6] 0x6070:0x07 0x01 BOOLEAN      Error
+  [0x00B3.7] 0x0000:0x00 0x07
+  [0x00B4.6] 0x6070:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00B4.7] 0x1807:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00B5.0] 0x6070:0x11 0x10 INTEGER16    Value
+
+Slave:6
+ Name:EL3318
+ Output size: 0bits
+ Input size: 256bits
+ State: 4
+ Delay: 719[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1006
+ Man: 00000002 ID: 0cf63052 Rev: 00150000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000024 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:4
+ FMMU0 Ls:000000b7 Ll:  32 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:1 1:2 2:3 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 210[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x00B7.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x00B7.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x00B7.2] 0x0000:0x00 0x04
+  [0x00B7.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x00B7.7] 0x0000:0x00 0x07
+  [0x00B8.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00B8.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00B9.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x00BB.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x00BB.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x00BB.2] 0x0000:0x00 0x04
+  [0x00BB.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x00BB.7] 0x0000:0x00 0x07
+  [0x00BC.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00BC.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00BD.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x00BF.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x00BF.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x00BF.2] 0x0000:0x00 0x04
+  [0x00BF.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x00BF.7] 0x0000:0x00 0x07
+  [0x00C0.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00C0.7] 0x1802:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00C1.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x00C3.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x00C3.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x00C3.2] 0x0000:0x00 0x04
+  [0x00C3.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x00C3.7] 0x0000:0x00 0x07
+  [0x00C4.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00C4.7] 0x1803:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00C5.0] 0x6030:0x11 0x10 INTEGER16    Value
+  [0x00C7.0] 0x6040:0x01 0x01 BOOLEAN      Underrange
+  [0x00C7.1] 0x6040:0x02 0x01 BOOLEAN      Overrange
+  [0x00C7.2] 0x0000:0x00 0x04
+  [0x00C7.6] 0x6040:0x07 0x01 BOOLEAN      Error
+  [0x00C7.7] 0x0000:0x00 0x07
+  [0x00C8.6] 0x6040:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00C8.7] 0x1804:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00C9.0] 0x6040:0x11 0x10 INTEGER16    Value
+  [0x00CB.0] 0x6050:0x01 0x01 BOOLEAN      Underrange
+  [0x00CB.1] 0x6050:0x02 0x01 BOOLEAN      Overrange
+  [0x00CB.2] 0x0000:0x00 0x04
+  [0x00CB.6] 0x6050:0x07 0x01 BOOLEAN      Error
+  [0x00CB.7] 0x0000:0x00 0x07
+  [0x00CC.6] 0x6050:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00CC.7] 0x1805:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00CD.0] 0x6050:0x11 0x10 INTEGER16    Value
+  [0x00CF.0] 0x6060:0x01 0x01 BOOLEAN      Underrange
+  [0x00CF.1] 0x6060:0x02 0x01 BOOLEAN      Overrange
+  [0x00CF.2] 0x0000:0x00 0x04
+  [0x00CF.6] 0x6060:0x07 0x01 BOOLEAN      Error
+  [0x00CF.7] 0x0000:0x00 0x07
+  [0x00D0.6] 0x6060:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00D0.7] 0x1806:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00D1.0] 0x6060:0x11 0x10 INTEGER16    Value
+  [0x00D3.0] 0x6070:0x01 0x01 BOOLEAN      Underrange
+  [0x00D3.1] 0x6070:0x02 0x01 BOOLEAN      Overrange
+  [0x00D3.2] 0x0000:0x00 0x04
+  [0x00D3.6] 0x6070:0x07 0x01 BOOLEAN      Error
+  [0x00D3.7] 0x0000:0x00 0x07
+  [0x00D4.6] 0x6070:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00D4.7] 0x1807:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00D5.0] 0x6070:0x11 0x10 INTEGER16    Value
+
+Slave:7
+ Name:EL3318
+ Output size: 0bits
+ Input size: 256bits
+ State: 4
+ Delay: 874[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.0.0.0
+ Configured address: 1007
+ Man: 00000002 ID: 0cf63052 Rev: 00150000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000024 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:4
+ FMMU0 Ls:000000d7 Ll:  32 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:1 1:2 2:3 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 210[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x00D7.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x00D7.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x00D7.2] 0x0000:0x00 0x04
+  [0x00D7.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x00D7.7] 0x0000:0x00 0x07
+  [0x00D8.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00D8.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00D9.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x00DB.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x00DB.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x00DB.2] 0x0000:0x00 0x04
+  [0x00DB.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x00DB.7] 0x0000:0x00 0x07
+  [0x00DC.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00DC.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00DD.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x00DF.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x00DF.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x00DF.2] 0x0000:0x00 0x04
+  [0x00DF.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x00DF.7] 0x0000:0x00 0x07
+  [0x00E0.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00E0.7] 0x1802:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00E1.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x00E3.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x00E3.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x00E3.2] 0x0000:0x00 0x04
+  [0x00E3.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x00E3.7] 0x0000:0x00 0x07
+  [0x00E4.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00E4.7] 0x1803:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00E5.0] 0x6030:0x11 0x10 INTEGER16    Value
+  [0x00E7.0] 0x6040:0x01 0x01 BOOLEAN      Underrange
+  [0x00E7.1] 0x6040:0x02 0x01 BOOLEAN      Overrange
+  [0x00E7.2] 0x0000:0x00 0x04
+  [0x00E7.6] 0x6040:0x07 0x01 BOOLEAN      Error
+  [0x00E7.7] 0x0000:0x00 0x07
+  [0x00E8.6] 0x6040:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00E8.7] 0x1804:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00E9.0] 0x6040:0x11 0x10 INTEGER16    Value
+  [0x00EB.0] 0x6050:0x01 0x01 BOOLEAN      Underrange
+  [0x00EB.1] 0x6050:0x02 0x01 BOOLEAN      Overrange
+  [0x00EB.2] 0x0000:0x00 0x04
+  [0x00EB.6] 0x6050:0x07 0x01 BOOLEAN      Error
+  [0x00EB.7] 0x0000:0x00 0x07
+  [0x00EC.6] 0x6050:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00EC.7] 0x1805:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00ED.0] 0x6050:0x11 0x10 INTEGER16    Value
+  [0x00EF.0] 0x6060:0x01 0x01 BOOLEAN      Underrange
+  [0x00EF.1] 0x6060:0x02 0x01 BOOLEAN      Overrange
+  [0x00EF.2] 0x0000:0x00 0x04
+  [0x00EF.6] 0x6060:0x07 0x01 BOOLEAN      Error
+  [0x00EF.7] 0x0000:0x00 0x07
+  [0x00F0.6] 0x6060:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00F0.7] 0x1806:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00F1.0] 0x6060:0x11 0x10 INTEGER16    Value
+  [0x00F3.0] 0x6070:0x01 0x01 BOOLEAN      Underrange
+  [0x00F3.1] 0x6070:0x02 0x01 BOOLEAN      Overrange
+  [0x00F3.2] 0x0000:0x00 0x04
+  [0x00F3.6] 0x6070:0x07 0x01 BOOLEAN      Error
+  [0x00F3.7] 0x0000:0x00 0x07
+  [0x00F4.6] 0x6070:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x00F4.7] 0x1807:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00F5.0] 0x6070:0x11 0x10 INTEGER16    Value
+
+Slave:8
+ Name:EK1100
+ Output size: 0bits
+ Input size: 0bits
+ State: 4
+ Delay: 2294[ns]
+ Has DC: 1
+ DCParentport:2
+ Activeports:1.1.1.0
+ Configured address: 1008
+ Man: 00000002 ID: 044c2c52 Rev: 00120000
+ FMMUfunc 0:0 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: -2000[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+
+Slave:9
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 2439[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1009
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:000000f7 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x00F7.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x00F7.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x00F7.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x00F7.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x00F7.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x00F7.7] 0x0000:0x00 0x07
+  [0x00F8.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x00F8.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00F9.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x00FB.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x00FB.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x00FB.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x00FB.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x00FB.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x00FB.7] 0x0000:0x00 0x07
+  [0x00FC.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x00FC.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x00FD.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:10
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 2584[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100a
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:000000ff Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x00FF.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x00FF.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x00FF.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x00FF.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x00FF.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x00FF.7] 0x0000:0x00 0x07
+  [0x0100.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0100.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0101.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0103.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0103.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0103.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0103.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0103.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0103.7] 0x0000:0x00 0x07
+  [0x0104.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0104.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0105.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:11
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 2724[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100b
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000107 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0107.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0107.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0107.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0107.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0107.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0107.7] 0x0000:0x00 0x07
+  [0x0108.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0108.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0109.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x010B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x010B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x010B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x010B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x010B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x010B.7] 0x0000:0x00 0x07
+  [0x010C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x010C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x010D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:12
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 2869[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100c
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000010f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x010F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x010F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x010F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x010F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x010F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x010F.7] 0x0000:0x00 0x07
+  [0x0110.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0110.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0111.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0113.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0113.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0113.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0113.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0113.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0113.7] 0x0000:0x00 0x07
+  [0x0114.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0114.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0115.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:13
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3014[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100d
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000117 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0117.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0117.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0117.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0117.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0117.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0117.7] 0x0000:0x00 0x07
+  [0x0118.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0118.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0119.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x011B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x011B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x011B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x011B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x011B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x011B.7] 0x0000:0x00 0x07
+  [0x011C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x011C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x011D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:14
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3159[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100e
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000011f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x011F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x011F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x011F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x011F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x011F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x011F.7] 0x0000:0x00 0x07
+  [0x0120.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0120.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0121.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0123.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0123.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0123.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0123.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0123.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0123.7] 0x0000:0x00 0x07
+  [0x0124.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0124.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0125.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:15
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3304[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 100f
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000127 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0127.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0127.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0127.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0127.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0127.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0127.7] 0x0000:0x00 0x07
+  [0x0128.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0128.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0129.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x012B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x012B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x012B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x012B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x012B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x012B.7] 0x0000:0x00 0x07
+  [0x012C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x012C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x012D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:16
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3444[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1010
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000012f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x012F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x012F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x012F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x012F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x012F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x012F.7] 0x0000:0x00 0x07
+  [0x0130.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0130.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0131.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0133.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0133.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0133.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0133.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0133.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0133.7] 0x0000:0x00 0x07
+  [0x0134.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0134.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0135.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:17
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3589[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1011
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000137 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0137.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0137.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0137.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0137.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0137.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0137.7] 0x0000:0x00 0x07
+  [0x0138.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0138.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0139.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x013B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x013B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x013B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x013B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x013B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x013B.7] 0x0000:0x00 0x07
+  [0x013C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x013C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x013D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:18
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 3744[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.0.0.0
+ Configured address: 1012
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000013f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x013F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x013F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x013F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x013F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x013F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x013F.7] 0x0000:0x00 0x07
+  [0x0140.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0140.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0141.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0143.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0143.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0143.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0143.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0143.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0143.7] 0x0000:0x00 0x07
+  [0x0144.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0144.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0145.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:19
+ Name:EK1100
+ Output size: 0bits
+ Input size: 0bits
+ State: 4
+ Delay: 5744[ns]
+ Has DC: 1
+ DCParentport:2
+ Activeports:1.1.1.0
+ Configured address: 1013
+ Man: 00000002 ID: 044c2c52 Rev: 00120000
+ FMMUfunc 0:0 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: -2000[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+
+Slave:20
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 5888[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1014
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000147 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0147.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0147.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0147.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0147.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0147.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0147.7] 0x0000:0x00 0x07
+  [0x0148.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0148.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0149.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x014B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x014B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x014B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x014B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x014B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x014B.7] 0x0000:0x00 0x07
+  [0x014C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x014C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x014D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:21
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6033[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1015
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000014f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x014F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x014F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x014F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x014F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x014F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x014F.7] 0x0000:0x00 0x07
+  [0x0150.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0150.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0151.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0153.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0153.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0153.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0153.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0153.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0153.7] 0x0000:0x00 0x07
+  [0x0154.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0154.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0155.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:22
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6178[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1016
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000157 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0157.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0157.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0157.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0157.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0157.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0157.7] 0x0000:0x00 0x07
+  [0x0158.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0158.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0159.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x015B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x015B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x015B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x015B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x015B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x015B.7] 0x0000:0x00 0x07
+  [0x015C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x015C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x015D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:23
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6323[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1017
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000015f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x015F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x015F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x015F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x015F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x015F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x015F.7] 0x0000:0x00 0x07
+  [0x0160.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0160.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0161.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0163.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0163.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0163.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0163.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0163.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0163.7] 0x0000:0x00 0x07
+  [0x0164.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0164.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0165.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:24
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6468[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1018
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000167 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0167.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0167.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0167.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0167.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0167.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0167.7] 0x0000:0x00 0x07
+  [0x0168.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0168.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0169.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x016B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x016B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x016B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x016B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x016B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x016B.7] 0x0000:0x00 0x07
+  [0x016C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x016C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x016D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:25
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6613[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1019
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000016f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x016F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x016F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x016F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x016F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x016F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x016F.7] 0x0000:0x00 0x07
+  [0x0170.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0170.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0171.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0173.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0173.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0173.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0173.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0173.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0173.7] 0x0000:0x00 0x07
+  [0x0174.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0174.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0175.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:26
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6753[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 101a
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000177 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0177.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0177.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0177.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0177.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0177.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0177.7] 0x0000:0x00 0x07
+  [0x0178.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0178.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0179.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x017B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x017B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x017B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x017B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x017B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x017B.7] 0x0000:0x00 0x07
+  [0x017C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x017C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x017D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:27
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 6898[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 101b
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:0000017f Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x017F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x017F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x017F.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x017F.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x017F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x017F.7] 0x0000:0x00 0x07
+  [0x0180.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0180.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0181.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x0183.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0183.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0183.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x0183.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x0183.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0183.7] 0x0000:0x00 0x07
+  [0x0184.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0184.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0185.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:28
+ Name:EL3202-0010
+ Output size: 0bits
+ Input size: 64bits
+ State: 4
+ Delay: 7038[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 101c
+ Man: 00000002 ID: 0c823052 Rev: 0016000a
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:   8 F:00010020 Type:4
+ FMMU0 Ls:00000187 Ll:   8 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x0187.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x0187.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x0187.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x0187.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x0187.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x0187.7] 0x0000:0x00 0x07
+  [0x0188.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO State
+  [0x0188.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x0189.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x018B.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x018B.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x018B.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x018B.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x018B.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x018B.7] 0x0000:0x00 0x07
+  [0x018C.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO State
+  [0x018C.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO Toggle
+  [0x018D.0] 0x6010:0x11 0x10 INTEGER16    Value
+
+Slave:29
+ Name:EL3692
+ Output size: 32bits
+ Input size: 96bits
+ State: 4
+ Delay: 7193[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.0.0.0
+ Configured address: 101d
+ Man: 00000002 ID: 0e6c3052 Rev: 00150000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   4 F:00010024 Type:3
+ SM3 A:1180 L:  12 F:00010020 Type:4
+ FMMU0 Ls:00000000 Ll:   4 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMU1 Ls:0000018f Ll:  12 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:1 1:2 2:3 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 220[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x0000.0] 0x7000:0x01 0x01 BOOLEAN      Disable autorange
+  [0x0000.1] 0x0000:0x00 0x02
+  [0x0000.3] 0x7000:0x04 0x01 BOOLEAN      Start conversion
+  [0x0000.4] 0x7000:0x05 0x04 BIT4         Mode
+  [0x0001.0] 0x7000:0x09 0x08 INTEGER8     Range
+  [0x0002.0] 0x7010:0x01 0x01 BOOLEAN      Disable autorange
+  [0x0002.1] 0x0000:0x00 0x02
+  [0x0002.3] 0x7010:0x04 0x01 BOOLEAN      Start conversion
+  [0x0002.4] 0x7010:0x05 0x04 BIT4         Mode
+  [0x0003.0] 0x7010:0x09 0x08 INTEGER8     Range
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x018F.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x018F.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x018F.2] 0x6000:0x03 0x01 BOOLEAN      Extended range
+  [0x018F.3] 0x6000:0x04 0x01 BOOLEAN      Data invalid
+  [0x018F.4] 0x6000:0x05 0x01 BOOLEAN      Range invalid
+  [0x018F.5] 0x6000:0x06 0x01 BOOLEAN      Autorange disabled
+  [0x018F.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x018F.7] 0x0000:0x00 0x01
+  [0x0190.0] 0x6000:0x09 0x01 BOOLEAN      Steady state
+  [0x0190.1] 0x0000:0x00 0x05
+  [0x0190.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0190.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0191.0] 0x6000:0x11 0x20 INTEGER32    Value
+  [0x0195.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x0195.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x0195.2] 0x6010:0x03 0x01 BOOLEAN      Extended range
+  [0x0195.3] 0x6010:0x04 0x01 BOOLEAN      Data invalid
+  [0x0195.4] 0x6010:0x05 0x01 BOOLEAN      Range invalid
+  [0x0195.5] 0x6010:0x06 0x01 BOOLEAN      Autorange disabled
+  [0x0195.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x0195.7] 0x0000:0x00 0x01
+  [0x0196.0] 0x6010:0x09 0x01 BOOLEAN      Steady state
+  [0x0196.1] 0x0000:0x00 0x05
+  [0x0196.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0196.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0197.0] 0x6010:0x11 0x20 INTEGER32    Value
+
+Slave:30
+ Name:EK1100
+ Output size: 0bits
+ Input size: 0bits
+ State: 4
+ Delay: 9293[ns]
+ Has DC: 1
+ DCParentport:2
+ Activeports:1.1.1.0
+ Configured address: 101e
+ Man: 00000002 ID: 044c2c52 Rev: 00120000
+ FMMUfunc 0:0 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: -2000[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+
+Slave:31
+ Name:EL3602
+ Output size: 0bits
+ Input size: 96bits
+ State: 4
+ Delay: 9433[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 101f
+ Man: 00000002 ID: 0e123052 Rev: 00120000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  12 F:00010020 Type:4
+ FMMU0 Ls:0000019b Ll:  12 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x019B.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x019B.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x019B.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x019B.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x019B.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x019B.7] 0x0000:0x00 0x07
+  [0x019C.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x019C.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x019D.0] 0x6000:0x11 0x20 INTEGER32    Value
+  [0x01A1.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01A1.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01A1.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01A1.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01A1.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01A1.7] 0x0000:0x00 0x07
+  [0x01A2.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x01A2.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x01A3.0] 0x6010:0x11 0x20 INTEGER32    Value
+
+Slave:32
+ Name:EL3602
+ Output size: 0bits
+ Input size: 96bits
+ State: 4
+ Delay: 9578[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1020
+ Man: 00000002 ID: 0e123052 Rev: 00120000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  12 F:00010020 Type:4
+ FMMU0 Ls:000001a7 Ll:  12 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01A7.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01A7.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01A7.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x01A7.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x01A7.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01A7.7] 0x0000:0x00 0x07
+  [0x01A8.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x01A8.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x01A9.0] 0x6000:0x11 0x20 INTEGER32    Value
+  [0x01AD.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01AD.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01AD.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01AD.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01AD.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01AD.7] 0x0000:0x00 0x07
+  [0x01AE.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x01AE.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x01AF.0] 0x6010:0x11 0x20 INTEGER32    Value
+
+Slave:33
+ Name:EL3602
+ Output size: 0bits
+ Input size: 96bits
+ State: 4
+ Delay: 9718[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1021
+ Man: 00000002 ID: 0e123052 Rev: 00120000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  12 F:00010020 Type:4
+ FMMU0 Ls:000001b3 Ll:  12 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01B3.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01B3.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01B3.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x01B3.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x01B3.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01B3.7] 0x0000:0x00 0x07
+  [0x01B4.6] 0x1800:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x01B4.7] 0x1800:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x01B5.0] 0x6000:0x11 0x20 INTEGER32    Value
+  [0x01B9.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01B9.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01B9.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01B9.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01B9.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01B9.7] 0x0000:0x00 0x07
+  [0x01BA.6] 0x1801:0x07 0x01 BOOLEAN      TxPDO-State
+  [0x01BA.7] 0x1801:0x09 0x01 BOOLEAN      TxPDO-Toggle
+  [0x01BB.0] 0x6010:0x11 0x20 INTEGER32    Value
+
+Slave:34
+ Name:EL3164
+ Output size: 0bits
+ Input size: 128bits
+ State: 4
+ Delay: 9863[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1022
+ Man: 00000002 ID: 0c5c3052 Rev: 00120000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  16 F:00010020 Type:4
+ FMMU0 Ls:000001bf Ll:  16 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 180[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01BF.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01BF.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01BF.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x01BF.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x01BF.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01BF.7] 0x0000:0x00 0x01
+  [0x01C0.0] 0x0000:0x00 0x05
+  [0x01C0.5] 0x6000:0x0E 0x01 BOOLEAN      Sync error
+  [0x01C0.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01C0.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01C1.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x01C3.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01C3.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01C3.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01C3.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01C3.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01C3.7] 0x0000:0x00 0x01
+  [0x01C4.0] 0x0000:0x00 0x05
+  [0x01C4.5] 0x6010:0x0E 0x01 BOOLEAN      Sync error
+  [0x01C4.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01C4.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01C5.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x01C7.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x01C7.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x01C7.2] 0x6020:0x03 0x02 BIT2         Limit 1
+  [0x01C7.4] 0x6020:0x05 0x02 BIT2         Limit 2
+  [0x01C7.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x01C7.7] 0x0000:0x00 0x01
+  [0x01C8.0] 0x0000:0x00 0x05
+  [0x01C8.5] 0x6020:0x0E 0x01 BOOLEAN      Sync error
+  [0x01C8.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01C8.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01C9.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x01CB.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x01CB.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x01CB.2] 0x6030:0x03 0x02 BIT2         Limit 1
+  [0x01CB.4] 0x6030:0x05 0x02 BIT2         Limit 2
+  [0x01CB.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x01CB.7] 0x0000:0x00 0x01
+  [0x01CC.0] 0x0000:0x00 0x05
+  [0x01CC.5] 0x6030:0x0E 0x01 BOOLEAN      Sync error
+  [0x01CC.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01CC.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01CD.0] 0x6030:0x11 0x10 INTEGER16    Value
+
+Slave:35
+ Name:EL3104
+ Output size: 0bits
+ Input size: 128bits
+ State: 4
+ Delay: 10003[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1023
+ Man: 00000002 ID: 0c203052 Rev: 00140000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  16 F:00010020 Type:4
+ FMMU0 Ls:000001cf Ll:  16 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01CF.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01CF.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01CF.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x01CF.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x01CF.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01CF.7] 0x0000:0x00 0x01
+  [0x01D0.0] 0x0000:0x00 0x05
+  [0x01D0.5] 0x6000:0x0E 0x01 BOOLEAN      Sync error
+  [0x01D0.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01D0.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01D1.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x01D3.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01D3.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01D3.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01D3.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01D3.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01D3.7] 0x0000:0x00 0x01
+  [0x01D4.0] 0x0000:0x00 0x05
+  [0x01D4.5] 0x6010:0x0E 0x01 BOOLEAN      Sync error
+  [0x01D4.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01D4.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01D5.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x01D7.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x01D7.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x01D7.2] 0x6020:0x03 0x02 BIT2         Limit 1
+  [0x01D7.4] 0x6020:0x05 0x02 BIT2         Limit 2
+  [0x01D7.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x01D7.7] 0x0000:0x00 0x01
+  [0x01D8.0] 0x0000:0x00 0x05
+  [0x01D8.5] 0x6020:0x0E 0x01 BOOLEAN      Sync error
+  [0x01D8.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01D8.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01D9.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x01DB.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x01DB.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x01DB.2] 0x6030:0x03 0x02 BIT2         Limit 1
+  [0x01DB.4] 0x6030:0x05 0x02 BIT2         Limit 2
+  [0x01DB.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x01DB.7] 0x0000:0x00 0x01
+  [0x01DC.0] 0x0000:0x00 0x05
+  [0x01DC.5] 0x6030:0x0E 0x01 BOOLEAN      Sync error
+  [0x01DC.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01DC.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01DD.0] 0x6030:0x11 0x10 INTEGER16    Value
+
+Slave:36
+ Name:EL3104
+ Output size: 0bits
+ Input size: 128bits
+ State: 4
+ Delay: 10143[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1024
+ Man: 00000002 ID: 0c203052 Rev: 00140000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  16 F:00010020 Type:4
+ FMMU0 Ls:000001df Ll:  16 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 07 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01DF.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01DF.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01DF.2] 0x6000:0x03 0x02 BIT2         Limit 1
+  [0x01DF.4] 0x6000:0x05 0x02 BIT2         Limit 2
+  [0x01DF.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01DF.7] 0x0000:0x00 0x01
+  [0x01E0.0] 0x0000:0x00 0x05
+  [0x01E0.5] 0x6000:0x0E 0x01 BOOLEAN      Sync error
+  [0x01E0.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01E0.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01E1.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x01E3.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01E3.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01E3.2] 0x6010:0x03 0x02 BIT2         Limit 1
+  [0x01E3.4] 0x6010:0x05 0x02 BIT2         Limit 2
+  [0x01E3.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01E3.7] 0x0000:0x00 0x01
+  [0x01E4.0] 0x0000:0x00 0x05
+  [0x01E4.5] 0x6010:0x0E 0x01 BOOLEAN      Sync error
+  [0x01E4.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01E4.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01E5.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x01E7.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x01E7.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x01E7.2] 0x6020:0x03 0x02 BIT2         Limit 1
+  [0x01E7.4] 0x6020:0x05 0x02 BIT2         Limit 2
+  [0x01E7.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x01E7.7] 0x0000:0x00 0x01
+  [0x01E8.0] 0x0000:0x00 0x05
+  [0x01E8.5] 0x6020:0x0E 0x01 BOOLEAN      Sync error
+  [0x01E8.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01E8.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01E9.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x01EB.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x01EB.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x01EB.2] 0x6030:0x03 0x02 BIT2         Limit 1
+  [0x01EB.4] 0x6030:0x05 0x02 BIT2         Limit 2
+  [0x01EB.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x01EB.7] 0x0000:0x00 0x01
+  [0x01EC.0] 0x0000:0x00 0x05
+  [0x01EC.5] 0x6030:0x0E 0x01 BOOLEAN      Sync error
+  [0x01EC.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01EC.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01ED.0] 0x6030:0x11 0x10 INTEGER16    Value
+
+Slave:37
+ Name:EL9505
+ Output size: 0bits
+ Input size: 2bits
+ State: 4
+ Delay: 10288[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1025
+ Man: 00000002 ID: 25213052 Rev: 00110000
+ SM0 A:1000 L:   1 F:00000000 Type:4
+ FMMU0 Ls:000001ef Ll:   1 Lsb:0 Leb:1 Ps:1000 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: 90[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+  SM0 TXPDO 0x1A00 Status Uo
+     addr b   index: sub bitl data_type    name
+  [0x01EF.0] 0x6000:0x01 0x01 BOOLEAN      Power OK
+  [0x01EF.1] 0x6000:0x02 0x01 BOOLEAN      Overload
+
+Slave:38
+ Name:EL2124
+ Output size: 4bits
+ Input size: 0bits
+ State: 4
+ Delay: 10427[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1026
+ Man: 00000002 ID: 084c3052 Rev: 00110000
+ SM0 A:0f00 L:   1 F:00090044 Type:3
+ FMMU0 Ls:00000004 Ll:   1 Lsb:0 Leb:3 Ps:0f00 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+  SM0 RXPDO 0x1600 Channel 1
+     addr b   index: sub bitl data_type    name
+  [0x0004.0] 0x7000:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1601 Channel 2
+     addr b   index: sub bitl data_type    name
+  [0x0004.1] 0x7010:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1602 Channel 3
+     addr b   index: sub bitl data_type    name
+  [0x0004.2] 0x7020:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1603 Channel 4
+     addr b   index: sub bitl data_type    name
+  [0x0004.3] 0x7030:0x01 0x01 BOOLEAN      Output
+
+Slave:39
+ Name:EL2124
+ Output size: 4bits
+ Input size: 0bits
+ State: 4
+ Delay: 10567[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 1027
+ Man: 00000002 ID: 084c3052 Rev: 00110000
+ SM0 A:0f00 L:   1 F:00090044 Type:3
+ FMMU0 Ls:00000004 Ll:   1 Lsb:4 Leb:7 Ps:0f00 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:0 2:0 3:0
+ MBX length wr: 0 rd: 0 MBX protocols : 00
+ CoE details: 00 FoE details: 00 EoE details: 00 SoE details: 00
+ Ebus current: 130[mA]
+ only LRD/LWR:0
+PDO mapping according to SII :
+  SM0 RXPDO 0x1600 Channel 1
+     addr b   index: sub bitl data_type    name
+  [0x0004.0] 0x7000:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1601 Channel 2
+     addr b   index: sub bitl data_type    name
+  [0x0004.1] 0x7010:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1602 Channel 3
+     addr b   index: sub bitl data_type    name
+  [0x0004.2] 0x7020:0x01 0x01 BOOLEAN      Output
+  SM0 RXPDO 0x1603 Channel 4
+     addr b   index: sub bitl data_type    name
+  [0x0004.3] 0x7030:0x01 0x01 BOOLEAN      Output
+
+Slave:40
+ Name:EL3208
+ Output size: 0bits
+ Input size: 256bits
+ State: 4
+ Delay: 10722[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.0.0.0
+ Configured address: 1028
+ Man: 00000002 ID: 0c883052 Rev: 00120000
+ SM0 A:1000 L: 128 F:00010026 Type:1
+ SM1 A:1080 L: 128 F:00010022 Type:2
+ SM2 A:1100 L:   0 F:00000004 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:4
+ FMMU0 Ls:000001f0 Ll:  32 Lsb:0 Leb:7 Ps:1180 Psb:0 Ty:01 Act:01
+ FMMUfunc 0:2 1:3 2:0 3:0
+ MBX length wr: 128 rd: 128 MBX protocols : 0c
+ CoE details: 03 FoE details: 01 EoE details: 00 SoE details: 00
+ Ebus current: 190[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0x01F0.0] 0x6000:0x01 0x01 BOOLEAN      Underrange
+  [0x01F0.1] 0x6000:0x02 0x01 BOOLEAN      Overrange
+  [0x01F0.2] 0x0000:0x00 0x04
+  [0x01F0.6] 0x6000:0x07 0x01 BOOLEAN      Error
+  [0x01F0.7] 0x0000:0x00 0x07
+  [0x01F1.6] 0x6000:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01F1.7] 0x6000:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01F2.0] 0x6000:0x11 0x10 INTEGER16    Value
+  [0x01F4.0] 0x6010:0x01 0x01 BOOLEAN      Underrange
+  [0x01F4.1] 0x6010:0x02 0x01 BOOLEAN      Overrange
+  [0x01F4.2] 0x0000:0x00 0x04
+  [0x01F4.6] 0x6010:0x07 0x01 BOOLEAN      Error
+  [0x01F4.7] 0x0000:0x00 0x07
+  [0x01F5.6] 0x6010:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01F5.7] 0x6010:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01F6.0] 0x6010:0x11 0x10 INTEGER16    Value
+  [0x01F8.0] 0x6020:0x01 0x01 BOOLEAN      Underrange
+  [0x01F8.1] 0x6020:0x02 0x01 BOOLEAN      Overrange
+  [0x01F8.2] 0x0000:0x00 0x04
+  [0x01F8.6] 0x6020:0x07 0x01 BOOLEAN      Error
+  [0x01F8.7] 0x0000:0x00 0x07
+  [0x01F9.6] 0x6020:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01F9.7] 0x6020:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01FA.0] 0x6020:0x11 0x10 INTEGER16    Value
+  [0x01FC.0] 0x6030:0x01 0x01 BOOLEAN      Underrange
+  [0x01FC.1] 0x6030:0x02 0x01 BOOLEAN      Overrange
+  [0x01FC.2] 0x0000:0x00 0x04
+  [0x01FC.6] 0x6030:0x07 0x01 BOOLEAN      Error
+  [0x01FC.7] 0x0000:0x00 0x07
+  [0x01FD.6] 0x6030:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x01FD.7] 0x6030:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x01FE.0] 0x6030:0x11 0x10 INTEGER16    Value
+  [0x0200.0] 0x6040:0x01 0x01 BOOLEAN      Underrange
+  [0x0200.1] 0x6040:0x02 0x01 BOOLEAN      Overrange
+  [0x0200.2] 0x0000:0x00 0x04
+  [0x0200.6] 0x6040:0x07 0x01 BOOLEAN      Error
+  [0x0200.7] 0x0000:0x00 0x07
+  [0x0201.6] 0x6040:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0201.7] 0x6040:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0202.0] 0x6040:0x11 0x10 INTEGER16    Value
+  [0x0204.0] 0x6050:0x01 0x01 BOOLEAN      Underrange
+  [0x0204.1] 0x6050:0x02 0x01 BOOLEAN      Overrange
+  [0x0204.2] 0x0000:0x00 0x04
+  [0x0204.6] 0x6050:0x07 0x01 BOOLEAN      Error
+  [0x0204.7] 0x0000:0x00 0x07
+  [0x0205.6] 0x6050:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0205.7] 0x6050:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x0206.0] 0x6050:0x11 0x10 INTEGER16    Value
+  [0x0208.0] 0x6060:0x01 0x01 BOOLEAN      Underrange
+  [0x0208.1] 0x6060:0x02 0x01 BOOLEAN      Overrange
+  [0x0208.2] 0x0000:0x00 0x04
+  [0x0208.6] 0x6060:0x07 0x01 BOOLEAN      Error
+  [0x0208.7] 0x0000:0x00 0x07
+  [0x0209.6] 0x6060:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x0209.7] 0x6060:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x020A.0] 0x6060:0x11 0x10 INTEGER16    Value
+  [0x020C.0] 0x6070:0x01 0x01 BOOLEAN      Underrange
+  [0x020C.1] 0x6070:0x02 0x01 BOOLEAN      Overrange
+  [0x020C.2] 0x0000:0x00 0x04
+  [0x020C.6] 0x6070:0x07 0x01 BOOLEAN      Error
+  [0x020C.7] 0x0000:0x00 0x07
+  [0x020D.6] 0x6070:0x0F 0x01 BOOLEAN      TxPDO State
+  [0x020D.7] 0x6070:0x10 0x01 BOOLEAN      TxPDO Toggle
+  [0x020E.0] 0x6070:0x11 0x10 INTEGER16    Value
+
+Slave:41
+ Name:? M:0000009a I:00030924
+ Output size: 168bits
+ Input size: 0bits
+ State: 4
+ Delay: 12702[ns]
+ Has DC: 1
+ DCParentport:2
+ Activeports:1.1.0.0
+ Configured address: 1029
+ Man: 0000009a ID: 00030924 Rev: 000103f6
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  21 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:00000005 Ll:  21 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x0005.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x0009.0] 0x60FF:0x00 0x20 INTEGER32    Target velocity
+  [0x000D.0] 0x6071:0x00 0x10 INTEGER16    Target torque
+  [0x000F.0] 0x6060:0x00 0x08 INTEGER8     Modes of operation
+  [0x0010.0] 0x2E00:0x00 0x10 UNSIGNED16   Gain scheduling manual index
+  [0x0012.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x0016.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  [0x0018.0] 0x60B1:0x00 0x20 INTEGER32    Velocity offset
+  [0x001C.0] 0x6073:0x00 0x10 UNSIGNED16   Maximal Current
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x6069:0x00 0x20 INTEGER32    Velocity sensor actual value
+  [0xDD9E7D40.0] 0x6078:0x00 0x10 INTEGER16    Current actual value
+  [0xDD9E7D42.0] 0x6074:0x00 0x10 INTEGER16    Torque demand
+  [0xDD9E7D44.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+  [0xDD9E7D46.0] 0x1002:0x00 0x20 UNSIGNED32   Manufacturer Status Register
+  [0xDD9E7D4A.0] 0x6061:0x00 0x08 INTEGER8     Modes of operation display
+  [0xDD9E7D4B.0] 0x20A0:0x00 0x20 INTEGER32    Auxiliary position actual value
+  [0xDD9E7D4F.0] 0x6079:0x00 0x20 UNSIGNED32   DC link voltage
+  [0xDD9E7D53.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+
+Slave:42
+ Name:? M:0000009a I:00030924
+ Output size: 168bits
+ Input size: 0bits
+ State: 4
+ Delay: 13282[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 102a
+ Man: 0000009a ID: 00030924 Rev: 000103f6
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  21 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:0000001a Ll:  21 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x001A.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x001E.0] 0x60FF:0x00 0x20 INTEGER32    Target velocity
+  [0x0022.0] 0x6071:0x00 0x10 INTEGER16    Target torque
+  [0x0024.0] 0x6060:0x00 0x08 INTEGER8     Modes of operation
+  [0x0025.0] 0x2E00:0x00 0x10 UNSIGNED16   Gain scheduling manual index
+  [0x0027.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x002B.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  [0x002D.0] 0x60B1:0x00 0x20 INTEGER32    Velocity offset
+  [0x0031.0] 0x6073:0x00 0x10 UNSIGNED16   Maximal Current
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x6069:0x00 0x20 INTEGER32    Velocity sensor actual value
+  [0xDD9E7D40.0] 0x6078:0x00 0x10 INTEGER16    Current actual value
+  [0xDD9E7D42.0] 0x6074:0x00 0x10 INTEGER16    Torque demand
+  [0xDD9E7D44.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+  [0xDD9E7D46.0] 0x1002:0x00 0x20 UNSIGNED32   Manufacturer Status Register
+  [0xDD9E7D4A.0] 0x6061:0x00 0x08 INTEGER8     Modes of operation display
+  [0xDD9E7D4B.0] 0x20A0:0x00 0x20 INTEGER32    Auxiliary position actual value
+  [0xDD9E7D4F.0] 0x6079:0x00 0x20 UNSIGNED32   DC link voltage
+  [0xDD9E7D53.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+
+Slave:43
+ Name:? M:0000009a I:00030924
+ Output size: 80bits
+ Input size: 0bits
+ State: 4
+ Delay: 13841[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 102b
+ Man: 0000009a ID: 00030924 Rev: 000103f6
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  10 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:0000002f Ll:  10 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x002F.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x0033.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x0037.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+  [0xDD9E7D40.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+
+Slave:44
+ Name:? M:0000009a I:00030924
+ Output size: 80bits
+ Input size: 0bits
+ State: 4
+ Delay: 14401[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 102c
+ Man: 0000009a ID: 00030924 Rev: 000103f6
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  10 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:00000039 Ll:  10 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x0039.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x003D.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x0041.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+  [0xDD9E7D40.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+
+Slave:45
+ Name:? M:0000009a I:00030924
+ Output size: 80bits
+ Input size: 0bits
+ State: 4
+ Delay: 14941[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.1.0.0
+ Configured address: 102d
+ Man: 0000009a ID: 00030924 Rev: 00010400
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  10 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:00000043 Ll:  10 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x0043.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x0047.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x004B.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+  [0xDD9E7D40.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+
+Slave:46
+ Name:? M:0000009a I:00030924
+ Output size: 80bits
+ Input size: 0bits
+ State: 4
+ Delay: 15501[ns]
+ Has DC: 1
+ DCParentport:1
+ Activeports:1.0.0.0
+ Configured address: 102e
+ Man: 0000009a ID: 00030924 Rev: 00010400
+ SM0 A:1800 L: 140 F:00010026 Type:1
+ SM1 A:1900 L: 140 F:00010022 Type:2
+ SM2 A:1100 L:  10 F:00010064 Type:3
+ SM3 A:1180 L:  32 F:00010020 Type:0
+ FMMU0 Ls:0000004d Ll:  10 Lsb:0 Leb:7 Ps:1100 Psb:0 Ty:02 Act:01
+ FMMUfunc 0:1 1:2 2:0 3:0
+ MBX length wr: 140 rd: 140 MBX protocols : 0e
+ CoE details: 3f FoE details: 01 EoE details: 01 SoE details: 00
+ Ebus current: 0[mA]
+ only LRD/LWR:0
+PDO mapping according to CoE :
+  SM2 outputs
+     addr b   index: sub bitl data_type    name
+  [0x004D.0] 0x607A:0x00 0x20 INTEGER32    Target position
+  [0x0051.0] 0x60FE:0x01 0x20 UNSIGNED32   Physical outputs
+  [0x0055.0] 0x6040:0x00 0x10 UNSIGNED16   Controlword
+  SM3 inputs
+     addr b   index: sub bitl data_type    name
+  [0xDD9E7D38.0] 0x6064:0x00 0x20 INTEGER32    Position actual value
+  [0xDD9E7D3C.0] 0x60FD:0x00 0x20 UNSIGNED32   Digital inputs
+  [0xDD9E7D40.0] 0x6041:0x00 0x10 UNSIGNED16   Statusword
+End slaveinfo, close socket
+[ INFO  ](/home/davkim/sandbox/jsd/src/jsd.c:309) Waiting for SDO Thread to join...
+[ DEBUG ](/home/davkim/sandbox/jsd/src/jsd.c:312) Closing SOEM socket connection...
+[ DEBUG ](/home/davkim/sandbox/jsd/src/jsd.c:331) Freed JSD context
+End program
+
