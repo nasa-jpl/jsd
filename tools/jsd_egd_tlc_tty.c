@@ -1,11 +1,10 @@
-#include <stdio.h>  // this include needs to come before readline/readline.h
-
 #include <float.h>
 #include <inttypes.h>
 #include <pthread.h>
 #include <readline/history.h>
 #include <readline/readline.h>
 #include <signal.h>
+#include <stdio.h>  // this include needs to come before readline/readline.h
 
 #include "jsd/jsd.h"
 #include "jsd/jsd_egd_pub.h"
