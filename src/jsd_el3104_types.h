@@ -40,7 +40,6 @@ extern "C" {
  * ~187.5hz sine wave with filter setting BECKHOFF_FILTER_30000HZ
  */
 typedef struct {
-//  jsd_el3104_range_t    range[JSD_EL3104_NUM_CHANNELS];   ///< Sensing Range
   jsd_beckhoff_filter_t filter[JSD_EL3104_NUM_CHANNELS];  ///< Active filter
   bool   limit1_enable[JSD_EL3104_NUM_CHANNELS];          ///< enables limit1
   double limit1_voltage[JSD_EL3104_NUM_CHANNELS];         ///< limit 1 in Volts
@@ -53,7 +52,7 @@ typedef struct {
  */
 typedef struct {
   double  voltage[JSD_EL3104_NUM_CHANNELS];    ///< Analog input data, converted
-  int32_t adc_value[JSD_EL3104_NUM_CHANNELS];  ///< Analog input data, raw
+  int16_t adc_value[JSD_EL3104_NUM_CHANNELS];  ///< Analog input data, raw
   uint8_t limit1[JSD_EL3104_NUM_CHANNELS];     ///< 0-off, 1-exceeded, 2-under
   uint8_t limit2[JSD_EL3104_NUM_CHANNELS];     ///< 0-off, 1-exceeded, 2-under
   uint8_t
@@ -61,6 +60,7 @@ typedef struct {
   uint8_t txPDO_toggle[JSD_EL3104_NUM_CHANNELS];  ///< toggled on new data
   uint8_t
       error[JSD_EL3104_NUM_CHANNELS];  ///< If channel is over or under range
+  uint8_t sync_error[JSD_EL3104_NUM_CHANNELS];  /// True(DC mode) a synchronization error occurred in the expired cycle
   uint8_t
           underrange[JSD_EL3104_NUM_CHANNELS];  ///< Value below measuring range.
   uint8_t overrange[JSD_EL3104_NUM_CHANNELS];   ///< Measuring range exceeded.

@@ -14,7 +14,7 @@ extern "C" {
  */
 typedef struct __attribute__((__packed__)) {
   uint16_t flags;
-  int32_t  value;
+  int16_t  value;
 } jsd_el3104_txpdo_channel_t;
 
 /**

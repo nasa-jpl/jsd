@@ -5,15 +5,6 @@
 
 #include "jsd/jsd_sdo.h"
 
-//const char* jsd_el3104_range_strings[] = {
-//    [JSD_EL3602_RANGE_10V]   = "10V Range",
-//    [JSD_EL3602_RANGE_5V]    = "5V Range",
-//    [JSD_EL3602_RANGE_2_5V]  = "2.5V Range",
-//    [JSD_EL3602_RANGE_1_25V] = "1.25V Range",
-//    [JSD_EL3602_RANGE_75MV]  = "75mV Range",
-//    [JSD_EL3602_RANGE_200MV] = "200mV Range",
-//};
-
 /****************************************************
  * Public functions
  ****************************************************/
@@ -32,7 +23,6 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3104_PRODUCT_CODE);
 
-//  jsd_slave_config_t* config = &self->slave_configs[slave_id];
   jsd_el3104_state_t* state  = &self->slave_states[slave_id].el3104;
 
   jsd_el3104_txpdo_t* txpdo =
@@ -49,6 +39,7 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
     state->limit1[ch]       = (txpdo->channel[ch].flags >> 2) & 0x03;
     state->limit2[ch]       = (txpdo->channel[ch].flags >> 4) & 0x03;
     state->error[ch]        = (txpdo->channel[ch].flags >> 6) & 0x01;
+    state->sync_error[ch]   = (txpdo->channel[ch].flags >> 13) & 0x01;
     state->txPDO_state[ch]  = (txpdo->channel[ch].flags >> 14) & 0x01;
     state->txPDO_toggle[ch] = (txpdo->channel[ch].flags >> 15) & 0x01;
   }
