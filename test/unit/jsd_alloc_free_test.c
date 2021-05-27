@@ -1,6 +1,7 @@
 #include "jsd/jsd_pub.h"
 
-int main() {
+int main()
+{
   MSG("Allocating jsd_t");
   jsd_t* jsd = jsd_alloc();
 

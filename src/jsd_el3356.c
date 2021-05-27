@@ -9,7 +9,8 @@
  * Public functions
  ****************************************************/
 
-const jsd_el3356_state_t* jsd_el3356_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_el3356_state_t* jsd_el3356_get_state(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3356_PRODUCT_CODE);
@@ -18,7 +19,8 @@ const jsd_el3356_state_t* jsd_el3356_get_state(jsd_t* self, uint16_t slave_id) {
   return state;
 }
 
-void jsd_el3356_read(jsd_t* self, uint16_t slave_id) {
+void jsd_el3356_read(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3356_PRODUCT_CODE);
@@ -40,7 +42,8 @@ void jsd_el3356_read(jsd_t* self, uint16_t slave_id) {
   state->scaled_value = (double)state->value * config->scale_factor;
 }
 
-void jsd_el3356_process(jsd_t* self, uint16_t slave_id) {
+void jsd_el3356_process(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3356_PRODUCT_CODE);
@@ -62,7 +65,8 @@ void jsd_el3356_process(jsd_t* self, uint16_t slave_id) {
   jsd_async_sdo_process_response(self, slave_id);
 }
 
-void jsd_el3356_tare(jsd_t* self, uint16_t slave_id) {
+void jsd_el3356_tare(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3356_PRODUCT_CODE);
@@ -75,7 +79,8 @@ void jsd_el3356_tare(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_el3356_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_el3356_init(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3356_PRODUCT_CODE);
@@ -90,7 +95,8 @@ bool jsd_el3356_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_el3356_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_el3356_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
+{
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL3356_PRODUCT_CODE);
 

@@ -2,13 +2,15 @@
 #include <string.h>
 
 #include "jsd/jsd_el3104_pub.h"
+#include "jsd/jsd_el3104_types.h"
 #include "jsd_test_utils.h"
 
 extern bool  quit;
 extern FILE* file;
 uint8_t      slave_id;
 
-void telemetry_header() {
+void telemetry_header()
+{
   int i = 0;
   if (!file) {
     return;
@@ -22,7 +24,8 @@ void telemetry_header() {
   fprintf(file, "\n");
 }
 
-void telemetry_data(void* self) {
+void telemetry_data(void* self)
+{
   assert(self);
 
   if (!file) {
@@ -44,7 +47,8 @@ void telemetry_data(void* self) {
   fflush(file);
 }
 
-void print_info(void* self) {
+void print_info(void* self)
+{
   assert(self);
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
@@ -53,14 +57,16 @@ void print_info(void* self) {
   MSG("Ch2: %f V,  Ch3: %f V", state->voltage[2], state->voltage[3]);
 }
 
-void extract_data(void* self) {
+void extract_data(void* self)
+{
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_el3104_read(sds->jsd, slave_id);
 }
 
 void command(void* self) { (void)self; };
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   if (argc != 4) {
     ERROR("Expecting exactly 3 arguments");
     MSG("Usage: jsd_el3104_test <ifname> <el3104_slave_index> <loop_freq_hz>");
@@ -87,10 +93,10 @@ int main(int argc, char* argv[]) {
   // set device configuration here
   jsd_slave_config_t my_config = {0};
 
-//  my_config.el3104.range[0]          = JSD_EL3104_RANGE_10V;
-//  my_config.el3104.range[1]          = JSD_EL3104_RANGE_10V;
-  my_config.el3104.filter[0]         = JSD_BECKHOFF_FILTER_30000HZ;
-  my_config.el3104.filter[1]         = JSD_BECKHOFF_FILTER_30000HZ;
+  my_config.el3104.filter[0]         = JSD_EL3104_FILTER_400HZ;
+  my_config.el3104.filter[1]         = JSD_EL3104_FILTER_400HZ;
+  my_config.el3104.filter[2]         = JSD_EL3104_FILTER_400HZ;
+  my_config.el3104.filter[3]         = JSD_EL3104_FILTER_400HZ;
   my_config.el3104.limit1_enable[0]  = false;
   my_config.el3104.limit1_voltage[0] = 10.0;
   my_config.el3104.limit2_enable[0]  = false;

@@ -9,7 +9,8 @@
  * Public functions
  ****************************************************/
 
-const jsd_jed_state_t* jsd_jed_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_jed_state_t* jsd_jed_get_state(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
 
@@ -17,7 +18,8 @@ const jsd_jed_state_t* jsd_jed_get_state(jsd_t* self, uint16_t slave_id) {
   return state;
 }
 
-void jsd_jed_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
+void jsd_jed_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
 
@@ -25,7 +27,8 @@ void jsd_jed_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
   state->cmd             = cmd;
 }
 
-void jsd_jed_read(jsd_t* self, uint16_t slave_id) {
+void jsd_jed_read(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
 
@@ -44,7 +47,8 @@ void jsd_jed_read(jsd_t* self, uint16_t slave_id) {
   state->z      = (double)txpdo->z / 1000.0;
 }
 
-void jsd_jed_process(jsd_t* self, uint16_t slave_id) {
+void jsd_jed_process(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
 
@@ -61,7 +65,8 @@ void jsd_jed_process(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_jed_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_jed_init(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_JPL_VENDOR_ID);
@@ -80,7 +85,8 @@ bool jsd_jed_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_jed_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_jed_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
+{
   jsd_slave_config_t* slave_configs =
       (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];

@@ -18,7 +18,8 @@ const char* jsd_el3602_range_strings[] = {
  * Public functions
  ****************************************************/
 
-const jsd_el3602_state_t* jsd_el3602_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_el3602_state_t* jsd_el3602_get_state(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3602_PRODUCT_CODE);
@@ -27,7 +28,8 @@ const jsd_el3602_state_t* jsd_el3602_get_state(jsd_t* self, uint16_t slave_id) {
   return state;
 }
 
-void jsd_el3602_read(jsd_t* self, uint16_t slave_id) {
+void jsd_el3602_read(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3602_PRODUCT_CODE);
@@ -56,7 +58,8 @@ void jsd_el3602_read(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_el3602_process(jsd_t* self, uint16_t slave_id) {
+void jsd_el3602_process(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3602_PRODUCT_CODE);
@@ -67,7 +70,8 @@ void jsd_el3602_process(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_el3602_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_el3602_init(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3602_PRODUCT_CODE);
@@ -82,7 +86,8 @@ bool jsd_el3602_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_el3602_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_el3602_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
+{
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL3602_PRODUCT_CODE);
 

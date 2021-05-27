@@ -27,7 +27,8 @@ char       usdo[128];
 char       hstr[1024];
 jsd_t*     jsd;
 
-char* dtype2string(uint16 dtype) {
+char* dtype2string(uint16 dtype)
+{
   switch (dtype) {
     case ECT_BOOLEAN:
       sprintf(hstr, "BOOLEAN");
@@ -104,7 +105,8 @@ char* dtype2string(uint16 dtype) {
   return hstr;
 }
 
-char* SDO2string(uint16 slave, uint16 index, uint8 subidx, uint16 dtype) {
+char* SDO2string(uint16 slave, uint16 index, uint8 subidx, uint16 dtype)
+{
   int     l = sizeof(usdo) - 1, i;
   uint8*  u8;
   int8*   i8;
@@ -202,7 +204,8 @@ char* SDO2string(uint16 slave, uint16 index, uint8 subidx, uint16 dtype) {
   }
 }
 
-int si_PDOassign(uint16 slave, uint16 PDOassign, int mapoffset, int bitoffset) {
+int si_PDOassign(uint16 slave, uint16 PDOassign, int mapoffset, int bitoffset)
+{
   uint16 idxloop, nidx, subidxloop, rdat, idx, subidx;
   uint8  subcnt;
   int    wkc, bsize = 0, rdl;
@@ -277,7 +280,8 @@ int si_PDOassign(uint16 slave, uint16 PDOassign, int mapoffset, int bitoffset) {
   return bsize;
 }
 
-int si_map_sdo(int slave) {
+int si_map_sdo(int slave)
+{
   int   wkc, rdl;
   int   retVal = 0;
   uint8 nSM, iSM, tSM;
@@ -352,7 +356,8 @@ int si_map_sdo(int slave) {
   return retVal;
 }
 
-int si_siiPDO(uint16 slave, uint8 t, int mapoffset, int bitoffset) {
+int si_siiPDO(uint16 slave, uint8 t, int mapoffset, int bitoffset)
+{
   uint16         a, w, c, e, er, Size;
   uint8          eectl;
   uint16         obj_idx;
@@ -457,7 +462,8 @@ int si_siiPDO(uint16 slave, uint8 t, int mapoffset, int bitoffset) {
   return totalsize;
 }
 
-int si_map_sii(int slave) {
+int si_map_sii(int slave)
+{
   int retVal = 0;
   int Tsize, outputs_bo, inputs_bo;
 
@@ -482,7 +488,8 @@ int si_map_sii(int slave) {
   return retVal;
 }
 
-void si_sdo(int cnt) {
+void si_sdo(int cnt)
+{
   int i, j;
 
   ODlist.Entries = 0;
@@ -520,7 +527,8 @@ void si_sdo(int cnt) {
   }
 }
 
-void slaveinfo(char* ifname) {
+void slaveinfo(char* ifname)
+{
   int    cnt, j, nSM;
   uint16 ssigen;
   int    expectedWKC;
@@ -660,7 +668,8 @@ void slaveinfo(char* ifname) {
   }
 }
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   ec_adaptert* adapter = NULL;
   printf("jsd (Simple Open EtherCAT Master)\nSlaveinfo\n");
   char ifbuf[1024];

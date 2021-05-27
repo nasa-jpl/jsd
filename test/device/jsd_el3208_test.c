@@ -8,7 +8,8 @@ extern bool  quit;
 extern FILE* file;
 uint8_t      slave_id;
 
-void telemetry_header() {
+void telemetry_header()
+{
   int i;
   if (!file) {
     return;
@@ -22,7 +23,8 @@ void telemetry_header() {
   fprintf(file, "\n");
 }
 
-void telemetry_data(void* self) {
+void telemetry_data(void* self)
+{
   assert(self);
   if (!file) {
     return;
@@ -43,7 +45,8 @@ void telemetry_data(void* self) {
   fflush(file);
 }
 
-void print_info(void* self) {
+void print_info(void* self)
+{
   assert(self);
 
   single_device_server_t* sds = (single_device_server_t*)self;
@@ -60,7 +63,8 @@ void extract_data(void* self) { (void)self; }
 
 void command(void* self) { (void)self; };
 
-int main(int argc, char* argv[]) {
+int main(int argc, char* argv[])
+{
   if (argc != 4) {
     ERROR("Expecting exactly 3 arguments");
     MSG("Usage: jsd_el3208_test <ifname> <el3208_slave_index> <loop_freq_hz>");

@@ -8,7 +8,8 @@
 
 ///////////////////  ASYNC SDO /////////////////////////////
 
-void jsd_sdo_req_cirq_init(jsd_sdo_req_cirq_t* self) {
+void jsd_sdo_req_cirq_init(jsd_sdo_req_cirq_t* self)
+{
   assert(self);
   self->r     = 0;
   self->w     = 0;
@@ -16,7 +17,8 @@ void jsd_sdo_req_cirq_init(jsd_sdo_req_cirq_t* self) {
 }
 
 // non-locking
-static jsd_sdo_req_t queue_pop(jsd_sdo_req_cirq_t* self) {
+static jsd_sdo_req_t queue_pop(jsd_sdo_req_cirq_t* self)
+{
   jsd_sdo_req_t new_req;
 
   // MSG_DEBUG("[%s] r=%u w=%u", self->name, self->r, self->w);
@@ -26,7 +28,8 @@ static jsd_sdo_req_t queue_pop(jsd_sdo_req_cirq_t* self) {
   return new_req;
 }
 
-jsd_sdo_req_t jsd_sdo_req_cirq_pop(jsd_sdo_req_cirq_t* self) {
+jsd_sdo_req_t jsd_sdo_req_cirq_pop(jsd_sdo_req_cirq_t* self)
+{
   assert(self);
 
   jsd_sdo_req_t new_req = {};
@@ -44,7 +47,8 @@ jsd_sdo_req_t jsd_sdo_req_cirq_pop(jsd_sdo_req_cirq_t* self) {
 }
 
 // non-locking
-static bool queue_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
+static bool queue_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req)
+{
   bool status = true;
 
   self->buffer[self->w % JSD_SDO_REQ_CIRQ_LEN] = req;
@@ -57,7 +61,8 @@ static bool queue_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
   return status;
 }
 
-bool jsd_sdo_req_cirq_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
+bool jsd_sdo_req_cirq_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req)
+{
   bool status;
 
   pthread_mutex_lock(&self->mutex);
@@ -68,11 +73,13 @@ bool jsd_sdo_req_cirq_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
   return status;
 }
 
-static bool queue_is_empty(jsd_sdo_req_cirq_t* self) {
+static bool queue_is_empty(jsd_sdo_req_cirq_t* self)
+{
   return self->r == self->w;
 }
 
-bool jsd_sdo_req_cirq_is_empty(jsd_sdo_req_cirq_t* self) {
+bool jsd_sdo_req_cirq_is_empty(jsd_sdo_req_cirq_t* self)
+{
   assert(self);
   bool val;
   pthread_mutex_lock(&self->mutex);
@@ -83,7 +90,8 @@ bool jsd_sdo_req_cirq_is_empty(jsd_sdo_req_cirq_t* self) {
 
 static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
                             uint16_t index, uint8_t subindex, void* void_data,
-                            char* verb) {
+                            char* verb)
+{
   jsd_sdo_data_t data = *(jsd_sdo_data_t*)void_data;
 
   switch (data_type) {
@@ -127,7 +135,8 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
   }
 }
 
-void* sdo_thread_loop(void* void_data) {
+void* sdo_thread_loop(void* void_data)
+{
   jsd_t* self = (jsd_t*)void_data;
 
   while (true) {
@@ -187,7 +196,8 @@ void* sdo_thread_loop(void* void_data) {
 }
 //////////////////////////
 
-int jsd_sdo_data_type_size(jsd_sdo_data_type_t type) {
+int jsd_sdo_data_type_size(jsd_sdo_data_type_t type)
+{
   int size = 0;
 
   switch (type) {
@@ -216,7 +226,8 @@ int jsd_sdo_data_type_size(jsd_sdo_data_type_t type) {
 void jsd_sdo_push_async_request(jsd_t* self, uint16_t slave_id, uint16_t index,
                                 uint8_t subindex, jsd_sdo_data_type_t data_type,
                                 jsd_sdo_data_t*    data,
-                                jsd_sdo_req_type_t request_type) {
+                                jsd_sdo_req_type_t request_type)
+{
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
   jsd_sdo_req_t req;
@@ -247,13 +258,15 @@ void jsd_sdo_push_async_request(jsd_t* self, uint16_t slave_id, uint16_t index,
 
 void jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
                              uint8_t subindex, jsd_sdo_data_type_t data_type,
-                             void* data) {
+                             void* data)
+{
   jsd_sdo_push_async_request(self, slave_id, index, subindex, data_type, data,
                              JSD_SDO_REQ_TYPE_WRITE);
 }
 
 void jsd_sdo_get_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
-                             uint8_t subindex, jsd_sdo_data_type_t data_type) {
+                             uint8_t subindex, jsd_sdo_data_type_t data_type)
+{
   jsd_sdo_push_async_request(self, slave_id, index, subindex, data_type, NULL,
                              JSD_SDO_REQ_TYPE_READ);
 }
@@ -262,7 +275,8 @@ void jsd_sdo_get_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
 
 bool jsd_sdo_set_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
                                 uint16_t index, uint8_t subindex,
-                                jsd_sdo_data_type_t data_type, void* param_in) {
+                                jsd_sdo_data_type_t data_type, void* param_in)
+{
   assert(ecx_context);
 
   int param_size = jsd_sdo_data_type_size(data_type);
@@ -281,8 +295,8 @@ bool jsd_sdo_set_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
 
 bool jsd_sdo_get_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
                                 uint16_t index, uint8_t subindex,
-                                jsd_sdo_data_type_t data_type,
-                                void*               param_out) {
+                                jsd_sdo_data_type_t data_type, void* param_out)
+{
   assert(ecx_context);
 
   int param_size = jsd_sdo_data_type_size(data_type);
@@ -301,7 +315,8 @@ bool jsd_sdo_get_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
 
 bool jsd_sdo_set_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
                                    uint16_t index, uint8_t subindex,
-                                   int param_size, void* param_in) {
+                                   int param_size, void* param_in)
+{
   assert(ecx_context);
 
   int wkc = ecx_SDOwrite(ecx_context, slave_id, index, subindex, true,
@@ -317,7 +332,8 @@ bool jsd_sdo_set_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
 
 bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
                                    uint16_t index, uint8_t subindex,
-                                   int* param_size_in_out, void* param_out) {
+                                   int* param_size_in_out, void* param_out)
+{
   assert(ecx_context);
 
   int wkc = ecx_SDOread(ecx_context, slave_id, index, subindex, true,
@@ -331,7 +347,8 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   return true;
 }
 
-void jsd_async_sdo_process_response(jsd_t* self, uint16_t slave_id) {
+void jsd_async_sdo_process_response(jsd_t* self, uint16_t slave_id)
+{
   jsd_slave_state_t* state = &self->slave_states[slave_id];
 
   // pop the response queue so it does not overflow

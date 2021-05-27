@@ -10,10 +10,12 @@ extern "C" {
 #define JSD_EL3104_PRODUCT_CODE (uint32_t)0x0c203052
 #define JSD_EL3104_NUM_CHANNELS 4
 
+#define JSD_EL3104_FILTER_400HZ 2
+
 /**
  * @brief EL3104 range values
  */
-//typedef enum {
+// typedef enum {
 //  JSD_EL3104_RANGE_10V = 0,  ///< +/- 10V range
 //  JSD_EL3104_RANGE_5V,       ///< +/- 5V range
 //  JSD_EL3104_RANGE_2_5V,     ///< +/- 2.5V range
@@ -23,7 +25,7 @@ extern "C" {
 //  JSD_EL3104_NUM_RANGES,
 //} jsd_el3104_range_t;
 
-//extern const char* jsd_el3104_range_strings[];
+// extern const char* jsd_el3104_range_strings[];
 
 /**
  * @brief configuration struct for EL3104 device initialization
@@ -60,7 +62,10 @@ typedef struct {
   uint8_t txPDO_toggle[JSD_EL3104_NUM_CHANNELS];  ///< toggled on new data
   uint8_t
       error[JSD_EL3104_NUM_CHANNELS];  ///< If channel is over or under range
-  uint8_t sync_error[JSD_EL3104_NUM_CHANNELS];  /// True(DC mode) a synchronization error occurred in the expired cycle
+  uint8_t
+      sync_error[JSD_EL3104_NUM_CHANNELS];  /// True(DC mode) a synchronization
+                                            /// error occurred in the expired
+                                            /// cycle
   uint8_t
           underrange[JSD_EL3104_NUM_CHANNELS];  ///< Value below measuring range.
   uint8_t overrange[JSD_EL3104_NUM_CHANNELS];   ///< Measuring range exceeded.

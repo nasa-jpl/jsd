@@ -9,7 +9,8 @@
 #include "jsd/jsd_sdo.h"
 
 static void set_controlword(jsd_t* self, uint16_t slave_id,
-                            uint16_t controlword) {
+                            uint16_t controlword)
+{
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
   /*
@@ -26,7 +27,8 @@ static void set_controlword(jsd_t* self, uint16_t slave_id,
   state->rxpdo_prof.controlword = controlword;
 }
 
-static uint16_t get_controlword(jsd_t* self, uint16_t slave_id) {
+static uint16_t get_controlword(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_slave_config_t*      config = &self->slave_configs[slave_id];
 
@@ -43,7 +45,8 @@ static uint16_t get_controlword(jsd_t* self, uint16_t slave_id) {
 }
 
 static void set_mode_of_operation(jsd_t* self, uint16_t slave_id,
-                                  int8_t mode_of_operation) {
+                                  int8_t mode_of_operation)
+{
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
   /*
@@ -82,13 +85,15 @@ static int8_t get_mode_of_operation(jsd_t* self, uint16_t slave_id){
  * Public functions
  ****************************************************/
 
-const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   return &self->slave_states[slave_id].egd.pub;
 }
 
-void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_reset(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   double now = jsd_get_time_sec();
@@ -103,20 +108,23 @@ void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_halt(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_halt(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   self->slave_states[slave_id].egd.new_halt_command = true;
 }
 
 // A halt achieves the same effect, wanted this function for public API
-void jsd_egd_disable_drive(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_disable_drive(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_halt(self, slave_id);
 }
 
 void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
                                 uint8_t digital_output_index,
-                                uint8_t output_level) {
+                                uint8_t output_level)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   assert(digital_output_index < JSD_EGD_NUM_DIGITAL_OUTPUTS);
@@ -137,7 +145,8 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
 }
 
 void jsd_egd_set_peak_current(jsd_t* self, uint16_t slave_id,
-                              double peak_current) {
+                              double peak_current)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -159,7 +168,8 @@ void jsd_egd_set_peak_current(jsd_t* self, uint16_t slave_id,
 
 void jsd_egd_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_pos_t motion_command) {
+    jsd_egd_motion_command_prof_pos_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -178,7 +188,8 @@ void jsd_egd_set_motion_command_prof_pos(
 
 void jsd_egd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_vel_t motion_command) {
+    jsd_egd_motion_command_prof_vel_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -197,7 +208,8 @@ void jsd_egd_set_motion_command_prof_vel(
 
 void jsd_egd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_torque_t motion_command) {
+    jsd_egd_motion_command_prof_torque_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -214,9 +226,9 @@ void jsd_egd_set_motion_command_prof_torque(
   state->motion_command.prof_torque  = motion_command;
 }
 
-void jsd_egd_set_motion_command_csp(
-    jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csp_t motion_command) {
+void jsd_egd_set_motion_command_csp(jsd_t* self, uint16_t slave_id,
+                                    jsd_egd_motion_command_csp_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -233,9 +245,9 @@ void jsd_egd_set_motion_command_csp(
   state->motion_command.csp          = motion_command;
 }
 
-void jsd_egd_set_motion_command_csv(
-    jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csv_t motion_command) {
+void jsd_egd_set_motion_command_csv(jsd_t* self, uint16_t slave_id,
+                                    jsd_egd_motion_command_csv_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -252,9 +264,9 @@ void jsd_egd_set_motion_command_csv(
   state->motion_command.csv          = motion_command;
 }
 
-void jsd_egd_set_motion_command_cst(
-    jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_cst_t motion_command) {
+void jsd_egd_set_motion_command_cst(jsd_t* self, uint16_t slave_id,
+                                    jsd_egd_motion_command_cst_t motion_command)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -271,7 +283,8 @@ void jsd_egd_set_motion_command_cst(
   state->motion_command.cst          = motion_command;
 }
 
-char* jsd_egd_mode_of_operation_to_string(jsd_egd_mode_of_operation_t mode) {
+char* jsd_egd_mode_of_operation_to_string(jsd_egd_mode_of_operation_t mode)
+{
   switch (mode) {
     case JSD_EGD_MODE_OF_OPERATION_DISABLED:
       return "Disabled";
@@ -303,8 +316,8 @@ char* jsd_egd_mode_of_operation_to_string(jsd_egd_mode_of_operation_t mode) {
   }
 }
 
-char* jsd_egd_state_machine_state_to_string(
-    jsd_egd_state_machine_state_t state) {
+char* jsd_egd_state_machine_state_to_string(jsd_egd_state_machine_state_t state)
+{
   switch (state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
       return "Not Ready to Switch On";
@@ -339,7 +352,8 @@ char* jsd_egd_state_machine_state_to_string(
   }
 }
 
-char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code) {
+char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code)
+{
   switch (fault_code) {
     case JSD_EGD_FAULT_OKAY:
       return "JSD_EGD_FAULT_OKAY";
@@ -490,7 +504,8 @@ char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code) {
   }
 }
 
-void jsd_egd_read(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_read(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -499,7 +514,8 @@ void jsd_egd_read(jsd_t* self, uint16_t slave_id) {
   jsd_egd_async_sdo_process(self, slave_id);
 }
 
-void jsd_egd_process(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_process(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -509,7 +525,8 @@ void jsd_egd_process(jsd_t* self, uint16_t slave_id) {
 
 ///////////////////  ASYNC SDO /////////////////////////////
 //
-uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
+uint16_t jsd_egd_tlc_to_do(char tlc[2])
+{
   if ((tlc[0] < 65 || tlc[0] > 90) || (tlc[1] < 65 || tlc[1] > 90)) {
     ERROR("Two-Letter Command string must be uppercased: %s", tlc);
   }
@@ -530,13 +547,15 @@ uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
 }
 
 void jsd_egd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
-                                          int32_t position) {
+                                          int32_t position)
+{
   jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("PX"), 1,
                           JSD_SDO_DATA_I32, &position);
 }
 
 void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
-                                     int32_t mode) {
+                                     int32_t mode)
+{
   jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("UM"), 1,
                           JSD_SDO_DATA_I32, &mode);
 }
@@ -545,7 +564,8 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
  * Private functions
  ****************************************************/
 
-bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_egd_init(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
@@ -586,7 +606,8 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_egd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_egd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
+{
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -618,7 +639,8 @@ int jsd_egd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 }
 
 int jsd_egd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
-                               jsd_slave_config_t* config) {
+                               jsd_slave_config_t* config)
+{
   MSG_DEBUG("Attempting to map custom EGD PDOs...");
 
   //////////////// RxPDO Mapping //////////////////////////
@@ -707,7 +729,8 @@ int jsd_egd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
 }
 
 int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                              jsd_slave_config_t* config) {
+                              jsd_slave_config_t* config)
+{
   // set the Application object (0x2203) to report drive temp
   uint32_t app_obj_config_word = 0x01 << (16 + 3);
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x2F41, 0x00,
@@ -784,7 +807,8 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 }
 
 int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                              jsd_slave_config_t* config) {
+                              jsd_slave_config_t* config)
+{
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id,
                                   jsd_egd_tlc_to_do("AC"), 1, JSD_SDO_DATA_U32,
                                   (void*)&config->egd.max_profile_accel)) {
@@ -928,7 +952,8 @@ int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
   return 1;
 }
 
-void jsd_egd_read_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_read_PDO_data(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   assert(sizeof(jsd_egd_txpdo_data_t) ==
@@ -940,7 +965,8 @@ void jsd_egd_read_PDO_data(jsd_t* self, uint16_t slave_id) {
          self->ecx_context.slavelist[slave_id].Ibytes);
 }
 
-void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -970,7 +996,8 @@ void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id)
+{
   jsd_slave_state_t* state = &self->slave_states[slave_id];
 
   while (!jsd_sdo_req_cirq_is_empty(&self->jsd_sdo_res_cirq[slave_id])) {
@@ -1016,7 +1043,8 @@ void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
   state->egd.last_async_sdo_in_prog = state->egd.pub.async_sdo_in_prog;
 }
 
-void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -1134,7 +1162,8 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   // drive temp
   state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
 }
-void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -1221,7 +1250,8 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   state->new_motion_command = false;
 }
 
-void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1261,7 +1291,8 @@ void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   set_mode_of_operation(self, slave_id, JSD_EGD_MODE_OF_OPERATION_PROF_POS);
 }
 
-void jsd_egd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1288,7 +1319,8 @@ void jsd_egd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
       state->requested_mode_of_operation = JSD_EGD_MODE_OF_OPERATION_DISABLED;
   }
 }
-void jsd_egd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1323,7 +1355,8 @@ void jsd_egd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1351,7 +1384,8 @@ void jsd_egd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1378,7 +1412,8 @@ void jsd_egd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id)
+{
   jsd_egd_private_state_t* state  = &self->slave_states[slave_id].egd;
   jsd_egd_config_t*        config = &self->slave_configs[slave_id].egd;
   jsd_egd_motion_command_t cmd    = state->motion_command;
@@ -1406,7 +1441,8 @@ void jsd_egd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_egd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_process_mode_of_operation(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -1467,7 +1503,8 @@ void jsd_egd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error) {
+jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error)
+{
   // WARNING("ec_err_type: %d", error.Etype);
 
   if (error.Etype == EC_ERR_TYPE_SDO_ERROR) {

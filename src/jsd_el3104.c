@@ -9,7 +9,8 @@
  * Public functions
  ****************************************************/
 
-const jsd_el3104_state_t* jsd_el3104_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_el3104_state_t* jsd_el3104_get_state(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3104_PRODUCT_CODE);
@@ -18,12 +19,13 @@ const jsd_el3104_state_t* jsd_el3104_get_state(jsd_t* self, uint16_t slave_id) {
   return state;
 }
 
-void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
+void jsd_el3104_read(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3104_PRODUCT_CODE);
 
-  jsd_el3104_state_t* state  = &self->slave_states[slave_id].el3104;
+  jsd_el3104_state_t* state = &self->slave_states[slave_id].el3104;
 
   jsd_el3104_txpdo_t* txpdo =
       (jsd_el3104_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
@@ -32,7 +34,8 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
   for (ch = 0; ch < JSD_EL3104_NUM_CHANNELS; ch++) {
     state->adc_value[ch] = txpdo->channel[ch].value;
 
-    state->voltage[ch] = (((double)state->adc_value[ch] + 32768) * 20 / 65536) - 10;
+    state->voltage[ch] =
+        (((double)state->adc_value[ch] + 32768) * 20 / 65536) - 10;
 
     state->underrange[ch]   = (txpdo->channel[ch].flags >> 0) & 0x01;
     state->overrange[ch]    = (txpdo->channel[ch].flags >> 1) & 0x01;
@@ -45,7 +48,8 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_el3104_process(jsd_t* self, uint16_t slave_id) {
+void jsd_el3104_process(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3104_PRODUCT_CODE);
@@ -56,7 +60,8 @@ void jsd_el3104_process(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_el3104_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_el3104_init(jsd_t* self, uint16_t slave_id)
+{
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3104_PRODUCT_CODE);
@@ -71,7 +76,8 @@ bool jsd_el3104_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_el3104_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_el3104_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
+{
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL3104_PRODUCT_CODE);
 
@@ -96,21 +102,8 @@ int jsd_el3104_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   int ch;
   for (ch = 0; ch < JSD_EL3104_NUM_CHANNELS; ch++) {
-//    MSG("\t range[%d]: %s", ch,
-//        jsd_el3104_range_strings[config->el3104.range[ch]]);
-    MSG("\t Ch%d Filter: %s", ch,
-        jsd_beckhoff_filter_strings[config->el3104.filter[ch]]);
-
     // register is 0x80n0, where n is channel number (e.g. ch4 = 0x8040)
     uint32_t sdo_channel_index = 0x8000 + (0x10 * ch);
-
-    // Set Range
-//    assert(config->el3104.range[ch] < JSD_EL3602_NUM_RANGES);
-//    uint16_t range = config->el3104.range[ch];
-//    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-//                                    0x19, JSD_SDO_DATA_U16, &range)) {
-//      return 0;
-//    }
 
     // Enable Filter (not explicitly required, always enabled)
     uint8_t enable_filter = 1;
@@ -120,47 +113,13 @@ int jsd_el3104_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     }
 
     // Set Filter Option
-    uint16_t filter_opt = config->el3104.filter[ch];
+    uint16_t filter_opt =
+        JSD_EL3104_FILTER_400HZ;  // IIR Filter, fastest rate. Ref:
+                                  // el31xxen.pdf, page 203 Filter settings
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x15, JSD_SDO_DATA_U16, &filter_opt)) {
       return 0;
     }
-
-    // Set limit1
-//    if (config->el3104.limit1_enable[ch]) {
-//      int32_t limit_value = config->el3104.limit1_voltage[ch] /
-//                            jsd_el3104_range_factor[config->el3104.range[ch]] *
-//                            JSD_EL3602_DAQ_RESOLUTION / 2.0;
-//      if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-//                                      0x13, JSD_SDO_DATA_I32, &limit_value)) {
-//        return 0;
-//      }
-//      MSG("Enabling limit1 on channel %d to value of %d", ch, limit_value);
-//
-//      uint8_t enable_limit = 1;
-//      if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-//                                      0x7, JSD_SDO_DATA_U8, &enable_limit)) {
-//        return 0;
-//      }
-//    }
-//
-//    // Set limit2
-//    if (config->el3104.limit2_enable[ch]) {
-//      int32_t limit_value = config->el3104.limit2_voltage[ch] /
-//                            jsd_el3104_range_factor[config->el3104.range[ch]] *
-//                            JSD_EL3602_DAQ_RESOLUTION / 2.0;
-//      if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-//                                      0x14, JSD_SDO_DATA_I32, &limit_value)) {
-//        return 0;
-//      }
-//      MSG("Enabling limit2 on channel %d to value of %d", ch, limit_value);
-//
-//      uint8_t enable_limit = 1;
-//      if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-//                                      0x8, JSD_SDO_DATA_U8, &enable_limit)) {
-//        return 0;
-//      }
-//    }
   }
 
   config->PO2SO_success = true;

@@ -12,10 +12,10 @@ extern "C" {
 #include "jsd/jsd_ati_fts_types.h"
 #include "jsd/jsd_egd_types.h"
 #include "jsd/jsd_el2124_types.h"
+#include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_el3208_types.h"
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
-#include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_jed_types.h"
 
 typedef struct {

@@ -12,5 +12,6 @@ PointerAlignment: Left
 AlignConsecutiveAssignments: true
 AlignConsecutiveDeclarations: true
 #BreakStringLiterals: false
+BreakBeforeBraces: Linux
 ...
 
