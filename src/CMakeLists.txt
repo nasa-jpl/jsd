@@ -11,6 +11,7 @@ add_library(jsd-lib STATIC
     jsd_timer.c
     jsd_ati_fts.c
     jsd_el3104.c
+    jsd_el3202.c
     )
 
 message(STATUS "SOEM INCLUDE DIRS: ${SOEM_INCLUDE_DIRS}")
