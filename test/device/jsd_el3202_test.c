@@ -94,13 +94,16 @@ int main(int argc, char* argv[])
   my_config.el3202.element[0] = JSD_EL3202_ELEMENT_PT100;
   my_config.el3202.element[1] = JSD_EL3202_ELEMENT_PT100;
 
-  my_config.el3202.filter[0] = JSD_BECKHOFF_FILTER_10HZ;
+  my_config.el3202.filter[0] = JSD_BECKHOFF_FILTER_50HZ;
   my_config.el3202.filter[1] = JSD_BECKHOFF_FILTER_50HZ;
 
   my_config.el3202.connection[0] = JSD_EL3202_CONNECTION_4WIRE;
   my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_4WIRE;
   //TODO: TEST some undesired config
-  //my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_2WIRE;
+//  my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_2WIRE;
+
+//  my_config.el3202.wire_resistance[0] = 100.0;
+//  my_config.el3202.wire_resistance[1] = 10.0;
 
   my_config.el3202.presentation[0] = JSD_EL3202_PRESENTATION_SIGNED;
   my_config.el3202.presentation[1] = JSD_EL3202_PRESENTATION_SIGNED;
