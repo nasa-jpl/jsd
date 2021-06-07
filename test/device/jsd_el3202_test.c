@@ -55,8 +55,7 @@ void print_info(void* self)
   jsd_el3202_read(sds->jsd, slave_id);
   const jsd_el3202_state_t* state = jsd_el3202_get_state(sds->jsd, slave_id);
 
-  MSG("Ch0: %f,  Ch1: %f",
-      state->output_eu[0], state->output_eu[1]);
+  MSG("Ch0: %f,  Ch1: %f", state->output_eu[0], state->output_eu[1]);
 }
 
 void extract_data(void* self) { (void)self; }
@@ -99,11 +98,11 @@ int main(int argc, char* argv[])
 
   my_config.el3202.connection[0] = JSD_EL3202_CONNECTION_4WIRE;
   my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_4WIRE;
-  //TODO: TEST some undesired config
-//  my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_2WIRE;
+  // TODO: TEST some undesired config
+  //  my_config.el3202.connection[1] = JSD_EL3202_CONNECTION_2WIRE;
 
-//  my_config.el3202.wire_resistance[0] = 100.0;
-//  my_config.el3202.wire_resistance[1] = 10.0;
+  //  my_config.el3202.wire_resistance[0] = 100.0;
+  //  my_config.el3202.wire_resistance[1] = 10.0;
 
   my_config.el3202.presentation[0] = JSD_EL3202_PRESENTATION_SIGNED;
   my_config.el3202.presentation[1] = JSD_EL3202_PRESENTATION_SIGNED;
