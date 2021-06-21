@@ -12,20 +12,6 @@ extern "C" {
 
 #define JSD_EL3104_FILTER_400HZ 2
 
-/**
- * @brief EL3104 range values
- */
-// typedef enum {
-//  JSD_EL3104_RANGE_10V = 0,  ///< +/- 10V range
-//  JSD_EL3104_RANGE_5V,       ///< +/- 5V range
-//  JSD_EL3104_RANGE_2_5V,     ///< +/- 2.5V range
-//  JSD_EL3104_RANGE_1_25V,    ///< +/- 1.25V range
-//  JSD_EL3104_RANGE_75MV,     ///< +/- 75mV range (only valid for EL3104-0010)
-//  JSD_EL3104_RANGE_200MV,    ///< +/- 200mV range (only valid for EL3104-0002)
-//  JSD_EL3104_NUM_RANGES,
-//} jsd_el3104_range_t;
-
-// extern const char* jsd_el3104_range_strings[];
 
 /**
  * @brief configuration struct for EL3104 device initialization
@@ -42,7 +28,7 @@ extern "C" {
  * ~187.5hz sine wave with filter setting BECKHOFF_FILTER_30000HZ
  */
 typedef struct {
-  jsd_beckhoff_filter_t filter[JSD_EL3104_NUM_CHANNELS];  ///< Active filter
+  uint16_t filter[JSD_EL3104_NUM_CHANNELS];  ///< Active filter
   bool   limit1_enable[JSD_EL3104_NUM_CHANNELS];          ///< enables limit1
   double limit1_voltage[JSD_EL3104_NUM_CHANNELS];         ///< limit 1 in Volts
   bool   limit2_enable[JSD_EL3104_NUM_CHANNELS];          ///< enables limit2
