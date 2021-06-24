@@ -5,28 +5,29 @@
 extern "C" {
 #endif
 
-#include "cfw/cfw_print.h"
-
 #include <stdio.h>
 
 #ifdef DEBUG
 #define MSG_DEBUG(M, ...) \
-  cfw_error_print(CFW_DEBUG, __FILE__, __LINE__, M, ##__VA_ARGS__)
+  fprintf(stderr, "[ DEBUG ](%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 #else
 #define MSG_DEBUG(M, ...)
 #endif
 
 #define MSG(M, ...) \
-  cfw_error_print(CFW_INFO, __FILE__, __LINE__, M, ##__VA_ARGS__)
+  fprintf(stderr, "[ INFO  ](%s:%d) " M "\n", __FILE__, __LINE__, ##__VA_ARGS__)
 
-#define WARNING(M, ...) \
-  cfw_error_print(CFW_WARN, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define WARNING(M, ...)                                                  \
+  fprintf(stderr, "\033[1;33m[ WARN  ](%s:%d) " M "\033[0m\n", __FILE__, \
+          __LINE__, ##__VA_ARGS__)
 
-#define ERROR(M, ...) \
-  cfw_error_print(CFW_ERROR, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define ERROR(M, ...)                                                    \
+  fprintf(stderr, "\033[1;31m[ ERROR ](%s:%d) " M "\033[0m\n", __FILE__, \
+          __LINE__, ##__VA_ARGS__)
 
-#define SUCCESS(M, ...) \
-  cfw_error_print(CFW_INFO, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SUCCESS(M, ...)                                                  \
+  fprintf(stderr, "\033[1;32m[SUCCESS](%s:%d) " M "\033[0m\n", __FILE__, \
+          __LINE__, ##__VA_ARGS__)
 
 #ifdef __cplusplus
 }
