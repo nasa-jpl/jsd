@@ -4,6 +4,7 @@
 #include <inttypes.h>
 #include <string.h>
 #include <time.h>
+#include <unistd.h>
 
 #include "jsd/jsd_ati_fts.h"
 #include "jsd/jsd_egd.h"
@@ -77,7 +78,12 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   self->enable_autorecovery = enable_autorecovery;
 
   if (ecx_init(&self->ecx_context, ifname) <= 0) {
-    ERROR("No socket connection on %s. Excecute as root", ifname);
+    ERROR("Unable to establish socket connection on %s", ifname);
+    if(geteuid() == 0) {
+      ERROR("Is the device on and connected?");
+    } else {
+      ERROR("Execute as root");
+    }
     return false;
   }
 
