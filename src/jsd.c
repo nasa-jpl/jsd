@@ -22,8 +22,7 @@
  * Public functions
  ****************************************************/
 
-jsd_t* jsd_alloc()
-{
+jsd_t* jsd_alloc() {
   jsd_t* self;
   self = (jsd_t*)calloc(1, sizeof(jsd_t));
 
@@ -63,8 +62,7 @@ jsd_t* jsd_alloc()
 }
 
 void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
-                          jsd_slave_config_t slave_config)
-{
+                          jsd_slave_config_t slave_config) {
   assert(self);
   assert(slave_id < EC_MAXSLAVE);
 
@@ -77,8 +75,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
 }
 
 // TODO check more of these return status to ensure clean initialization
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery)
-{
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
@@ -218,8 +215,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery)
 
 // request state for all slaves is achieved by setting state on index 0
 bool jsd_set_device_state(jsd_t* self, uint16_t slave_id, ec_state state,
-                          int timeout_us)
-{
+                          int timeout_us) {
   assert(self);
 
   self->ecx_context.slavelist[slave_id].state = state;
@@ -239,8 +235,7 @@ bool jsd_set_device_state(jsd_t* self, uint16_t slave_id, ec_state state,
   return true;
 }
 
-void jsd_read(jsd_t* self, int timeout_us)
-{
+void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
@@ -289,8 +284,7 @@ void jsd_read(jsd_t* self, int timeout_us)
   }
 }
 
-void jsd_write(jsd_t* self)
-{
+void jsd_write(jsd_t* self) {
   assert(self);
 
   // Write EtherCat frame to slaves, with logic for smart prints
@@ -306,8 +300,7 @@ void jsd_write(jsd_t* self)
   last_transmitted = transmitted;
 }
 
-void jsd_free(jsd_t* self)
-{
+void jsd_free(jsd_t* self) {
   if (!self) {
     return;
   }
@@ -339,20 +332,17 @@ void jsd_free(jsd_t* self)
   MSG_DEBUG("Freed JSD context");
 }
 
-ec_state jsd_get_device_state(jsd_t* self, uint16_t slave_id)
-{
+ec_state jsd_get_device_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
   return self->ecx_context.slavelist[slave_id].state;
 }
 
-void jsd_set_manual_recovery(jsd_t* self)
-{
+void jsd_set_manual_recovery(jsd_t* self) {
   assert(self);
   self->attempt_manual_recovery = 1;
 }
 
-char* jsd_ec_state_to_string(ec_state state)
-{
+char* jsd_ec_state_to_string(ec_state state) {
   switch (state) {
     case EC_STATE_NONE:
       return "EC_STATE_NONE";
@@ -385,15 +375,13 @@ char* jsd_ec_state_to_string(ec_state state)
  * Private functions
  ****************************************************/
 
-double jsd_get_time_sec()
-{
+double jsd_get_time_sec() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
 }
 
-bool jsd_init_all_devices(jsd_t* self)
-{
+bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
 
   uint16_t num_found_slaves = *(self->ecx_context.slavecount);
@@ -439,8 +427,7 @@ bool jsd_init_all_devices(jsd_t* self)
   return true;
 }
 
-bool jsd_init_single_device(jsd_t* self, uint16_t slave_id)
-{
+bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
   assert(self);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -495,8 +482,7 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id)
   return true;
 }
 
-void jsd_ecatcheck(jsd_t* self)
-{
+void jsd_ecatcheck(jsd_t* self) {
   uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   int     slave;
 

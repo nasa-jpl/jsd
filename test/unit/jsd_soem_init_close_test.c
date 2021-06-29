@@ -2,8 +2,7 @@
 
 #include "jsd/jsd_pub.h"
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 2) {
     ERROR("Expecting exactly 1 argument");
     MSG("Usage: jsd_el2124_test <ifname>");

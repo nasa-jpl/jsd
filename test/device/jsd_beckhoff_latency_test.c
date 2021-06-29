@@ -12,8 +12,7 @@ uint8_t      el3602_slave_id;
 uint8_t      cmd_output[JSD_EL2124_NUM_CHANNELS] = {0, 0, 0, 0};
 uint32_t     cmd_count                           = 0;
 
-void telemetry_header()
-{
+void telemetry_header() {
   int i;
   if (!file) {
     return;
@@ -30,8 +29,7 @@ void telemetry_header()
   fprintf(file, "\n");
 }
 
-void telemetry_data(void* self)
-{
+void telemetry_data(void* self) {
   assert(self);
 
   if (!file) {
@@ -58,8 +56,7 @@ void telemetry_data(void* self)
   fflush(file);
 }
 
-void print_info(void* self)
-{
+void print_info(void* self) {
   assert(self);
   single_device_server_t*   sds = (single_device_server_t*)self;
   const jsd_el3602_state_t* state =
@@ -68,15 +65,13 @@ void print_info(void* self)
   MSG("EL2124 Ch0: %u, EL3602 Ch0: %f", cmd_output[0], state->voltage[0]);
 }
 
-void extract_data(void* self)
-{
+void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_el3602_read(sds->jsd, el3602_slave_id);
   jsd_el2124_process(sds->jsd, el2124_slave_id);
 }
 
-void command(void* self)
-{
+void command(void* self) {
   if (0 == cmd_count++ % 100) {
     single_device_server_t* ssd = (single_device_server_t*)self;
 
@@ -86,8 +81,7 @@ void command(void* self)
   }
 };
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 5) {
     ERROR("Expecting exactly 4 arguments");
     MSG("Usage: jsd_beckhoff_latency_test <ifname> <el3602_slave_index> \

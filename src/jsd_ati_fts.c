@@ -9,8 +9,8 @@
  * Public functions
  ****************************************************/
 
-const jsd_ati_fts_state_t* jsd_ati_fts_get_state(jsd_t* self, uint16_t slave_id)
-{
+const jsd_ati_fts_state_t* jsd_ati_fts_get_state(jsd_t*   self,
+                                                 uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_ATI_FTS_PRODUCT_CODE);
@@ -19,8 +19,7 @@ const jsd_ati_fts_state_t* jsd_ati_fts_get_state(jsd_t* self, uint16_t slave_id)
   return state;
 }
 
-void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id)
-{
+void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_ATI_FTS_PRODUCT_CODE);
@@ -56,8 +55,7 @@ void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id)
   state->sample_counter = txpdo->sample_counter;
 }
 
-void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id)
-{
+void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_ATI_FTS_PRODUCT_CODE);
@@ -77,8 +75,7 @@ void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id)
  * Private functions
  ****************************************************/
 
-bool jsd_ati_fts_init(jsd_t* self, uint16_t slave_id)
-{
+bool jsd_ati_fts_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_ATI_FTS_PRODUCT_CODE);
@@ -92,8 +89,7 @@ bool jsd_ati_fts_init(jsd_t* self, uint16_t slave_id)
   return true;
 }
 
-int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
-{
+int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_ATI_FTS_PRODUCT_CODE);
 
@@ -183,8 +179,7 @@ int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
   return 1;
 }
 
-bool jsd_ati_fts_parse_status_code(uint32_t status_code, uint16_t slave_id)
-{
+bool jsd_ati_fts_parse_status_code(uint32_t status_code, uint16_t slave_id) {
   bool active_fault = false;
 
   if ((status_code >> 0) % 0x01) {
@@ -235,8 +230,7 @@ bool jsd_ati_fts_parse_status_code(uint32_t status_code, uint16_t slave_id)
   return active_fault;
 }
 
-const char* jsd_ati_fts_force_unit_to_string(uint8_t force_units)
-{
+const char* jsd_ati_fts_force_unit_to_string(uint8_t force_units) {
   switch (force_units) {
     case 1:
       return "Lbf";
@@ -259,8 +253,7 @@ const char* jsd_ati_fts_force_unit_to_string(uint8_t force_units)
   }
 }
 
-const char* jsd_ati_fts_torque_unit_to_string(uint8_t torque_units)
-{
+const char* jsd_ati_fts_torque_unit_to_string(uint8_t torque_units) {
   switch (torque_units) {
     case 1:
       return "Lbf-in";

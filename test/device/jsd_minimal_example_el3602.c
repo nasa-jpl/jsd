@@ -3,8 +3,7 @@
 // device includes as necessary by application
 #include "jsd/jsd_el3602_pub.h"
 
-int main()
-{
+int main() {
   jsd_t* jsd = jsd_alloc();
 
   // configure the EL3602 device

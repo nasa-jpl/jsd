@@ -10,16 +10,14 @@ bool   quit      = false;
 FILE*  file      = NULL;
 double last_time = 0;
 
-void on_sigint(int signal)
-{
+void on_sigint(int signal) {
   (void)signal;
   MSG("Received SIGINT stopping JSD now");
   quit = true;
 }
 
 void sds_set_telemetry_header_callback(single_device_server_t* self,
-                                       void (*telemetry_header)())
-{
+                                       void (*telemetry_header)()) {
   assert(self);
   assert(telemetry_header);
   MSG_DEBUG("Assigned telemetry_header");
@@ -27,8 +25,7 @@ void sds_set_telemetry_header_callback(single_device_server_t* self,
 }
 
 void sds_set_telemetry_data_callback(single_device_server_t* self,
-                                     void (*telemetry_data)(void*))
-{
+                                     void (*telemetry_data)(void*)) {
   assert(self);
   assert(telemetry_data);
   MSG_DEBUG("Assigned telemetry_data");
@@ -36,8 +33,7 @@ void sds_set_telemetry_data_callback(single_device_server_t* self,
 }
 
 void sds_set_print_info_callback(single_device_server_t* self,
-                                 void (*print_info)(void*))
-{
+                                 void (*print_info)(void*)) {
   assert(self);
   assert(print_info);
   MSG_DEBUG("Assigned print_info");
@@ -45,8 +41,7 @@ void sds_set_print_info_callback(single_device_server_t* self,
 }
 
 void sds_set_extract_data_callback(single_device_server_t* self,
-                                   void (*extract_data)(void*))
-{
+                                   void (*extract_data)(void*)) {
   assert(self);
   assert(extract_data);
   MSG_DEBUG("Assigned extract_data");
@@ -54,16 +49,14 @@ void sds_set_extract_data_callback(single_device_server_t* self,
 }
 
 void sds_set_command_callback(single_device_server_t* self,
-                              void (*command)(void*))
-{
+                              void (*command)(void*)) {
   assert(self);
   assert(command);
   MSG_DEBUG("Assigned command");
   self->command = command;
 }
 
-void sds_setup(single_device_server_t* self, uint16_t loop_rate_hz)
-{
+void sds_setup(single_device_server_t* self, uint16_t loop_rate_hz) {
   assert(self);
   MSG_DEBUG("SDS_SETUP Begin");
 
@@ -91,8 +84,7 @@ void sds_setup(single_device_server_t* self, uint16_t loop_rate_hz)
   MSG_DEBUG("SDS_SETUP End");
 }
 
-void sds_run(single_device_server_t* self, char* device_name, char* filename)
-{
+void sds_run(single_device_server_t* self, char* device_name, char* filename) {
   assert(self);
   assert(self->telemetry_header);
   assert(self->telemetry_data);

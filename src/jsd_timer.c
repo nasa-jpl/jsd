@@ -48,8 +48,7 @@ static struct timespec jsd_timer_timespec_add(struct timespec time1,
 static int jsd_timer_setup_process(jsd_timer_t* self, int16_t cpu,
                                    bool use_mlockall);
 
-jsd_timer_t* jsd_timer_alloc(void)
-{
+jsd_timer_t* jsd_timer_alloc(void) {
   jsd_timer_t* self;
 
   self = (jsd_timer_t*)calloc(1, sizeof(jsd_timer_t));
@@ -59,14 +58,12 @@ jsd_timer_t* jsd_timer_alloc(void)
 }
 
 int jsd_timer_init(jsd_timer_t* self, uint32_t loop_period_ns, int16_t cpu,
-                   bool use_root)
-{
+                   bool use_root) {
   return jsd_timer_init_ex(self, loop_period_ns, cpu, use_root, true);
 }
 
 int jsd_timer_init_ex(jsd_timer_t* self, uint32_t loop_period_ns, int16_t cpu,
-                      bool use_root, bool use_mlockall)
-{
+                      bool use_root, bool use_mlockall) {
   self->loop_period_ns.tv_nsec = loop_period_ns;
 
   if (use_root) {
@@ -83,15 +80,13 @@ int jsd_timer_init_ex(jsd_timer_t* self, uint32_t loop_period_ns, int16_t cpu,
 }
 
 void jsd_timer_set_max_cycle_overruns(jsd_timer_t* self,
-                                      uint8_t      max_cycle_overruns)
-{
+                                      uint8_t      max_cycle_overruns) {
   assert(self != NULL);
 
   self->max_cycle_overruns = max_cycle_overruns;
 }
 
-int jsd_timer_process(jsd_timer_t* self)
-{
+int jsd_timer_process(jsd_timer_t* self) {
   struct timespec curr_time;
   struct timespec wakeup_time;
   int64_t         ns_left_in_cycle;
@@ -144,8 +139,7 @@ int jsd_timer_process(jsd_timer_t* self)
 }
 
 static int jsd_timer_setup_process(jsd_timer_t* self, int16_t cpu,
-                                   bool use_mlockall)
-{
+                                   bool use_mlockall) {
   (void)self;
   // lock this process's virtual address space into RAM
   if (use_mlockall) {
@@ -180,8 +174,7 @@ static int jsd_timer_setup_process(jsd_timer_t* self, int16_t cpu,
 }
 
 static struct timespec jsd_timer_timespec_add(struct timespec time1,
-                                              struct timespec time2)
-{
+                                              struct timespec time2) {
   struct timespec result;
 
   if ((time1.tv_nsec + time2.tv_nsec) >= JSD_NSEC_PER_SEC) {
@@ -195,8 +188,7 @@ static struct timespec jsd_timer_timespec_add(struct timespec time1,
   return result;
 }
 
-double jsd_timer_get_time_sec()
-{
+double jsd_timer_get_time_sec() {
   struct timespec sys_time;
 
   clock_gettime(CLOCK_MONOTONIC, &sys_time);
@@ -204,8 +196,7 @@ double jsd_timer_get_time_sec()
   return (double)sys_time.tv_sec + (double)sys_time.tv_nsec / 1.0e9;
 }
 
-double jsd_timer_get_time_msec()
-{
+double jsd_timer_get_time_msec() {
   struct timespec sys_time;
 
   clock_gettime(CLOCK_MONOTONIC, &sys_time);
@@ -213,8 +204,7 @@ double jsd_timer_get_time_msec()
   return (double)sys_time.tv_sec * 1.0e3 + (double)sys_time.tv_nsec / 1.0e6;
 }
 
-double jsd_timer_get_time_usec()
-{
+double jsd_timer_get_time_usec() {
   struct timespec sys_time;
 
   clock_gettime(CLOCK_MONOTONIC, &sys_time);
@@ -222,8 +212,7 @@ double jsd_timer_get_time_usec()
   return (double)sys_time.tv_sec * 1.0e6 + (double)sys_time.tv_nsec / 1.0e3;
 }
 
-double jsd_timer_get_time_nsec()
-{
+double jsd_timer_get_time_nsec() {
   struct timespec sys_time;
 
   clock_gettime(CLOCK_MONOTONIC, &sys_time);

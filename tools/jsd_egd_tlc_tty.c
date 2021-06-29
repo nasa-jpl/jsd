@@ -15,15 +15,13 @@ pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 uint16_t        slave_id;
 bool            quit = false;
 
-void on_signal(int signal)
-{
+void on_signal(int signal) {
   (void)signal;
   MSG("Received ctrl-c. Closing down.");
   quit = true;
 }
 
-void* tlc_tty_cb(void* jsd_ptr)
-{
+void* tlc_tty_cb(void* jsd_ptr) {
   jsd_t* jsd = (jsd_t*)jsd_ptr;
 
   char                line[64];
@@ -111,8 +109,7 @@ void* tlc_tty_cb(void* jsd_ptr)
   return NULL;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 3) {
     ERROR("Expecting exactly 2 arguments");
     MSG("Usage: jsd_egd_tlc_tty <ifname> <egd_slave_index> ");

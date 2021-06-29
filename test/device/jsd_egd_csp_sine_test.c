@@ -22,8 +22,7 @@ uint8_t      first_time = 1;
 int32_t      loop_freq_hz;
 int32_t      pos_offset;
 
-void telemetry_header()
-{
+void telemetry_header() {
   if (!file) {
     return;
   }
@@ -61,8 +60,7 @@ void telemetry_header()
 
   fprintf(file, "\n");
 }
-void telemetry_data(void* self)
-{
+void telemetry_data(void* self) {
   assert(self);
   if (!file) {
     return;
@@ -114,14 +112,12 @@ void telemetry_data(void* self)
 
 void print_info(void* self) { (void)self; };
 
-void extract_data(void* self)
-{
+void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_egd_process(sds->jsd, slave_id);
 }
 
-void command(void* self)
-{
+void command(void* self) {
   single_device_server_t* sds   = (single_device_server_t*)self;
   const jsd_egd_state_t*  state = jsd_egd_get_state(sds->jsd, slave_id);
 
@@ -178,8 +174,7 @@ void command(void* self)
   }
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 10) {
     ERROR("Expecting exactly 9 arguments");
     MSG("%s%s%s", "Usage: jsd_egd_csp_sine_test <ifname> <egd_slave_index> ",

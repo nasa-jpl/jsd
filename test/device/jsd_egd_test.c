@@ -13,8 +13,7 @@ uint8_t                           first_command = 1;
 double                            command_time;
 jsd_egd_motion_command_prof_pos_t prof_pos_cmd;
 
-void telemetry_header()
-{
+void telemetry_header() {
   if (!file) {
     return;
   }
@@ -51,8 +50,7 @@ void telemetry_header()
 
   fprintf(file, "\n");
 }
-void telemetry_data(void* self)
-{
+void telemetry_data(void* self) {
   assert(self);
   if (!file) {
     return;
@@ -95,8 +93,7 @@ void telemetry_data(void* self)
   fflush(file);
 }
 
-void print_info(void* self)
-{
+void print_info(void* self) {
   assert(self);
   // single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -106,15 +103,13 @@ void print_info(void* self)
   //    state->actual_position);
 }
 
-void extract_data(void* self)
-{
+void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_egd_read(sds->jsd, slave_id);
   jsd_egd_process(sds->jsd, slave_id);
 }
 
-void command(void* self)
-{
+void command(void* self) {
   single_device_server_t* sds   = (single_device_server_t*)self;
   const jsd_egd_state_t*  state = jsd_egd_get_state(sds->jsd, slave_id);
 
@@ -148,8 +143,7 @@ void command(void* self)
   cmd_cnt++;
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 7) {
     ERROR("Expecting exactly 6 arguments");
     MSG("%s%s", "Usage: jsd_egd_test <ifname> <egd_slave_index> <loop_freq_hz>",

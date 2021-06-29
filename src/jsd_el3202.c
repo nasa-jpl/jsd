@@ -35,8 +35,7 @@ const char* jsd_el3202_presentation_strings[] = {
 /****************************************************
  * Public functions
  ****************************************************/
-const jsd_el3202_state_t* jsd_el3202_get_state(jsd_t* self, uint16_t slave_id)
-{
+const jsd_el3202_state_t* jsd_el3202_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3202_PRODUCT_CODE);
@@ -44,8 +43,7 @@ const jsd_el3202_state_t* jsd_el3202_get_state(jsd_t* self, uint16_t slave_id)
   return &self->slave_states[slave_id].el3202;
 }
 
-void jsd_el3202_read(jsd_t* self, uint16_t slave_id)
-{
+void jsd_el3202_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3202_PRODUCT_CODE);
@@ -72,8 +70,7 @@ void jsd_el3202_read(jsd_t* self, uint16_t slave_id)
   }
 }
 
-void jsd_el3202_process(jsd_t* self, uint16_t slave_id)
-{
+void jsd_el3202_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3202_PRODUCT_CODE);
@@ -84,8 +81,7 @@ void jsd_el3202_process(jsd_t* self, uint16_t slave_id)
  * Private functions
  ****************************************************/
 
-bool jsd_el3202_init(jsd_t* self, uint16_t slave_id)
-{
+bool jsd_el3202_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3202_PRODUCT_CODE);
@@ -100,8 +96,7 @@ bool jsd_el3202_init(jsd_t* self, uint16_t slave_id)
   return true;
 }
 
-int jsd_el3202_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
-{
+int jsd_el3202_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL3202_PRODUCT_CODE);
 
@@ -176,8 +171,7 @@ int jsd_el3202_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id)
 
 double jsd_el3202_output_from_config(int16_t              adc_value,
                                      jsd_el3202_config_t* config,
-                                     uint16_t             channel)
-{
+                                     uint16_t             channel) {
   assert(config->presentation[channel] < JSD_EL3202_NUM_PRESENTATIONS);
   assert(config->element[channel] < JSD_EL3202_NUM_ELEMENTS);
 

@@ -6,32 +6,27 @@ uint16_t     slave_id;
 
 void telemetry_header() { MSG("you called telemetry_header"); }
 
-void telemetry_data(void* self)
-{
+void telemetry_data(void* self) {
   (void)self;
   MSG("you called telemetry_data");
 }
 
-void print_info(void* self)
-{
+void print_info(void* self) {
   (void)self;
   MSG("you called print_info");
 }
 
-void extract_data(void* self)
-{
+void extract_data(void* self) {
   (void)self;
   MSG("you called extract_data");
 }
 
-void command(void* self)
-{
+void command(void* self) {
   (void)self;
   MSG("you called command");
 }
 
-int main(int argc, char* argv[])
-{
+int main(int argc, char* argv[]) {
   if (argc != 4) {
     ERROR("Expecting exactly 3 arguments");
     MSG("Usage: jsd_device_test_template <ifname> <slave_index> "

@@ -9,8 +9,7 @@ extern FILE* file;
 uint8_t      slave_id;
 uint16_t     cmd = 0;
 
-void telemetry_header()
-{
+void telemetry_header() {
   if (!file) {
     return;
   }
@@ -22,8 +21,7 @@ void telemetry_header()
   fprintf(file, "\n");
 }
 
-void telemetry_data(void* self)
-{
+void telemetry_data(void* self) {
   assert(self);
   if (!file) {
     return;
@@ -47,8 +45,7 @@ void telemetry_data(void* self)
   fflush(file);
 }
 
-void print_info(void* self)
-{
+void print_info(void* self) {
   assert(self);
 
   single_device_server_t* sds   = (single_device_server_t*)self;
@@ -58,8 +55,7 @@ void print_info(void* self)
       state->w, state->x, state->y, state->z, state->cmd);
 }
 
-void extract_data(void* self)
-{
+void extract_data(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -67,16 +63,14 @@ void extract_data(void* self)
   jsd_jed_process(sds->jsd, slave_id);
 }
 
-void command(void* self)
-{
+void command(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
   jsd_jed_set_cmd_value(sds->jsd, slave_id, cmd++ % 255);
 }
 
-int main(int argc, char const* argv[])
-{
+int main(int argc, char const* argv[]) {
   if (argc != 4) {
     ERROR("Expecting exactly 3 arguments");
     MSG("Usage: jsd_jed_test <ifname> <jed_slave_index> <loop_freq_hz>");
