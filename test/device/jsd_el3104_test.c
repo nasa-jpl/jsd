@@ -35,7 +35,7 @@ void telemetry_data(void* self) {
 
   int i = 0;
   for (i = 0; i < JSD_EL3104_NUM_CHANNELS; ++i) {
-    fprintf(file, "%u, %lf,", state->adc_value[i], state->voltage[i]);
+    fprintf(file, "%i, %lf,", state->adc_value[i], state->voltage[i]);
     fprintf(file, "%u, %u,", state->limit1[i], state->limit2[i]);
     fprintf(file, "%u, %u,", state->txPDO_state[i], state->txPDO_toggle[i]);
     fprintf(file, "%u, %u,", state->error[i], state->underrange[i]);
@@ -50,8 +50,8 @@ void print_info(void* self) {
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
   const jsd_el3104_state_t* state = jsd_el3104_get_state(sds->jsd, slave_id);
-  MSG("Ch0: %f V,  Ch1: %f V", state->voltage[0], state->voltage[1]);
-  MSG("Ch2: %f V,  Ch3: %f V", state->voltage[2], state->voltage[3]);
+  MSG("Ch0: %f V,  Ch1: %f V, Ch2: %f V,  Ch3: %f V", 
+    state->voltage[0], state->voltage[1], state->voltage[2], state->voltage[3]);
 }
 
 void extract_data(void* self) {
@@ -88,10 +88,6 @@ int main(int argc, char* argv[]) {
   // set device configuration here
   jsd_slave_config_t my_config = {0};
 
-  my_config.el3104.filter[0]         = JSD_EL3104_FILTER_400HZ;
-  my_config.el3104.filter[1]         = JSD_EL3104_FILTER_400HZ;
-  my_config.el3104.filter[2]         = JSD_EL3104_FILTER_400HZ;
-  my_config.el3104.filter[3]         = JSD_EL3104_FILTER_400HZ;
   my_config.el3104.limit1_enable[0]  = false;
   my_config.el3104.limit1_voltage[0] = 10.0;
   my_config.el3104.limit2_enable[0]  = false;
