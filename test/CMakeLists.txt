@@ -38,6 +38,11 @@ if(BUILD_JSD_TESTS)
         jsd_test_utils.c)
     target_link_libraries(jsd_el3602_test ${jsd_test_libs})
 
+    add_executable(jsd_el3202_test
+            device/jsd_el3202_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_el3202_test ${jsd_test_libs})
+
     add_executable(jsd_el3208_test
         device/jsd_el3208_test.c
         jsd_test_utils.c)
@@ -72,6 +77,16 @@ if(BUILD_JSD_TESTS)
         device/jsd_ati_fts_test.c
         jsd_test_utils.c)
     target_link_libraries(jsd_ati_fts_test ${jsd_test_libs})
+
+    add_executable(jsd_el3104_test
+            device/jsd_el3104_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_el3104_test ${jsd_test_libs})
+
+    add_executable(jsd_el3318_test
+            device/jsd_el3318_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_el3318_test ${jsd_test_libs})
 
     find_program(VALGRIND_EXECUTABLE NAMES valgrind)
     if(VALGRIND_EXECUTABLE)
