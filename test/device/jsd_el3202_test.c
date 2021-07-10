@@ -52,7 +52,8 @@ void print_info(void* self) {
   jsd_el3202_read(sds->jsd, slave_id);
   const jsd_el3202_state_t* state = jsd_el3202_get_state(sds->jsd, slave_id);
 
-  MSG("Ch0: %f,  Ch1: %f", state->output_eu[0], state->output_eu[1]);
+  MSG("Ch0: %f (%i),  Ch1: %f (%i)", state->output_eu[0], state->adc_value[0], 
+      state->output_eu[1], state->adc_value[1]);
 }
 
 void extract_data(void* self) { (void)self; }
@@ -87,7 +88,7 @@ int main(int argc, char* argv[]) {
   jsd_slave_config_t my_config = {0};
 
   my_config.el3202.element[0] = JSD_EL3202_ELEMENT_PT100;
-  my_config.el3202.element[1] = JSD_EL3202_ELEMENT_PT100;
+  my_config.el3202.element[1] = JSD_EL3202_ELEMENT_PT1000;
 
   my_config.el3202.filter[0] = JSD_BECKHOFF_FILTER_50HZ;
   my_config.el3202.filter[1] = JSD_BECKHOFF_FILTER_50HZ;
