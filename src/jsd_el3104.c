@@ -32,8 +32,7 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
   for (ch = 0; ch < JSD_EL3104_NUM_CHANNELS; ch++) {
     state->adc_value[ch] = txpdo->channel[ch].value;
 
-    state->voltage[ch] =
-        (((double)state->adc_value[ch] + 32768) * 20 / 65536) - 10;
+    state->voltage[ch] = (double)state->adc_value[ch] / 3276.8;
 
     state->underrange[ch]   = (txpdo->channel[ch].flags >> 0) & 0x01;
     state->overrange[ch]    = (txpdo->channel[ch].flags >> 1) & 0x01;
@@ -108,9 +107,8 @@ int jsd_el3104_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     }
 
     // Set Filter Option
-    uint16_t filter_opt =
-        JSD_EL3104_FILTER_400HZ;  // IIR Filter, fastest rate. Ref:
-                                  // el31xxen.pdf, page 203 Filter settings
+    uint16_t filter_opt = 2; // 400 hz IIR Filter, fastest rate. Ref:
+                             // el31xxen.pdf, page 203 Filter settings
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x15, JSD_SDO_DATA_U16, &filter_opt)) {
       return 0;

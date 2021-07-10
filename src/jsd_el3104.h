@@ -26,15 +26,6 @@ typedef struct __attribute__((__packed__)) {
   jsd_el3104_txpdo_channel_t channel[JSD_EL3104_NUM_CHANNELS];
 } jsd_el3104_txpdo_t;
 
-///**
-// * @brief Range Factor used for voltage calculation
-// */
-// static const double jsd_el3104_range_factor[] = {
-//    [JSD_EL3104_RANGE_10V] = 20.0,  [JSD_EL3104_RANGE_5V] = 10.0,
-//    [JSD_EL3104_RANGE_2_5V] = 5.0,  [JSD_EL3104_RANGE_1_25V] = 2.5,
-//    [JSD_EL3104_RANGE_75MV] = 0.15, [JSD_EL3104_RANGE_200MV] = 0.4,
-//};
-
 /** @brief Initializes el3104 and registers the PO2SO function
  *
  * @param self pointer JSD context
