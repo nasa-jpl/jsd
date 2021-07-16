@@ -76,6 +76,7 @@ int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
  * The function will print a helpful error message if a slave error is present
  *
  * @param status_code Data Object 0x6010
+ * @param slave_id index of device on EtherCAT bus
  * @return True on active fault
  */
 bool jsd_ati_fts_parse_status_code(uint32_t status_code, uint16_t slave_id);

@@ -88,14 +88,6 @@ void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id);
 void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
 
 /**
- * @brief Handles async SDO response queue
- *
- * @param self pointer JSD context
- * @param slave_id index of device on EtherCAT bus
- */
-void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id);
-
-/**
  * @brief Progresses drive through the statemachine and sets initial controlword
  *
  * @param self pointer JSD context
