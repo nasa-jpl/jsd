@@ -1,22 +1,3 @@
-/**
- * Copyright (C) 2013, California Institute of Technology.
- * All Rights Reserved. U.S. Government Sponsorshyip Acknowledged.
- * Any commercial use must be negotiated with the Office of
- * Technology Transfer at the California Institute of Technology.
- */
-
-/**
- * \file  timer.h
- * \brief timer object header
-
- * \date  02/08/2013
-
- * \authors
- *   Daniel Helmick (dhelmick@jpl.nasa.gov)
- *   Peter Vieira (pevieira@jpl.nasa.gov)
- * Mobility and Robotic Systems (347), JSD
-*/
-
 #ifndef JSD_TIMER_H_
 #define JSD_TIMER_H_
 
