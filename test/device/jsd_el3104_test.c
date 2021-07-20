@@ -16,7 +16,6 @@ void telemetry_header() {
   }
   for (i = 0; i < JSD_EL3104_NUM_CHANNELS; ++i) {
     fprintf(file, "EL3602_ch%d_raw_value, EL3602_ch%d_volts, ", i, i);
-    fprintf(file, "limit1_ch%d, limit2_ch%d, ", i, i);
     fprintf(file, "txPDO_state_ch%d, txPDO_toggle_ch%d, ", i, i);
     fprintf(file, "error_ch%d, underrange_ch%d, overrange_ch%d, ", i, i, i);
   }
