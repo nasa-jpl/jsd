@@ -88,14 +88,13 @@ int main(int argc, char* argv[]) {
   jsd_slave_config_t my_config = {0};
 
   my_config.el3318.element[0] = JSD_EL3318_ELEMENT_TYPE_K;
-  my_config.el3318.element[1] = JSD_EL3318_ELEMENT_TYPE_K;
+  my_config.el3318.element[1] = JSD_EL3318_ELEMENT_TYPE_T;
   my_config.el3318.element[2] = JSD_EL3318_ELEMENT_TYPE_K;
   my_config.el3318.element[3] = JSD_EL3318_ELEMENT_TYPE_K;
   my_config.el3318.element[4] = JSD_EL3318_ELEMENT_TYPE_K;
   my_config.el3318.element[5] = JSD_EL3318_ELEMENT_TYPE_K;
   my_config.el3318.element[6] = JSD_EL3318_ELEMENT_TYPE_K;
   my_config.el3318.element[7] = JSD_EL3318_ELEMENT_TYPE_K;
-  // there are 8 channels but I only care about the first 2
 
   my_config.el3318.filter[0] = JSD_BECKHOFF_FILTER_50HZ;
   my_config.el3318.filter[1] = JSD_BECKHOFF_FILTER_50HZ;
@@ -105,7 +104,6 @@ int main(int argc, char* argv[]) {
   my_config.el3318.filter[5] = JSD_BECKHOFF_FILTER_50HZ;
   my_config.el3318.filter[6] = JSD_BECKHOFF_FILTER_50HZ;
   my_config.el3318.filter[7] = JSD_BECKHOFF_FILTER_50HZ;
-  // there are 8 channels but I only care about the first 2
 
   my_config.el3318.presentation[0] = JSD_EL3318_PRESENTATION_SIGNED;
   my_config.el3318.presentation[1] = JSD_EL3318_PRESENTATION_SIGNED;
