@@ -19,10 +19,6 @@ extern "C" {
  *
  */
 typedef struct {
-  bool     limit1_enable[JSD_EL3104_NUM_CHANNELS];   ///< enables limit1
-  double   limit1_voltage[JSD_EL3104_NUM_CHANNELS];  ///< limit 1 in Volts
-  bool     limit2_enable[JSD_EL3104_NUM_CHANNELS];   ///< enables limit2
-  double   limit2_voltage[JSD_EL3104_NUM_CHANNELS];  ///< limit 2 in Volts
 } jsd_el3104_config_t;
 
 /**
@@ -31,8 +27,6 @@ typedef struct {
 typedef struct {
   double  voltage[JSD_EL3104_NUM_CHANNELS];    ///< Analog input data, converted
   int16_t adc_value[JSD_EL3104_NUM_CHANNELS];  ///< Analog input data, raw
-  uint8_t limit1[JSD_EL3104_NUM_CHANNELS];     ///< 0-off, 1-exceeded, 2-under
-  uint8_t limit2[JSD_EL3104_NUM_CHANNELS];     ///< 0-off, 1-exceeded, 2-under
   uint8_t
           txPDO_state[JSD_EL3104_NUM_CHANNELS];  ///< 0 - data is valid, 1 otherwise
   uint8_t txPDO_toggle[JSD_EL3104_NUM_CHANNELS];  ///< toggled on new data

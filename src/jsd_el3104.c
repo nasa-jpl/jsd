@@ -36,8 +36,6 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
 
     state->underrange[ch]   = (txpdo->channel[ch].flags >> 0) & 0x01;
     state->overrange[ch]    = (txpdo->channel[ch].flags >> 1) & 0x01;
-    state->limit1[ch]       = (txpdo->channel[ch].flags >> 2) & 0x03;
-    state->limit2[ch]       = (txpdo->channel[ch].flags >> 4) & 0x03;
     state->error[ch]        = (txpdo->channel[ch].flags >> 6) & 0x01;
     state->sync_error[ch]   = (txpdo->channel[ch].flags >> 13) & 0x01;
     state->txPDO_state[ch]  = (txpdo->channel[ch].flags >> 14) & 0x01;

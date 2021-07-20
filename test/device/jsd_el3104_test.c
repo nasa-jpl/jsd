@@ -36,7 +36,6 @@ void telemetry_data(void* self) {
   int i = 0;
   for (i = 0; i < JSD_EL3104_NUM_CHANNELS; ++i) {
     fprintf(file, "%i, %lf,", state->adc_value[i], state->voltage[i]);
-    fprintf(file, "%u, %u,", state->limit1[i], state->limit2[i]);
     fprintf(file, "%u, %u,", state->txPDO_state[i], state->txPDO_toggle[i]);
     fprintf(file, "%u, %u,", state->error[i], state->underrange[i]);
     fprintf(file, "%u,", state->overrange[i]);
@@ -87,15 +86,6 @@ int main(int argc, char* argv[]) {
 
   // set device configuration here
   jsd_slave_config_t my_config = {0};
-
-  my_config.el3104.limit1_enable[0]  = false;
-  my_config.el3104.limit1_voltage[0] = 10.0;
-  my_config.el3104.limit2_enable[0]  = false;
-  my_config.el3104.limit2_voltage[0] = -10.0;
-  my_config.el3104.limit1_enable[1]  = false;
-  my_config.el3104.limit1_voltage[1] = 10.0;
-  my_config.el3104.limit2_enable[1]  = false;
-  my_config.el3104.limit2_voltage[1] = -10.0;
 
   snprintf(my_config.name, JSD_NAME_LEN, "unicorn");
   my_config.configuration_active = true;
