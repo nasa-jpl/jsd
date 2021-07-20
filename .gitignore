@@ -15,3 +15,6 @@ bin
 # doxygen
 /doxygen_html
 .doxyfile
+
+# clang-format
+.clang-format

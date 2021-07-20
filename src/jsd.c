@@ -9,7 +9,10 @@
 #include "jsd/jsd_ati_fts.h"
 #include "jsd/jsd_egd.h"
 #include "jsd/jsd_el2124.h"
+#include "jsd/jsd_el3104.h"
+#include "jsd/jsd_el3202.h"
 #include "jsd/jsd_el3208.h"
+#include "jsd/jsd_el3318.h"
 #include "jsd/jsd_el3356.h"
 #include "jsd/jsd_el3602.h"
 #include "jsd/jsd_jed.h"
@@ -445,6 +448,10 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       return jsd_el3208_init(self, slave_id);
       break;
     }
+    case JSD_EL3202_PRODUCT_CODE: {
+      return jsd_el3202_init(self, slave_id);
+      break;
+    }
     case JSD_EGD_PRODUCT_CODE: {
       return jsd_egd_init(self, slave_id);
       break;
@@ -463,6 +470,14 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     }
     case JSD_ATI_FTS_PRODUCT_CODE: {
       return jsd_ati_fts_init(self, slave_id);
+      break;
+    }
+    case JSD_EL3104_PRODUCT_CODE: {
+      return jsd_el3104_init(self, slave_id);
+      break;
+    }
+    case JSD_EL3318_PRODUCT_CODE: {
+      return jsd_el3318_init(self, slave_id);
       break;
     }
     default:

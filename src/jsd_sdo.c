@@ -228,9 +228,9 @@ void jsd_sdo_push_async_request(jsd_t* self, uint16_t slave_id, uint16_t index,
   req.data_type    = data_type;
 
   if (request_type == JSD_SDO_REQ_TYPE_WRITE) {
-    if(data == NULL){
-      WARNING("Slave[%d] Failed write async SDO: 0x%X:%d - Data is NULL", 
-          slave_id, index, subindex);
+    if (data == NULL) {
+      WARNING("Slave[%d] Failed write async SDO: 0x%X:%d - Data is NULL",
+              slave_id, index, subindex);
       return;
     }
     int size = jsd_sdo_data_type_size(req.data_type);
