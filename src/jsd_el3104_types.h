@@ -12,11 +12,6 @@ extern "C" {
 
 /**
  * @brief configuration struct for EL3104 device initialization
- *
- * If you sample faster than the digital filter can update the device state,
- * you will recieve stale data. As a check, you can use the TxPDO toggle field
- * to see when the device has new data.
- *
  */
 typedef struct {
 } jsd_el3104_config_t;
