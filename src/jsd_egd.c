@@ -783,7 +783,7 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
           (void*)&ca_18)) {
     return 0;
   }
-  MSG("EGD[%d] read CA[18] = %lu cnts per rev", slave_id, ca_18);
+  MSG("EGD[%d] read CA[18] = %u cnts per rev", slave_id, ca_18);
 
   double max_motor_speed_rpm = (config->egd.max_motor_speed) / (double)ca_18 * 60.0;
 
@@ -791,7 +791,7 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
   MSG("EGD[%d] max_motor_speed_rpm = %lf as int: %i", slave_id, 
       max_motor_speed_rpm, 
-      max_motor_speed_rpm_int)
+      max_motor_speed_rpm_int);
 
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6080, 0,
                                   JSD_SDO_DATA_I32,
