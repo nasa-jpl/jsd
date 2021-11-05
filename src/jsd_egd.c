@@ -774,9 +774,28 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   // set max motor speed
+  //   0x6080 accepts units of RPM and internally converts to 
+  //   counts per second according to CA[18]. Every other speed in in cnts/sec
+  //   so to keep the JSD api consistent perform the adjustment here.
+  uint32_t ca_18;
+  if (!jsd_sdo_get_param_blocking(
+          ecx_context, slave_id, jsd_egd_tlc_to_do("CA"), 18, JSD_SDO_DATA_U32,
+          (void*)&ca_18)) {
+    return 0;
+  }
+  MSG("EGD[%d] read CA[18] = %u cnts per rev", slave_id, ca_18);
+
+  double max_motor_speed_rpm = (config->egd.max_motor_speed) / (double)ca_18 * 60.0;
+
+  int32_t max_motor_speed_rpm_int = (int32_t)max_motor_speed_rpm;
+
+  MSG("EGD[%d] max_motor_speed_rpm = %lf as int: %i", slave_id, 
+      max_motor_speed_rpm, 
+      max_motor_speed_rpm_int);
+
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6080, 0,
                                   JSD_SDO_DATA_I32,
-                                  (void*)&config->egd.max_motor_speed)) {
+                                  (void*)&max_motor_speed_rpm_int)) {
     return 0;
   }
 

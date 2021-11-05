@@ -230,7 +230,7 @@ typedef struct {
       drive_cmd_mode;  ///< controls which egd commands are supported
 
   // Parameters set via SDO
-  int32_t max_motor_speed;  ///< max speed in cnts/sec, negative disables
+  double  max_motor_speed;  ///< max speed in cnts/sec, negative disables
   int8_t  loop_period_ms;   ///< expected loop period in ms for synch. modes
   double  torque_slope;  ///< amps/sec, converted to 0x6087 using CL[1]. Ignored
                          /// by CS mode
