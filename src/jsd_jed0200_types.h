@@ -7,7 +7,7 @@ extern "C" {
 
 #include "jsd/jsd_common_device_types.h"
 
-#define JSD_JED0200_PRODUCT_CODE (uint32_t)0x00009252
+#define JSD_JED0200_PRODUCT_CODE (uint32_t)0x00001001
 
 /**
  * @brief configuration struct for JED0200 device initialization
@@ -21,16 +21,17 @@ typedef struct {
  */
 
 typedef struct {
-  uint16_t status;  ///< Status value placeholder
-  uint32_t w_raw;   ///< raw w component of IMU quaternion
-  uint32_t x_raw;   ///< raw x component of IMU quaternion
-  uint32_t y_raw;   ///< raw y component of IMU quaternion
-  uint32_t z_raw;   ///< raw z component of IMU quaternion
-  double   w;       ///< converted w component of IMU quaternion
-  double   x;       ///< converted x component of IMU quaternion
-  double   y;       ///< converted y component of IMU quaternion
-  double   z;       ///< converted z component of IMU quaternion
-  uint16_t cmd;     ///< User specified cmd mode sent to JED0200
+  uint16_t status;        ///< Status value placeholder
+  uint32_t ticks;         ///< Ticks
+  float    voltage_hv;    ///< High voltage
+  float    voltage_lv;    ///< Low voltage
+  float    voltage_12v;   ///< 12v voltage
+  float    temp_ambient;  ///< Ambient temperature
+  float    temp_actuator; ///< Actuator temperature
+  float    humidity;      ///< Humidity
+  float    pressure;      ///< Pressure
+  uint16_t brake_current; ///< Brake current
+  uint16_t brake_cc_val;  ///< Brake CC val
 } jsd_jed0200_state_t;
 
 #ifdef __cplusplus

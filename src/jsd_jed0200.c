@@ -34,14 +34,16 @@ void jsd_jed0200_read(jsd_t* self, uint16_t slave_id) {
       (jsd_jed0200_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
   state->status = txpdo->status;
-  state->w_raw  = txpdo->w;
-  state->x_raw  = txpdo->x;
-  state->y_raw  = txpdo->y;
-  state->z_raw  = txpdo->z;
-  state->w      = (double)txpdo->w / 1000.0;
-  state->x      = (double)txpdo->x / 1000.0;
-  state->y      = (double)txpdo->y / 1000.0;
-  state->z      = (double)txpdo->z / 1000.0;
+  state->ticks = txpdo->ticks;
+  state->voltage_hv = txpdo->voltage_hv;
+  state->voltage_lv = txpdo->voltage_lv;
+  state->voltage_12v = txpdo->voltage_12v;
+  state->temp_ambient = txpdo->temp_ambient;
+  state->temp_actuator = txpdo->temp_actuator;
+  state->humidity = txpdo->humidity;
+  state->pressure = txpdo->pressure;
+  state->brake_current = txpdo->brake_current;
+  state->brake_cc_val = txpdo->brake_cc_val;
 }
 
 void jsd_jed0200_process(jsd_t* self, uint16_t slave_id) {

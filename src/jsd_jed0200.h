@@ -13,11 +13,17 @@ extern "C" {
  * Note: Struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  uint16_t status;
-  uint32_t w;
-  uint32_t x;
-  uint32_t y;
-  uint32_t z;
+  uint16_t status;        ///< Status value placeholder
+  uint32_t ticks;         ///< Ticks
+  float    voltage_hv;    ///< High voltage
+  float    voltage_lv;    ///< Low voltage
+  float    voltage_12v;   ///< 12v voltage
+  float    temp_ambient;  ///< Ambient temperature
+  float    temp_actuator; ///< Actuator temperature
+  float    humidity;      ///< Humidity
+  float    pressure;      ///< Pressure
+  uint16_t brake_current; ///< Brake current
+  uint16_t brake_cc_val;  ///< Brake CC val
 } jsd_jed0200_txpdo_t;
 
 /**
