@@ -15,8 +15,16 @@ void telemetry_header() {
   }
 
   fprintf(file, "status, ");
-  fprintf(file, "w_raw, x_raw, y_raw, z_raw, ");
-  fprintf(file, "w, x, y, z, ");
+  fprintf(file, "ticks, ");
+  fprintf(file, "voltage_hv, ");
+  fprintf(file, "voltage_lv, ");
+  fprintf(file, "voltage_12v, ");
+  fprintf(file, "temp_ambient, ");
+  fprintf(file, "temp_actuator, ");
+  fprintf(file, "humidity, ");
+  fprintf(file, "pressure, ");
+  fprintf(file, "brake_current, ");
+  fprintf(file, "brake_cc_vel, ");
   fprintf(file, "cmd, ");
   fprintf(file, "\n");
 }
@@ -32,13 +40,13 @@ void telemetry_data(void* self) {
 
   fprintf(file, "%u, ", state->status);
   fprintf(file, "%u, ", state->ticks);
-  fprintf(file, "%u, ", state->voltage_hv);
-  fprintf(file, "%u, ", state->voltage_lv);
-  fprintf(file, "%u, ", state->voltage_12v);
-  fprintf(file, "%u, ", state->temp_ambient);
-  fprintf(file, "%u, ", state->temp_actuator);
-  fprintf(file, "%u, ", state->humidity);
-  fprintf(file, "%u, ", state->pressure);
+  fprintf(file, "%f, ", state->voltage_hv);
+  fprintf(file, "%f, ", state->voltage_lv);
+  fprintf(file, "%f, ", state->voltage_12v);
+  fprintf(file, "%f, ", state->temp_ambient);
+  fprintf(file, "%f, ", state->temp_actuator);
+  fprintf(file, "%f, ", state->humidity);
+  fprintf(file, "%f, ", state->pressure);
   fprintf(file, "%u, ", state->brake_current);
   fprintf(file, "%u, ", state->brake_cc_val);
   fprintf(file, "%u, ", state->cmd);
@@ -52,9 +60,18 @@ void print_info(void* self) {
 
   single_device_server_t* sds   = (single_device_server_t*)self;
   const jsd_jed0200_state_t*  state = jsd_jed0200_get_state(sds->jsd, slave_id);
-
-  MSG("Status: %u (Qw: %lf, Qx: %lf, Qy: %lf, Qz: %lf) Cmd: %u", state->status,
-      state->w, state->x, state->y, state->z, state->cmd);
+  MSG("status: %u, ", state->status);
+  MSG("ticks: %u, ", state->ticks);
+  MSG("voltage_hv: %f, ", state->voltage_hv);
+  MSG("voltage_lv: %f, ", state->voltage_lv);
+  MSG("voltage_12v: %f, ", state->voltage_12v);
+  MSG("temp_ambient: %f, ", state->temp_ambient);
+  MSG("temp_actuator: %f, ", state->temp_actuator);
+  MSG("humidity: %f, ", state->humidity);
+  MSG("pressure: %f, ", state->pressure);
+  MSG("brake_current: %u, ", state->brake_current);
+  MSG("brake_cc_vel: %u, ", state->brake_cc_val);
+  MSG("cmd: %u, ", state->cmd);
 }
 
 void extract_data(void* self) {
