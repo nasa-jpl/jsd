@@ -8,6 +8,7 @@ add_library(jsd-lib STATIC
     jsd_egd.c
     jsd_el3356.c
     jsd_jed0101.c
+    jsd_jed0200.c
     jsd_timer.c
     jsd_ati_fts.c
     jsd_el3104.c
