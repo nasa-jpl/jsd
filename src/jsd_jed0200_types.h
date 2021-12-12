@@ -32,6 +32,7 @@ typedef struct {
   float    pressure;      ///< Pressure
   uint16_t brake_current; ///< Brake current
   uint16_t brake_cc_val;  ///< Brake CC val
+  uint16_t cmd;           ///< User specified cmd mode sent to JED0200
 } jsd_jed0200_state_t;
 
 #ifdef __cplusplus
