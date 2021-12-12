@@ -15,7 +15,7 @@
 #include "jsd/jsd_el3318.h"
 #include "jsd/jsd_el3356.h"
 #include "jsd/jsd_el3602.h"
-#include "jsd/jsd_jed.h"
+#include "jsd/jsd_jed0101.h"
 #include "jsd/jsd_print.h"
 #include "jsd/jsd_sdo.h"
 
@@ -464,8 +464,8 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       return jsd_el3356_init(self, slave_id);
       break;
     }
-    case JSD_JED_PRODUCT_CODE: {
-      return jsd_jed_init(self, slave_id);
+    case JSD_JED0101_PRODUCT_CODE: {
+      return jsd_jed0101_init(self, slave_id);
       break;
     }
     case JSD_ATI_FTS_PRODUCT_CODE: {

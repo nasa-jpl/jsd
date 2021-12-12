@@ -18,7 +18,7 @@ extern "C" {
 #include "jsd/jsd_el3318_types.h"
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
-#include "jsd/jsd_jed_types.h"
+#include "jsd/jsd_jed0101_types.h"
 
 typedef struct {
   bool     configuration_active;
@@ -30,7 +30,7 @@ typedef struct {
     jsd_el2124_config_t  el2124;
     jsd_egd_config_t     egd;
     jsd_el3356_config_t  el3356;
-    jsd_jed_config_t     jed;
+    jsd_jed0101_config_t jed0101;
     jsd_ati_fts_config_t ati_fts;
     jsd_el3104_config_t  el3104;
     jsd_el3202_config_t  el3202;
@@ -47,7 +47,7 @@ typedef struct {
     jsd_el2124_state_t      el2124;
     jsd_egd_private_state_t egd;
     jsd_el3356_state_t      el3356;
-    jsd_jed_state_t         jed;
+    jsd_jed0101_state_t     jed0101;
     jsd_ati_fts_state_t     ati_fts;
     jsd_el3104_state_t      el3104;
     jsd_el3202_state_t      el3202;
