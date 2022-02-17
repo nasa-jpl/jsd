@@ -13,6 +13,7 @@ extern "C" {
 #include "jsd/jsd_egd_types.h"
 #include "jsd/jsd_el2124_types.h"
 #include "jsd/jsd_el3104_types.h"
+#include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
 #include "jsd/jsd_el3208_types.h"
 #include "jsd/jsd_el3318_types.h"
@@ -35,6 +36,7 @@ typedef struct {
     jsd_el3104_config_t  el3104;
     jsd_el3202_config_t  el3202;
     jsd_el3318_config_t  el3318;
+    jsd_el3162_config_t  el3162;
   };
   bool PO2SO_success;  // reserved for internal use
 
@@ -52,6 +54,7 @@ typedef struct {
     jsd_el3104_state_t      el3104;
     jsd_el3202_state_t      el3202;
     jsd_el3318_state_t      el3318;
+    jsd_el3162_state_t      el3162;
   };
 
   uint16_t num_async_sdo_requests;   // reserved
