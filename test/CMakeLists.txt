@@ -68,10 +68,15 @@ if(BUILD_JSD_TESTS)
         jsd_test_utils.c)
     target_link_libraries(jsd_el3356_test ${jsd_test_libs})
 
-    add_executable(jsd_jed_test
-        device/jsd_jed_test.c
+    add_executable(jsd_jed0101_test
+        device/jsd_jed0101_test.c
         jsd_test_utils.c)
-    target_link_libraries(jsd_jed_test ${jsd_test_libs})
+    target_link_libraries(jsd_jed0101_test ${jsd_test_libs})
+
+    add_executable(jsd_jed0200_test
+        device/jsd_jed0200_test.c
+        jsd_test_utils.c)
+    target_link_libraries(jsd_jed0200_test ${jsd_test_libs})
 
     add_executable(jsd_ati_fts_test
         device/jsd_ati_fts_test.c

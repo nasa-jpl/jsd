@@ -1,4 +1,4 @@
-#include "jsd/jsd_jed.h"
+#include "jsd/jsd_jed0101.h"
 
 #include <assert.h>
 
@@ -9,29 +9,29 @@
  * Public functions
  ****************************************************/
 
-const jsd_jed_state_t* jsd_jed_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_jed0101_state_t* jsd_jed0101_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
 
-  jsd_jed_state_t* state = &self->slave_states[slave_id].jed;
+  jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   return state;
 }
 
-void jsd_jed_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
+void jsd_jed0101_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
 
-  jsd_jed_state_t* state = &self->slave_states[slave_id].jed;
+  jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   state->cmd             = cmd;
 }
 
-void jsd_jed_read(jsd_t* self, uint16_t slave_id) {
+void jsd_jed0101_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
 
-  jsd_jed_state_t* state = &self->slave_states[slave_id].jed;
-  jsd_jed_txpdo_t* txpdo =
-      (jsd_jed_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
+  jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
+  jsd_jed0101_txpdo_t* txpdo =
+      (jsd_jed0101_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
   state->status = txpdo->status;
   state->w_raw  = txpdo->w;
@@ -44,13 +44,13 @@ void jsd_jed_read(jsd_t* self, uint16_t slave_id) {
   state->z      = (double)txpdo->z / 1000.0;
 }
 
-void jsd_jed_process(jsd_t* self, uint16_t slave_id) {
+void jsd_jed0101_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
 
-  jsd_jed_state_t* state = &self->slave_states[slave_id].jed;
-  jsd_jed_rxpdo_t* rxpdo =
-      (jsd_jed_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
+  jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
+  jsd_jed0101_rxpdo_t* rxpdo =
+      (jsd_jed0101_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
   rxpdo->cmd = state->cmd;
 
@@ -61,9 +61,9 @@ void jsd_jed_process(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_jed_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_jed0101_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_JPL_VENDOR_ID);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -71,16 +71,16 @@ bool jsd_jed_init(jsd_t* self, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
 
-  slave->PO2SOconfigx   = jsd_jed_PO2SO_config;
+  slave->PO2SOconfigx   = jsd_jed0101_PO2SO_config;
   config->PO2SO_success = false;  // only set true in PO2SO callback
 
-  jsd_jed_state_t* state = &self->slave_states[slave_id].jed;
-  state->cmd             = config->jed.initial_cmd;
+  jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
+  state->cmd             = config->jed0101.initial_cmd;
 
   return true;
 }
 
-int jsd_jed_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_jed0101_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   jsd_slave_config_t* slave_configs =
       (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];
@@ -100,7 +100,7 @@ int jsd_jed_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     config->PO2SO_success = false;
   } else {
     config->PO2SO_success = true;
-    SUCCESS("JED[%d] drive parameters successfully configured and verified",
+    SUCCESS("JED0101[%d] drive parameters successfully configured and verified",
             slave_id);
   }
   return 1;
