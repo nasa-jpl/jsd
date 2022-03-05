@@ -31,9 +31,10 @@ void jsd_el3162_read(jsd_t* self, uint16_t slave_id) {
   for (int ch = 0; ch < JSD_EL3162_NUM_CHANNELS; ++ch) {
     state->adc_value[ch] = txpdo->channel[ch].value;
 
-    // EL3162 has a 0-10V range and a 16-bit integer ADC value:
-    // 1/((10-0)/2^16)=6553.6 discrete levels/V.
-    state->voltage[ch] = (double)state->adc_value[ch] / 6553.6;
+    // EL3162 has a 0-10V range and a 16-bit integer ADC value. The available
+    // discrete values for that range are 0x0000 - 0x7FFF:
+    // 1/((10-0)/(2^16/2-1))=3276.7 discrete levels/V.
+    state->voltage[ch] = (double)state->adc_value[ch] / 3276.7;
 
     // EL3162 status data is 1-byte long.
     state->underrange[ch] = (txpdo->channel[ch].flags >> 0) & 0x01;
