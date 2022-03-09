@@ -21,8 +21,11 @@ typedef struct {
  * @brief EL4102 state data
  */
 typedef struct {
-  int16_t dac_output[JSD_EL4102_NUM_CHANNELS];  ///< 0-10 V (0x0000-0x7FFF)
-                                                ///< analog output
+  int16_t dac_output[JSD_EL4102_NUM_CHANNELS];     ///< 0-10 V (0x0000-0x7FFF)
+                                                   ///< analog output
+  double voltage_output[JSD_EL4102_NUM_CHANNELS];  ///< Voltage equivalent of
+                                                   ///< dac_output computed by
+                                                   ///< this driver
 } jsd_el4102_state_t;
 
 #ifdef __cplusplus

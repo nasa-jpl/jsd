@@ -30,25 +30,25 @@ const jsd_el4102_state_t* jsd_el4102_get_state(jsd_t* self, uint16_t slave_id);
 void jsd_el4102_process(jsd_t* self, uint16_t slave_id);
 
 /**
- * @brief Sets the DAC value command for the given channel
+ * @brief Sets the voltage (V) command for the given channel
  *
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EL4102 device
  * @param channel Device channel to command
- * @param output Commanded DAC value (0x0000-0x7FFF)
+ * @param output Commanded voltage. Provided value is clamped within [0-10].
  */
 void jsd_el4102_write_single_channel(jsd_t* self, uint16_t slave_id,
-                                     uint8_t channel, int16_t output);
+                                     uint8_t channel, double output);
 
 /**
- * @brief Sets the DAC value commands for each channel
+ * @brief Sets the voltage (V) command for each channel
  *
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EL4102 device
- * @param output Commanded DAC values (0x0000-0x7FFF)
+ * @param output Commanded voltages. Provided values are clamped within [0-10].
  */
 void jsd_el4102_write_all_channels(jsd_t* self, uint16_t slave_id,
-                                   int16_t output[JSD_EL4102_NUM_CHANNELS]);
+                                   double output[JSD_EL4102_NUM_CHANNELS]);
 
 #ifdef __cplusplus
 }

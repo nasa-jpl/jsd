@@ -7,14 +7,14 @@
 
 extern FILE* file;
 uint8_t      slave_id;
-int16_t      cmd_output[JSD_EL4102_NUM_CHANNELS] = {0x7FFF, 0x3FFF};
+double       cmd_output[JSD_EL4102_NUM_CHANNELS] = {10.0, 5.0};
 
 void telemetry_header() {
   if (!file) {
     return;
   }
   for (int i = 0; i < JSD_EL4102_NUM_CHANNELS; ++i) {
-    fprintf(file, "EL4102_ch%d_raw_value, ", i);
+    fprintf(file, "EL4102_ch%d_raw_value, EL4102_ch%d_volts, ", i, i);
   }
   fprintf(file, "\n");
 }
@@ -29,7 +29,7 @@ void telemetry_data(void* self) {
   const jsd_el4102_state_t* state = jsd_el4102_get_state(sds->jsd, slave_id);
 
   for (int i = 0; i < JSD_EL4102_NUM_CHANNELS; ++i) {
-    fprintf(file, "%#06hX,", state->dac_output[i]);
+    fprintf(file, "%i, %lf, ", state->dac_output[i], state->voltage_output[i]);
   }
   fprintf(file, "\n");
   fflush(file);
@@ -41,7 +41,8 @@ void print_info(void* self) {
 
   const jsd_el4102_state_t* state = jsd_el4102_get_state(sds->jsd, slave_id);
 
-  MSG("Ch0: %#06hX, Ch1: %#06hX, ", state->dac_output[0], state->dac_output[1]);
+  MSG("Ch0: %f V, Ch1: %f V", state->voltage_output[0],
+      state->voltage_output[1]);
 }
 
 void extract_data(void* self) {
@@ -58,7 +59,7 @@ void command(void* self) {
 
   // Swap values of channels every 5 seconds.
   if (iter % (sds->loop_rate_hz * 5) == 0) {
-    int16_t temp  = cmd_output[0];
+    double temp   = cmd_output[0];
     cmd_output[0] = cmd_output[1];
     cmd_output[1] = temp;
   }
