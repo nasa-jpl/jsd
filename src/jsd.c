@@ -16,8 +16,10 @@
 #include "jsd/jsd_el3318.h"
 #include "jsd/jsd_el3356.h"
 #include "jsd/jsd_el3602.h"
+#include "jsd/jsd_el4102.h"
 #include "jsd/jsd_jed0101.h"
 #include "jsd/jsd_jed0200.h"
+
 #include "jsd/jsd_print.h"
 #include "jsd/jsd_sdo.h"
 
@@ -488,6 +490,10 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     }
     case JSD_EL3162_PRODUCT_CODE: {
       return jsd_el3162_init(self, slave_id);
+      break;
+    }
+    case JSD_EL4102_PRODUCT_CODE: {
+      return jsd_el4102_init(self, slave_id);
       break;
     }
     default:
