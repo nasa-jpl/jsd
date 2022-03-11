@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "jsd/jsd_jed_pub.h"
+#include "jsd/jsd_jed0101_pub.h"
 #include "jsd_test_utils.h"
 
 extern bool  quit;
@@ -28,7 +28,7 @@ void telemetry_data(void* self) {
   }
 
   single_device_server_t* sds   = (single_device_server_t*)self;
-  const jsd_jed_state_t*  state = jsd_jed_get_state(sds->jsd, slave_id);
+  const jsd_jed0101_state_t*  state = jsd_jed0101_get_state(sds->jsd, slave_id);
 
   fprintf(file, "%u,", state->status);
   fprintf(file, "%u,", state->w_raw);
@@ -49,7 +49,7 @@ void print_info(void* self) {
   assert(self);
 
   single_device_server_t* sds   = (single_device_server_t*)self;
-  const jsd_jed_state_t*  state = jsd_jed_get_state(sds->jsd, slave_id);
+  const jsd_jed0101_state_t*  state = jsd_jed0101_get_state(sds->jsd, slave_id);
 
   MSG("Status: %u (Qw: %lf, Qx: %lf, Qy: %lf, Qz: %lf) Cmd: %u", state->status,
       state->w, state->x, state->y, state->z, state->cmd);
@@ -59,22 +59,22 @@ void extract_data(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
-  jsd_jed_read(sds->jsd, slave_id);
-  jsd_jed_process(sds->jsd, slave_id);
+  jsd_jed0101_read(sds->jsd, slave_id);
+  jsd_jed0101_process(sds->jsd, slave_id);
 }
 
 void command(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
-  jsd_jed_set_cmd_value(sds->jsd, slave_id, cmd++ % 255);
+  jsd_jed0101_set_cmd_value(sds->jsd, slave_id, cmd++ % 255);
 }
 
 int main(int argc, char const* argv[]) {
   if (argc != 4) {
     ERROR("Expecting exactly 3 arguments");
-    MSG("Usage: jsd_jed_test <ifname> <jed_slave_index> <loop_freq_hz>");
-    MSG("Example: $ jsd_jed_test eth0 5 500");
+    MSG("Usage: jsd_jed0101_test <ifname> <jed0101_slave_index> <loop_freq_hz>");
+    MSG("Example: $ jsd_jed0101_test eth0 5 500");
     return 0;
   }
 
@@ -99,10 +99,10 @@ int main(int argc, char const* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "bigfoot");
   my_config.configuration_active = true;
-  my_config.product_code         = JSD_JED_PRODUCT_CODE;
-  my_config.jed.initial_cmd      = 0;
+  my_config.product_code         = JSD_JED0101_PRODUCT_CODE;
+  my_config.jed0101.initial_cmd      = 0;
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
-  sds_run(&sds, ifname, "/tmp/jsd_jed.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_jed0101.csv");
 
   return 0;
 }

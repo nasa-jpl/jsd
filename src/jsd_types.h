@@ -13,13 +13,15 @@ extern "C" {
 #include "jsd/jsd_egd_types.h"
 #include "jsd/jsd_el2124_types.h"
 #include "jsd/jsd_el3104_types.h"
+#include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
 #include "jsd/jsd_el3208_types.h"
 #include "jsd/jsd_el3318_types.h"
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
-#include "jsd/jsd_jed_types.h"
+#include "jsd/jsd_jed0101_types.h"
+#include "jsd/jsd_jed0200_types.h"
 
 typedef struct {
   bool     configuration_active;
@@ -31,11 +33,13 @@ typedef struct {
     jsd_el2124_config_t  el2124;
     jsd_egd_config_t     egd;
     jsd_el3356_config_t  el3356;
-    jsd_jed_config_t     jed;
+    jsd_jed0101_config_t jed0101;
+    jsd_jed0200_config_t jed0200;
     jsd_ati_fts_config_t ati_fts;
     jsd_el3104_config_t  el3104;
     jsd_el3202_config_t  el3202;
     jsd_el3318_config_t  el3318;
+    jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
   };
   bool PO2SO_success;  // reserved for internal use
@@ -49,11 +53,13 @@ typedef struct {
     jsd_el2124_state_t      el2124;
     jsd_egd_private_state_t egd;
     jsd_el3356_state_t      el3356;
-    jsd_jed_state_t         jed;
+    jsd_jed0101_state_t     jed0101;
+    jsd_jed0200_state_t     jed0200;
     jsd_ati_fts_state_t     ati_fts;
     jsd_el3104_state_t      el3104;
     jsd_el3202_state_t      el3202;
     jsd_el3318_state_t      el3318;
+    jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
   };
 

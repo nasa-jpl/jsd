@@ -1,5 +1,5 @@
-#ifndef JSD_JED_TYPES_H
-#define JSD_JED_TYPES_H
+#ifndef JSD_JED0101_TYPES_H
+#define JSD_JED0101_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -7,17 +7,17 @@ extern "C" {
 
 #include "jsd/jsd_common_device_types.h"
 
-#define JSD_JED_PRODUCT_CODE (uint32_t)0x00009252
+#define JSD_JED0101_PRODUCT_CODE (uint32_t)0x00009252
 
 /**
- * @brief configuration struct for JED device initialization
+ * @brief configuration struct for JED0101 device initialization
  */
 typedef struct {
   uint16_t initial_cmd;  ///< Initial cmd value
-} jsd_jed_config_t;
+} jsd_jed0101_config_t;
 
 /**
- * @brief state data for JED module
+ * @brief state data for JED0101 module
  */
 
 typedef struct {
@@ -30,8 +30,8 @@ typedef struct {
   double   x;       ///< converted x component of IMU quaternion
   double   y;       ///< converted y component of IMU quaternion
   double   z;       ///< converted z component of IMU quaternion
-  uint16_t cmd;     ///< User specified cmd mode sent to JED
-} jsd_jed_state_t;
+  uint16_t cmd;     ///< User specified cmd mode sent to JED0101
+} jsd_jed0101_state_t;
 
 #ifdef __cplusplus
 }
