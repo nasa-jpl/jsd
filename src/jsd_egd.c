@@ -1184,9 +1184,11 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
+
   ec_mbxbuft               MbxIn;
   ec_errort                error;
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
+  state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -1205,14 +1207,19 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // Handle reset
       if (state->new_reset) {
         set_controlword(self, slave_id,
-                        JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
+          JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
+
+        state->requested_mode_of_operation = 
+          JSD_EGD_MODE_OF_OPERATION_PROF_POS;
+
+        set_mode_of_operation(self, slave_id, 
+          state->requested_mode_of_operation);
       }
       break;
     case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
-      // Handle halt or fault
-      if (state->new_halt_command ||
-          state->pub.fault_code != JSD_EGD_FAULT_OKAY) {
+      // Handle halt
+      if (state->new_halt_command){
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
         set_controlword(self, slave_id, cw);
@@ -1238,7 +1245,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       break;
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
-      state->new_reset = false;
 
       ecx_mbxreceive(&self->ecx_context, slave_id, (ec_mbxbuft*)&MbxIn, 0);
       if (ecx_iserror(&self->ecx_context)) {
@@ -1257,14 +1263,9 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
             state->pub.actual_state_machine_state);
   }
 
-  if (state->new_reset) {
-    state->requested_mode_of_operation = JSD_EGD_MODE_OF_OPERATION_PROF_POS;
-    set_mode_of_operation(self, slave_id, state->requested_mode_of_operation);
-    state->new_halt_command = false;
-    state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
-  }
   state->new_reset          = false;
   state->new_motion_command = false;
+  state->new_halt_command   = false;
 }
 
 void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
