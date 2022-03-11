@@ -519,7 +519,7 @@ uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
 
   if (index < 0x3000 || index > 0x3FFF) {
     ERROR(
-        "Two-Letter Command converstion is out of range: %s -> 0x%X not in "
+        "Two-Letter Command conversion is out of range: %s -> 0x%X not in "
         "(0x3000,0x3FFF)",
         tlc, index);
   }
@@ -836,6 +836,14 @@ int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
   // PL[1] does not need to be set here since it is updated synchronously
   // with every PDO exchange
+  // Let's set it anyways to help head off any potential issues. Setting the
+  // PDO-mapped max current doesn't appear to update PL[1]
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_egd_tlc_to_do("PL"), 1, JSD_SDO_DATA_FLOAT,
+          (void*)&config->egd.peak_current_limit)) {
+    return 0;
+  }
+
 
   if (!jsd_sdo_set_param_blocking(
           ecx_context, slave_id, jsd_egd_tlc_to_do("CL"), 1, JSD_SDO_DATA_FLOAT,
@@ -944,6 +952,14 @@ int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
+  int32_t um = 0;
+  if (!jsd_sdo_get_param_blocking(
+          ecx_context, slave_id, jsd_egd_tlc_to_do("UM"), 1, JSD_SDO_DATA_U32,
+          (void*)&um)) {
+    return 0;
+  }
+  MSG("EGD[%d] UM[1] = %d", slave_id, um);
+
   return 1;
 }
 
@@ -1001,10 +1017,21 @@ void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
     if (!req.success) {
       ERROR("Slave[%u] Failed last SDO operation on 0x%X:%u, wkc = %d",
             slave_id, req.sdo_index, req.sdo_subindex, req.wkc);
+    }else {
+
+      // NOTE: If there is a usecase for low-frequency SDO
+      // Reads, EGD could parse SDO Read requests
+      // and update public state data here
+
+      if(req.sdo_index == jsd_egd_tlc_to_do("UM")){
+        MSG("EGD[%d]  UM[%d] = %d (0x%X:%d set through async SDO)", 
+            slave_id, 
+            req.sdo_subindex,
+            req.data.as_i32,
+            req.sdo_index,
+            req.sdo_subindex);
+      }
     }
-    // NOTE: If there is a usecase for low-frequency SDO
-    // Reads, EGD could parse SDO Read requests
-    // and update public state data here
   }
 
   // 2) Check if any SDO operations are ongoing and update state
