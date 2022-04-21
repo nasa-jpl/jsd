@@ -72,10 +72,12 @@ typedef union {
   int8_t   as_i8;
   int16_t  as_i16;
   int32_t  as_i32;
+  int64_t  as_i64;
   float    as_float;
   uint8_t  as_u8;
   uint16_t as_u16;
   uint32_t as_u32;
+  uint64_t as_u64;
 } jsd_sdo_data_t;
 
 typedef enum {
@@ -83,10 +85,12 @@ typedef enum {
   JSD_SDO_DATA_I8,
   JSD_SDO_DATA_I16,
   JSD_SDO_DATA_I32,
+  JSD_SDO_DATA_I64,
   JSD_SDO_DATA_FLOAT,
   JSD_SDO_DATA_U8,
   JSD_SDO_DATA_U16,
   JSD_SDO_DATA_U32,
+  JSD_SDO_DATA_U64,
 } jsd_sdo_data_type_t;
 
 typedef enum {

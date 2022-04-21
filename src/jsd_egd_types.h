@@ -136,6 +136,23 @@ typedef enum {
 } jsd_egd_fault_code_t;
 
 /**
+ * @brief Elmo Gold Drive's gain scheduling mode for the controller and filters.
+ *
+ * See MAN-G-CR, command GS[2, 16, 17, 18].
+ *
+ */
+typedef enum {
+  JSD_EGD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
+  JSD_EGD_GAIN_SCHEDULING_SPEED         = 64,  ///< Scheduling by speed
+  JSD_EGD_GAIN_SCHEDULING_POSITION      = 65,  ///< Scheduling by position
+  JSD_EGD_GAIN_SCHEDULING_SETTLING      = 66,  ///< Scheduling by Best Settling
+  JSD_EGD_GAIN_SCHEDULING_MANUAL_LOW =
+      67,  ///< Manual selection via lower byte of 0x2E00 object
+  JSD_EGD_GAIN_SCHEDULING_MANUAL_HIGH =
+      68,  ///< Manual selection via upper byte of 0x2E00 object
+} jsd_egd_gain_scheduling_mode_t;
+
+/**
  * @brief Elmo Gold Drive Motion Command for Profiled Position Mode of
  * Operation
  *
@@ -335,6 +352,7 @@ typedef struct __attribute__((__packed__)) {
   int16_t  torque_offset;      ///< 0x60B2
   int8_t   mode_of_operation;  ///< 0x6060
   uint16_t max_current;        ///< 0x6073 PL[1]
+  uint16_t gain_scheduling_index;  ///< 0x2E00
 } jsd_egd_rxpdo_data_cs_mode_t;
 
 /**
