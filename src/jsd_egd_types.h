@@ -143,12 +143,12 @@ typedef enum {
  */
 typedef enum {
   JSD_EGD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
-  JSD_EGD_GAIN_SCHEDULING_SPEED         = 64,  ///< Scheduling by speed
-  JSD_EGD_GAIN_SCHEDULING_POSITION      = 65,  ///< Scheduling by position
-  JSD_EGD_GAIN_SCHEDULING_SETTLING      = 66,  ///< Scheduling by Best Settling
-  JSD_EGD_GAIN_SCHEDULING_MANUAL_LOW =
+  JSD_EGD_GAIN_SCHEDULING_MODE_SPEED    = 64,  ///< Scheduling by speed
+  JSD_EGD_GAIN_SCHEDULING_MODE_POSITION = 65,  ///< Scheduling by position
+  JSD_EGD_GAIN_SCHEDULING_MODE_SETTLING = 66,  ///< Scheduling by Best Settling
+  JSD_EGD_GAIN_SCHEDULING_MODE_MANUAL_LOW =
       67,  ///< Manual selection via lower byte of 0x2E00 object
-  JSD_EGD_GAIN_SCHEDULING_MANUAL_HIGH =
+  JSD_EGD_GAIN_SCHEDULING_MODE_MANUAL_HIGH =
       68,  ///< Manual selection via upper byte of 0x2E00 object
 } jsd_egd_gain_scheduling_mode_t;
 
