@@ -67,7 +67,29 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
                                 uint8_t digital_output_index,
                                 uint8_t output_level);
 
-// Set Manual Gain TODO
+/**
+ * @brief Set the gain scheduling index manually
+ *
+ * Real-time safe
+ * Only available to JSD_EGD_DRIVE_MODE_CMD_CS command mode
+ *
+ * Sets the index of the gain/parameter set for the controller or one of the
+ * filters via Dictionary Object 0x2E00. Two indexes can be selected
+ * independently through the LSB or MSB byte of the object. The GS command
+ * determines which controller or filter is assigned the gains/parameters
+ * specified by the index. See MAN-G-CR, command GS.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EGD device
+ * @param lsb_byte Whether the provided index is for the controller/filter
+ * assigned to the LSB (true) or MSB (false) of 0x2E00.
+ * @param gain_scheduling_index Index of the gain/parameter set. It can range
+ * from 1-63, and each value corresponds to a particular set of gains for the
+ * controller or parameters for a filter.
+ */
+void jsd_egd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
+                                       bool     lsb_byte,
+                                       uint16_t gain_scheduling_index);
 
 /**
  * @brief Set drive peak current, PL[1]
@@ -261,6 +283,23 @@ void jsd_egd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
  */
 void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
                                      int32_t mode);
+
+/**
+ * @brief Set the gain scheduling mode for the controller, GS[2]
+ *
+ * Real-time safe, but uses SDO background thread.
+ * See MAN-G-CR for more information.
+ *
+ * It is recommended that the application checks the status of the
+ * async_sdo_in_prog state field before issuing commands that may depend on this
+ * setting (e.g. jsd_egd_set_gain_scheduling_index).
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EGD device
+ * @param mode Gain scheduling mode
+ */
+void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
+    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode);
 
 #ifdef __cplusplus
 }

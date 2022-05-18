@@ -136,6 +136,37 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
   }
 }
 
+void jsd_egd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
+                                       bool     lsb_byte,
+                                       uint16_t gain_scheduling_index) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
+
+  if (self->slave_configs[slave_id].egd.drive_cmd_mode !=
+      JSD_EGD_DRIVE_CMD_MODE_CS) {
+    ERROR("Drive cmd mode: %d not suitable for manual gain scheduling",
+          self->slave_configs[slave_id].egd.drive_cmd_mode);
+    return;
+  }
+  if (gain_scheduling_index < 1 || gain_scheduling_index > 63) {
+    ERROR("The provided gain scheduling index %d is out of range [1,63]",
+          gain_scheduling_index);
+    return;
+  }
+
+  jsd_egd_private_state_t* state   = &self->slave_states[slave_id].egd;
+  uint16_t                 bitmask = 0x00FF;
+  if (lsb_byte) {
+    state->rxpdo_cs.gain_scheduling_index =
+        (state->rxpdo_cs.gain_scheduling_index & (bitmask << 8)) |
+        gain_scheduling_index;
+  } else {
+    state->rxpdo_cs.gain_scheduling_index =
+        (state->rxpdo_cs.gain_scheduling_index & bitmask) |
+        (gain_scheduling_index << 8);
+  }
+}
+
 void jsd_egd_set_peak_current(jsd_t* self, uint16_t slave_id,
                               double peak_current) {
   assert(self);
@@ -541,6 +572,17 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
                           JSD_SDO_DATA_I32, &mode);
 }
 
+void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
+    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode) {
+  if (mode < 0 || mode > 68) {
+    ERROR("Gain scheduling mode %d for the controller is not valid.", mode);
+    return;
+  }
+  int64_t mode_i64 = mode;
+  jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("GS"), 2,
+                          JSD_SDO_DATA_I64, &mode_i64);
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -640,7 +682,17 @@ int jsd_egd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
       return 0;
     }
 
-    uint16_t map_output_RxPDO[] = {0x0002, 0x1600, 0x1607};
+    uint16_t map_output_pdos_1608[] = {
+        0x0001,          // num mapped params
+        0x0010, 0x2E00,  // gain_scheduling_index
+    };
+
+    if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1608, 0x00,
+                                       sizeof(map_output_pdos_1608),
+                                       &map_output_pdos_1608)) {
+      return 0;
+    }
+    uint16_t map_output_RxPDO[] = {0x0003, 0x1600, 0x1607, 0x1608};
     if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
                                        sizeof(map_output_RxPDO),
                                        &map_output_RxPDO)) {
