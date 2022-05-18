@@ -197,6 +197,7 @@ int main(int argc, char* argv[]) {
   my_config.egd.high_position_limit           = 0;
   my_config.egd.crc                           = INT32_MIN;
   my_config.egd.drive_max_current_limit       = -FLT_MAX;
+  my_config.egd.ctrl_gain_scheduling_mode     = -1;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

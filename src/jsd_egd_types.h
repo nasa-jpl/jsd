@@ -277,6 +277,10 @@ typedef struct {
 
   int32_t smooth_factor;  ///< SF[1] msec, [0, 63] 0 is default
 
+  jsd_egd_gain_scheduling_mode_t
+      ctrl_gain_scheduling_mode;  ///< GS[2]. Set to -1 to use mode saved in
+                                  ///< drive's non-volatile memory.
+
 } jsd_egd_config_t;
 
 /**
