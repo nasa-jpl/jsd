@@ -952,7 +952,7 @@ int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   int64_t ctrl_gs_mode_i64 = config->egd.ctrl_gain_scheduling_mode;
-  if (ctrl_gs_mode_i64 != -1 &&
+  if (ctrl_gs_mode_i64 != JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED &&
       !jsd_sdo_set_param_blocking(ecx_context, slave_id,
                                   jsd_egd_tlc_to_do("GS"), 2, JSD_SDO_DATA_I64,
                                   (void*)&ctrl_gs_mode_i64)) {

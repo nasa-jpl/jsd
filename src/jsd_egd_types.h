@@ -142,6 +142,8 @@ typedef enum {
  *
  */
 typedef enum {
+  JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED =
+      -1,  ///< Scheduling mode saved in the drive's non-volatile memory
   JSD_EGD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
   JSD_EGD_GAIN_SCHEDULING_MODE_SPEED    = 64,  ///< Scheduling by speed
   JSD_EGD_GAIN_SCHEDULING_MODE_POSITION = 65,  ///< Scheduling by position
