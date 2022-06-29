@@ -8,7 +8,7 @@ extern "C" {
 #include <stdint.h>
 
 #define JSD_NAME_LEN 64
-#define JSD_IOMAP_BYTES 1024
+#define JSD_IOMAP_BYTES 4096
 
 #define JSD_SDO_TIMEOUT 1.4e6  // usec
 
