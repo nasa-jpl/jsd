@@ -208,8 +208,6 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
   }
 
   // Set the measuring rate.
-  // TODO(dloret): Double check whether value is expressed in Hz of kHz. Right
-  // now I assume it is Hz.
   float measuring_rate_hz = config->ild1900.measuring_rate;
   if (measuring_rate_hz > 10000.0) {
     ERROR("ILD1900 slave %u's measuring rate %f must be less than 10,000 Hz.",

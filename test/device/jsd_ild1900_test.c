@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
   my_config.configuration_active     = true;
   my_config.product_code             = JSD_ILD1900_PRODUCT_CODE;
   my_config.ild1900.model            = JSD_ILD1900_MODEL_100;
-  my_config.ild1900.measuring_rate   = 250;
+  my_config.ild1900.measuring_rate   = 0.250;
   my_config.ild1900.averaging_type   = JSD_ILD1900_AVERAGING_MOVING;
   my_config.ild1900.averaging_number = 16;
   my_config.ild1900.peak_selection   = JSD_ILD1900_PEAK_SELECTION_HIGHEST;

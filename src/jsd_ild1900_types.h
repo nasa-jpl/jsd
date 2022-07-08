@@ -81,9 +81,10 @@ typedef enum {
  * @brief Configuration struct for ILD1900 device initialization
  */
 typedef struct {
-  float measuring_rate;  ///< Number of measurements per second. Maximum value
-                         ///< is 10 kHz. See Operating Instructions optoNCDT
-                         ///< 1900-IE EtherCAT section 7.4.3.
+  float
+      measuring_rate;  ///< Number of measurements per second expressed in kHz.
+                       ///< Maximum value is 10 kHz. See Operating Instructions
+                       ///< optoNCDT 1900-IE EtherCAT section 7.4.3.
   uint32_t
       averaging_number;  ///< Number of consecutive measurements averaged
                          ///< together. If averaging_type is
