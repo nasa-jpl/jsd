@@ -20,6 +20,7 @@ add_library(jsd-lib STATIC
     jsd_el3162.c
     jsd_el4102.c
     jsd_ild1900.c
+    jsd_epd.c
     )
 
 message(STATUS "SOEM INCLUDE DIRS: ${SOEM_INCLUDE_DIRS}")

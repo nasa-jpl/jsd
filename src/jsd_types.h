@@ -20,6 +20,7 @@ extern "C" {
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
+#include "jsd/jsd_epd_types.h"
 #include "jsd/jsd_ild1900_types.h"
 #include "jsd/jsd_jed0101_types.h"
 #include "jsd/jsd_jed0200_types.h"
@@ -45,6 +46,7 @@ typedef struct {
     jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
     jsd_ild1900_config_t ild1900;
+    jsd_epd_config_t     epd;
   };
   bool PO2SO_success;  // reserved for internal use
 
@@ -66,6 +68,7 @@ typedef struct {
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
     jsd_ild1900_state_t     ild1900;
+    jsd_epd_private_state_t epd;
   };
 
   uint16_t num_async_sdo_requests; // reserved
@@ -78,6 +81,7 @@ typedef union {
   int32_t  as_i32;
   int64_t  as_i64;
   float    as_float;
+  double   as_double;
   uint8_t  as_u8;
   uint16_t as_u16;
   uint32_t as_u32;
@@ -91,6 +95,7 @@ typedef enum {
   JSD_SDO_DATA_I32,
   JSD_SDO_DATA_I64,
   JSD_SDO_DATA_FLOAT,
+  JSD_SDO_DATA_DOUBLE,
   JSD_SDO_DATA_U8,
   JSD_SDO_DATA_U16,
   JSD_SDO_DATA_U32,
