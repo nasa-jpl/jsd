@@ -38,15 +38,15 @@ void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
 
   const jsd_ild1900_config_t* config = &self->slave_configs[slave_id].ild1900;
 
-  // TODO(dloret): Confirm timestamp is in nanoseconds.
   state->timestamp               = txpdo->timestamp;
+  state->counter                 = txpdo->counter;
   state->sensor_status           = txpdo->sensor_status;
   state->linearized_distance_raw = txpdo->linearized_distance_raw;
   state->intensity               = (100 * txpdo->intensity_raw) / 1023.0;
   state->unlinearized_center_of_gravity =
       (100 * txpdo->unlinearized_distance_raw) / 262143.0;
-  state->distance = (txpdo->linearized_distance_raw - 98232) / 65536.0 *
-                        JSD_ILD1900_MR_MAP[config->model] +
+  state->distance = ((int32_t)txpdo->linearized_distance_raw - 98232) /
+                        65536.0 * JSD_ILD1900_MR_MAP[config->model] +
                     JSD_ILD1900_SMR_MAP[config->model];
 
   // Determine whether there was an error with the measurement.
@@ -129,8 +129,13 @@ int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  // TODO(dloret): Issue SDO to reset all settings here (0x3800:18, bit, set to
-  // 1).
+  // TODO(dloret): Issue SDO to reset all settings here (0x3800:0x18, bit, set
+  // to 1).
+  //  uint8_t reset = 1;
+  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3800, 0x18,
+  //  JSD_SDO_DATA_U8, &reset)) {
+  //    return false;
+  //  }
 
   if (!jsd_ild1900_config_PDO_mapping(ecx_context, slave_id)) {
     ERROR("Failed to map PDO parameters on ILD1900 slave %u", slave_id);
@@ -155,15 +160,46 @@ bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
   /*
    * TxPDO Mapping
    * 0x1A04 - Timestamp (0x6002:1)
+   * 0x1A08 - Measurement counter (0x6003:1)
    * 0x1A0C - Status (0x6004:1)
    * 0x1A10 - Not linearized distance + intensity + distance (0x6005:1 +
    * 0x5006:1 + 0x6007:1)
+   *
+   * ILD1900 sensors do not support Complete Access. Steps to set TxPDO
+   * assignment are the following:
+   * 1. Write 0 to 0x1C13:0.
+   * 2. Write the desired PDO mappings individually to their corresponding
+   * subindices (greater than 0).
+   * 3. Write the total number of PDO mappings to 0x1C13:0.
    */
-  uint16_t map_input_TxPDO[] = {0x0003, 0x1A04, 0x1A0C, 0x1A10};
-
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
-                                     sizeof(map_input_TxPDO),
-                                     &map_input_TxPDO)) {
+  uint8_t num_entries = 0;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
+                                  JSD_SDO_DATA_U8, &num_entries)) {
+    return false;
+  }
+  uint16_t entry = 0x1A04;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x01,
+                                  JSD_SDO_DATA_U16, &entry)) {
+    return false;
+  }
+  entry = 0x1A08;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x02,
+                                  JSD_SDO_DATA_U16, &entry)) {
+    return false;
+  }
+  entry = 0x1A0C;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x03,
+                                  JSD_SDO_DATA_U16, &entry)) {
+    return false;
+  }
+  entry = 0x1A10;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x04,
+                                  JSD_SDO_DATA_U16, &entry)) {
+    return false;
+  }
+  num_entries = 4;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
+                                  JSD_SDO_DATA_U8, &num_entries)) {
     return false;
   }
 
@@ -200,12 +236,15 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
   // Disable signal quality mode because averaging is selected through
   // configuration. See Operating Instructions optoNCDT 1900-IE EtherCAT
   // sections 6.2.2 and A5.3.2.7.
-  uint8_t signal_quality_mode = 0;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3851, 0x01,
-                                  JSD_SDO_DATA_U8,
-                                  (void*)&signal_quality_mode)) {
-    return false;
-  }
+  // TODO(dloret): Corroborate with Micro-Epsilon whether signal quality mode
+  // needs to be explicitly set to 'None' to disable preset measurement
+  // configurations.
+  //  uint8_t signal_quality_mode = 0;
+  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3851, 0x01,
+  //                                  JSD_SDO_DATA_U8,
+  //                                  (void*)&signal_quality_mode)) {
+  //    return false;
+  //  }
 
   // Set the measuring rate.
   float measuring_rate_hz = config->ild1900.measuring_rate;

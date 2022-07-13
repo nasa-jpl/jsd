@@ -15,7 +15,7 @@ void telemetry_header() {
   }
   fprintf(file, "ILD1900_distance_m, ILD1900_linearized_distance_raw, ");
   fprintf(file, "unlinearized_center_of_gravity_percent, intensity_percent, ");
-  fprintf(file, "timestamp_ns, sensor_status, error");
+  fprintf(file, "timestamp_ns, counter, sensor_status, error");
   fprintf(file, "\n");
 }
 
@@ -32,7 +32,8 @@ void telemetry_data(void* self) {
   fprintf(file, "%lf, %u, ", state->distance, state->linearized_distance_raw);
   fprintf(file, "%lf, ", state->unlinearized_center_of_gravity);
   fprintf(file, "%lf, %u, ", state->intensity, state->timestamp);
-  fprintf(file, "%u, %i", state->sensor_status, state->error);
+  fprintf(file, "%u, %u, ", state->counter, state->sensor_status);
+  fprintf(file, "%i", state->error);
   fprintf(file, "\n");
   fflush(file);
 }
@@ -42,7 +43,8 @@ void print_info(void* self) {
 
   single_device_server_t*    sds   = (single_device_server_t*)self;
   const jsd_ild1900_state_t* state = jsd_ild1900_get_state(sds->jsd, slave_id);
-  MSG("Distance: %lf m, Error: %i", state->distance, state->error);
+  MSG("Distance: %lf m, Distance raw: %d, Error: %i", state->distance,
+      state->linearized_distance_raw, state->error);
 }
 
 void extract_data(void* self) {
@@ -81,7 +83,7 @@ int main(int argc, char* argv[]) {
 
   jsd_slave_config_t my_config = {0};
 
-  snprintf(my_config.name, JSD_NAME_LEN, "tonatiuh");
+  snprintf(my_config.name, JSD_NAME_LEN, "huehueteotl");
   my_config.configuration_active     = true;
   my_config.product_code             = JSD_ILD1900_PRODUCT_CODE;
   my_config.ild1900.model            = JSD_ILD1900_MODEL_100;

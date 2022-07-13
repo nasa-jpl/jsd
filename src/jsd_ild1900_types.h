@@ -63,17 +63,20 @@ typedef enum {
  * @brief ILD1900's type of averaging on measurements
  *
  * See Operating Instructions optoNCDT 1900-IE EtherCAT section 7.5.2.
+ * The values of the averaging type objects (0x3400, subindeces 0x01 and 0x0B)
+ * are incorrect in the documentation. The correct values are the ones assigned
+ * in this enumeration.
  */
 typedef enum {
   JSD_ILD1900_AVERAGING_NONE = 0,  ///< No averaging
   JSD_ILD1900_AVERAGING_MEDIAN =
-      1,  ///< Median from specified number of measurements. Number must be 3,
+      3,  ///< Median from specified number of measurements. Number must be 3,
           ///< 5, 7, or 9.
   JSD_ILD1900_AVERAGING_MOVING =
-      2,  ///< Arithmetic average from the specified number of measurements.
+      1,  ///< Arithmetic average from the specified number of measurements.
           ///< Number must be a power of 2: 1, 2, 4, ..., 4096.
   JSD_ILD1900_AVERAGING_RECURSIVE =
-      3  ///< Weighted average of new measured value with previous averaging
+      2  ///< Weighted average of new measured value with previous averaging
          ///< value. Number must be in range [1, 32000].
 } jsd_ild1900_averaging_t;
 
@@ -119,6 +122,8 @@ typedef struct {
            unlinearized_center_of_gravity;  ///< Unlinearized distance in percentage
   double   intensity;      ///< Signal intensity of peak in percentage
   uint32_t timestamp;      ///< Timestamp of measurement in nanoseconds
+  uint32_t
+           counter;  ///< Measurement counter. Distinguishes separate measurements.
   uint32_t sensor_status;  ///< Bitfield with the status of the sensor's
                            ///< measurement. See Operating Instructions optoNCDT
                            ///< 1900-IE EtherCAT section 7.6.1.
