@@ -247,15 +247,16 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
   //  }
 
   // Set the measuring rate.
-  float measuring_rate_hz = config->ild1900.measuring_rate;
-  if (measuring_rate_hz > 10000.0) {
-    ERROR("ILD1900 slave %u's measuring rate %f must be less than 10,000 Hz.",
-          slave_id, measuring_rate_hz);
+  if (config->ild1900.measuring_rate > 10000.0) {
+    ERROR("ILD1900 slave %u's measuring rate %lf must be less than 10,000 Hz.",
+          slave_id, config->ild1900.measuring_rate);
     return false;
   }
+  // Sensor expects kHz.
+  float measuring_rate_khz = (float)(config->ild1900.measuring_rate / 1000.0);
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3200, 0x03,
                                   JSD_SDO_DATA_FLOAT,
-                                  (void*)&measuring_rate_hz)) {
+                                  (void*)&measuring_rate_khz)) {
     return false;
   }
 
