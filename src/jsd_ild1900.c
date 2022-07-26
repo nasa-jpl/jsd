@@ -129,13 +129,14 @@ int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  // TODO(dloret): Issue SDO to reset all settings here (0x3800:0x18, bit, set
-  // to 1).
-  //  uint8_t reset = 1;
-  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3800, 0x18,
-  //  JSD_SDO_DATA_U8, &reset)) {
-  //    return false;
-  //  }
+  // Reset all settings first. Object 0x3800, subindex 0x18 is a boolean
+  // variable. When accessed as a single subindex, the bit is encoded in an
+  // octet 0bxxxxxxxn (by EtherCAT standard).
+  uint8_t reset = 1;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3800, 0x18,
+                                  JSD_SDO_DATA_U8, &reset)) {
+    return false;
+  }
 
   if (!jsd_ild1900_config_PDO_mapping(ecx_context, slave_id)) {
     ERROR("Failed to map PDO parameters on ILD1900 slave %u", slave_id);
@@ -233,18 +234,38 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
     return false;
   }
 
-  // Disable signal quality mode because averaging is selected through
-  // configuration. See Operating Instructions optoNCDT 1900-IE EtherCAT
-  // sections 6.2.2 and A5.3.2.7.
-  // TODO(dloret): Corroborate with Micro-Epsilon whether signal quality mode
-  // needs to be explicitly set to 'None' to disable preset measurement
-  // configurations.
-  //  uint8_t signal_quality_mode = 0;
-  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3851, 0x01,
-  //                                  JSD_SDO_DATA_U8,
-  //                                  (void*)&signal_quality_mode)) {
+  // Turn off zeroing/mastering function.
+  //  uint8_t mastering_set = 0;
+  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3450, 0x04,
+  //                                  JSD_SDO_DATA_U8, (void*)&mastering_set)) {
+  //    if (ecx_iserror(ecx_context)) {
+  //      ec_errort error;
+  //      while (ecx_poperror(ecx_context, &error)) {
+  //        if (ecx_context->slavelist[error.Slave].eep_id ==
+  //        JSD_ILD1900_PRODUCT_CODE && error.Etype == EC_ERR_TYPE_SDO_ERROR) {
+  //          MSG("SDO abort code %x", error.AbortCode);
+  //        }
+  //      }
+  //    }
   //    return false;
   //  }
+  //  MSG("Zeroing/Mastering Set/Reset: %u", mastering_set);
+  //  float mastering_value = 0;
+  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3450, 0x05,
+  //                                  JSD_SDO_DATA_FLOAT,
+  //                                  (void*)&mastering_value)) {
+  //  if (ecx_iserror(ecx_context)) {
+  //    ec_errort error;
+  //    while (ecx_poperror(ecx_context, &error)) {
+  //      if (ecx_context->slavelist[error.Slave].eep_id ==
+  //      JSD_ILD1900_PRODUCT_CODE && error.Etype == EC_ERR_TYPE_SDO_ERROR) {
+  //        MSG("SDO abort code %x", error.AbortCode);
+  //      }
+  //    }
+  //  }
+  //    return false;
+  //  }
+  //  MSG("Zeroing/Mastering value: %f", mastering_value);
 
   // Set the measuring rate.
   if (config->ild1900.measuring_rate > 10000.0) {
