@@ -41,12 +41,13 @@ void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
   state->timestamp               = txpdo->timestamp;
   state->counter                 = txpdo->counter;
   state->sensor_status           = txpdo->sensor_status;
+  state->peak_distance           = txpdo->peak_distance;
   state->linearized_distance_raw = txpdo->linearized_distance_raw;
   state->intensity               = (100 * txpdo->intensity_raw) / 1023.0;
   state->unlinearized_center_of_gravity =
       (100 * txpdo->unlinearized_distance_raw) / 262143.0;
-  state->distance = ((int32_t)txpdo->linearized_distance_raw - 98232) /
-                        65536.0 * JSD_ILD1900_MR_MAP[config->model] +
+  state->distance = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
+                        JSD_ILD1900_MR_MAP[config->model] +
                     JSD_ILD1900_SMR_MAP[config->model];
 
   // Determine whether there was an error with the measurement.
@@ -163,6 +164,7 @@ bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
    * 0x1A04 - Timestamp (0x6002:1)
    * 0x1A08 - Measurement counter (0x6003:1)
    * 0x1A0C - Status (0x6004:1)
+   * 0x1A14 - Peak distance (0x6008:1)
    * 0x1A10 - Not linearized distance + intensity + distance (0x6005:1 +
    * 0x5006:1 + 0x6007:1)
    *
@@ -193,12 +195,17 @@ bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
                                   JSD_SDO_DATA_U16, &entry)) {
     return false;
   }
-  entry = 0x1A10;
+  entry = 0x1A14;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x04,
                                   JSD_SDO_DATA_U16, &entry)) {
     return false;
   }
-  num_entries = 4;
+  entry = 0x1A10;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x05,
+                                  JSD_SDO_DATA_U16, &entry)) {
+    return false;
+  }
+  num_entries = 5;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
                                   JSD_SDO_DATA_U8, &num_entries)) {
     return false;

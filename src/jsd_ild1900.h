@@ -16,6 +16,7 @@ typedef struct __attribute__((__packed__)) {
   uint32_t timestamp;                  ///< 0x6002:1
   uint32_t counter;                    ///< 0X6003:1
   uint32_t sensor_status;              ///< 0x6004:1
+  uint32_t peak_distance;              ///< 0x6008:1
   uint32_t unlinearized_distance_raw;  ///< 0x6005:1
   uint32_t intensity_raw;              ///< 0x6006:1
   uint32_t linearized_distance_raw;    ///< 0x6007:1
