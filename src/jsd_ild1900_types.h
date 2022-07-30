@@ -118,18 +118,14 @@ typedef enum {
  */
 typedef struct {
   double distance;  ///< Distance from the sensor to the target in m
-  double
-           unlinearized_center_of_gravity;  ///< Unlinearized distance in percentage
   double   intensity;      ///< Signal intensity of peak in percentage
-  uint32_t timestamp;      ///< Timestamp of measurement in nanoseconds
+  uint32_t timestamp;      ///< Timestamp of measurement in microseconds
   uint32_t
            counter;  ///< Measurement counter. Distinguishes separate measurements.
   uint32_t sensor_status;  ///< Bitfield with the status of the sensor's
                            ///< measurement. See Operating Instructions optoNCDT
                            ///< 1900-IE EtherCAT section 7.6.1.
   uint32_t peak_distance;  ///< Digital value of distance measured from SMR
-  uint32_t linearized_distance_raw;  ///< Digital value of linearized distance
-                                     ///< measured from SMR
   jsd_ild1900_error_t error;         ///< Type of measurement error
 } jsd_ild1900_state_t;
 
