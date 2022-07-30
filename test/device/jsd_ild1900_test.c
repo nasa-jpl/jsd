@@ -13,7 +13,7 @@ void telemetry_header() {
   if (!file) {
     return;
   }
-  fprintf(file, "ILD1900_distance_m, intensity_percent, peak_distance, ");
+  fprintf(file, "ILD1900_distance_m, intensity_percent, distance_raw, ");
   fprintf(file, "timestamp_us, counter, sensor_status, error");
   fprintf(file, "\n");
 }
@@ -29,7 +29,7 @@ void telemetry_data(void* self) {
   const jsd_ild1900_state_t* state = jsd_ild1900_get_state(sds->jsd, slave_id);
 
   fprintf(file, "%lf, %f, ", state->distance, state->intensity);
-  fprintf(file, "%u, %u, ", state->peak_distance, state->timestamp);
+  fprintf(file, "%u, %u, ", state->distance_raw, state->timestamp);
   fprintf(file, "%u, %u, ", state->counter, state->sensor_status);
   fprintf(file, "%i", state->error);
   fprintf(file, "\n");
@@ -41,8 +41,8 @@ void print_info(void* self) {
 
   single_device_server_t*    sds   = (single_device_server_t*)self;
   const jsd_ild1900_state_t* state = jsd_ild1900_get_state(sds->jsd, slave_id);
-  MSG("Distance: %lf m, Peak distance: %d, Error: %i", state->distance,
-      state->peak_distance, state->error);
+  MSG("Distance: %lf m, Distance raw: %d, Error: %i", state->distance,
+      state->distance_raw, state->error);
 }
 
 void extract_data(void* self) {

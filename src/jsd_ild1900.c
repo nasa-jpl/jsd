@@ -41,7 +41,7 @@ void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
   state->timestamp               = txpdo->timestamp;
   state->counter                 = txpdo->counter;
   state->sensor_status           = txpdo->sensor_status;
-  state->peak_distance           = txpdo->peak_distance;
+  state->distance_raw            = txpdo->peak_distance;
   state->intensity               = (100 * txpdo->intensity_raw) / 1023.0;
   state->distance = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
                         JSD_ILD1900_MR_MAP[config->model] +

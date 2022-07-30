@@ -125,7 +125,7 @@ typedef struct {
   uint32_t sensor_status;  ///< Bitfield with the status of the sensor's
                            ///< measurement. See Operating Instructions optoNCDT
                            ///< 1900-IE EtherCAT section 7.6.1.
-  uint32_t peak_distance;  ///< Digital value of distance measured from SMR
+  uint32_t distance_raw;   ///< Digital value of distance measured from SMR
   jsd_ild1900_error_t error;         ///< Type of measurement error
 } jsd_ild1900_state_t;
 
