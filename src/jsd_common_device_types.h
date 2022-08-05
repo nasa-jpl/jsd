@@ -19,6 +19,8 @@ extern "C" {
 
 #define JSD_JPL_VENDOR_ID (uint32_t)0x00000C53
 
+#define JSD_MICROEPSILON_VENDOR_ID (uint32_t)0x00000607
+
 /**
  * @brief Digital Filter Options common across many beckhoff devices
  */
