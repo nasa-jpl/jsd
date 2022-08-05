@@ -38,14 +38,14 @@ void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
 
   const jsd_ild1900_config_t* config = &self->slave_configs[slave_id].ild1900;
 
-  state->timestamp               = txpdo->timestamp;
+  state->timestamp_us            = txpdo->timestamp;
   state->counter                 = txpdo->counter;
   state->sensor_status           = txpdo->sensor_status;
   state->distance_raw            = txpdo->peak_distance;
   state->intensity               = (100 * txpdo->intensity_raw) / 1023.0;
-  state->distance = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
-                        JSD_ILD1900_MR_MAP[config->model] +
-                    JSD_ILD1900_SMR_MAP[config->model];
+  state->distance_m = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
+                          JSD_ILD1900_MR_MAP[config->model] +
+                      JSD_ILD1900_SMR_MAP[config->model];
 
   // Determine whether there was an error with the measurement.
   switch (txpdo->linearized_distance_raw) {

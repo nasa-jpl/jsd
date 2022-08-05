@@ -117,9 +117,9 @@ typedef enum {
  * @brief Read struct for ILD1900 device
  */
 typedef struct {
-  double distance;  ///< Distance from the sensor to the target in m
+  double   distance_m;     ///< Distance from the sensor to the target in m
   double   intensity;      ///< Signal intensity of peak in percentage
-  uint32_t timestamp;      ///< Timestamp of measurement in microseconds
+  uint32_t timestamp_us;   ///< Timestamp of measurement in microseconds
   uint32_t
            counter;  ///< Measurement counter. Distinguishes separate measurements.
   uint32_t sensor_status;  ///< Bitfield with the status of the sensor's
