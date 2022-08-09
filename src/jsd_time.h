@@ -10,7 +10,7 @@ extern "C" {
 
 /**
  * @brief Get the system's clock time since the Unix Epoch.
- * @return Number of seconds isnce Unis Epoch.
+ * @return Number of seconds since Unix Epoch.
  */
 static inline double jsd_time_get_time_sec() {
   struct timeval tv;
