@@ -1,5 +1,5 @@
 #ifndef JSD_TIME_H_
-#define JSD_TIME_H
+#define JSD_TIME_H_
 
 #ifdef __cplusplus
 extern "C" {
