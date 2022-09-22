@@ -130,6 +130,7 @@ typedef enum {
   JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED,
 
   JSD_EGD_FAULT_SDO_ERROR,
+  JSD_EGD_FAULT_SDO_TIMEOUT,
 
   JSD_EGD_FAULT_UNKNOWN,
 
@@ -313,7 +314,8 @@ typedef struct {
   uint8_t warning;         ///< from statusword (SW), bit 7
   uint8_t target_reached;  ///< from SW, bit 10 mode dependent
   uint8_t motor_on;        ///< from SW, indicates brake and drive status
-  jsd_egd_fault_code_t fault_code;  ///< from EMCY, != 0 indicates fault
+  uint16_t fault_code;     ///< raw value from EMCY, != 0 indicates fault
+  jsd_egd_fault_code_t fault_enum; ///< Enum from both EMCY and SDO faults
 
   double   bus_voltage;           ///< bus voltage in volts
   double   analog_input_voltage;  ///< Analog 1 input in volts
@@ -399,6 +401,7 @@ typedef struct {
   uint32_t motor_rated_current;  ///< CL[1] in mA
 
   // user input
+  bool                        new_async_sdo_timeout_error;
   bool                        new_reset;
   bool                        new_halt_command;
   bool                        new_motion_command;

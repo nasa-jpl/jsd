@@ -1070,6 +1070,8 @@ void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id) {
 void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
   jsd_slave_state_t* state = &self->slave_states[slave_id];
 
+  state->egd.new_async_sdo_timeout_error = false;
+
   while (!jsd_sdo_req_cirq_is_empty(&self->jsd_sdo_res_cirq[slave_id])) {
     jsd_sdo_req_t req = jsd_sdo_req_cirq_pop(&self->jsd_sdo_res_cirq[slave_id]);
     state->num_async_sdo_responses++;
@@ -1079,7 +1081,7 @@ void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
     if (!req.success) {
       ERROR("Slave[%u] Failed last SDO operation on 0x%X:%u, wkc = %d",
             slave_id, req.sdo_index, req.sdo_subindex, req.wkc);
-    }else {
+    }else{
 
       // NOTE: If there is a usecase for low-frequency SDO
       // Reads, EGD could parse SDO Read requests
@@ -1102,22 +1104,21 @@ void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
 
   // 3) Check if async_sdo_in_prog has been held high for too long, indicating
   //    a lost SDO Request likely due to a queue overflow
-  if (state->egd.last_async_sdo_in_prog == 0 &&
-      state->egd.pub.async_sdo_in_prog == 1) {
+  if (state->egd.last_async_sdo_in_prog == false &&
+      state->egd.pub.async_sdo_in_prog == true) {
     state->egd.async_sdo_in_prog_start_time = jsd_get_time_sec();
   }
 
   if (state->egd.pub.async_sdo_in_prog) {
     if (jsd_get_time_sec() - state->egd.async_sdo_in_prog_start_time >
         JSD_EGD_ASYNC_SDO_TIMEOUT_SEC) {
-      if (state->egd.pub.fault_code != JSD_EGD_FAULT_SDO_ERROR) {
         // only print this one to not spew to stdout
-        ERROR(
-            "Async SDO has been in progress >%lf sec, likely SDO queue "
-            "overflow. Latching fault.",
-            JSD_EGD_ASYNC_SDO_TIMEOUT_SEC);
-      }
-      state->egd.pub.fault_code = JSD_EGD_FAULT_SDO_ERROR;
+        ERROR("Async SDO has been in progress >%lf sec, likely SDO queue "
+              "overflow. Latching fault.",
+                JSD_EGD_ASYNC_SDO_TIMEOUT_SEC);
+
+        state->egd.pub.async_sdo_in_prog = false;
+        state->egd.new_async_sdo_timeout_error = true;
     }
   }
 
@@ -1246,11 +1247,22 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
+  ec_mbxbuft MbxIn;
+  ec_errort  error;
 
-  ec_mbxbuft               MbxIn;
-  ec_errort                error;
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
-  state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
+
+  state->pub.fault_code = 0;
+
+  if(state->new_async_sdo_timeout_error){
+    // this error type is a JSD-custom error that is raised during the jsd_egd_read()
+    // function that should always be invoked before the jsd_egd_process() function. 
+    state->pub.fault_enum = JSD_EGD_FAULT_SDO_TIMEOUT;
+  }else{
+    // The other faults are taken from the EMCY code mailbox directly. Clear 
+    // here before that check
+    state->pub.fault_enum = JSD_EGD_FAULT_OKAY;
+  }
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -1280,8 +1292,10 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
-      // Handle halt
-      if (state->new_halt_command){
+      // Handle halt or fault
+      if (state->new_halt_command ||
+          state->new_async_sdo_timeout_error)
+      {
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
         set_controlword(self, slave_id, cw);
@@ -1311,10 +1325,16 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       ecx_mbxreceive(&self->ecx_context, slave_id, (ec_mbxbuft*)&MbxIn, 0);
       if (ecx_iserror(&self->ecx_context)) {
         ecx_poperror(&self->ecx_context, &error);
-        ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave,
-              jsd_egd_fault_code_to_string(
-                  jsd_egd_get_fault_code_from_ec_error(error)));
+
+        state->pub.fault_enum = jsd_egd_get_fault_code_from_ec_error(error);
         state->pub.fault_code = error.ErrorCode;
+
+        ERROR("EMCY: on slave id: %d, code: 0x%X, "
+            "jsd fault enum: %u, Description: %s", 
+            error.Slave,
+            state->pub.fault_code,
+            state->pub.fault_enum,
+            jsd_egd_fault_code_to_string(state->pub.fault_enum));
       }
 
       set_controlword(self, slave_id,
