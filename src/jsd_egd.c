@@ -12,16 +12,6 @@ static void set_controlword(jsd_t* self, uint16_t slave_id,
                             uint16_t controlword) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
-  /*
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    state->rxpdo_cs.controlword = controlword;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    state->rxpdo_prof.controlword = controlword;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  */
   state->rxpdo_cs.controlword   = controlword;
   state->rxpdo_prof.controlword = controlword;
 }
@@ -46,37 +36,9 @@ static void set_mode_of_operation(jsd_t* self, uint16_t slave_id,
                                   int8_t mode_of_operation) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
-  /*
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    state->rxpdo_cs.mode_of_operation = mode_of_operation;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    state->rxpdo_prof.mode_of_operation = mode_of_operation;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  */
   state->rxpdo_cs.mode_of_operation   = mode_of_operation;
   state->rxpdo_prof.mode_of_operation = mode_of_operation;
 }
-/*
-static int8_t get_mode_of_operation(jsd_t* self, uint16_t slave_id){
-  jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-
-  int8_t mop = 0;
-
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    mop = state->rxpdo_cs.mode_of_operation;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    mop = state->rxpdo_prof.mode_of_operation;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  return mop;
-
-}
-*/
 
 /****************************************************
  * Public functions
@@ -764,6 +726,41 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   uint32_t app_obj_config_word = 0x01 << (16 + 3);
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x2F41, 0x00,
                                   JSD_SDO_DATA_U32, &app_obj_config_word)) {
+    return 0;
+  }
+
+  // Check that the drive supports PROF_POS mode
+  // It's not 100% clear what the mode of operation should be set to when 
+  //   advancing through the EGD state machine before ENABLE_OPERATION state is reached 
+  //   since DISABLED cananot be set by application. 
+  // When only velocity or current loops are tuned for a given drive, the PROF_POS mode
+  //   cannot be used and the drive will through an error.  
+  // In this version of JSD, we'll enforce that a position loop is tuned and check
+  //   it here. In future versions we may not need this requirement on current-only or 
+  //   velocity-only drives. 
+  uint32_t supported_drive_modes;
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, 0x6502, 18, JSD_SDO_DATA_U32,
+          (void*)&supported_drive_modes)) {
+    ERROR("EGD[%d] Could not read SDO 0x6502 Supported Drive Modes", slave_id);
+    return 0;
+  }
+
+  bool prof_pos_sup    = (supported_drive_modes & 0x01);
+  bool prof_vel_sup    = (supported_drive_modes & (0x01 << 2));
+  bool prof_torque_sup = (supported_drive_modes & (0x01 << 3));
+  bool prof_csp_sup    = (supported_drive_modes & (0x01 << 7));
+  bool prof_csv_sup    = (supported_drive_modes & (0x01 << 8));
+  bool prof_cst_sup    = (supported_drive_modes & (0x01 << 9));
+
+  if(!prof_pos_sup) {
+    ERROR("EGD[%d] does not support PROF_POS mode. A valid position controller must be tuned before use", 
+        slave_id);
+    MSG("EGD[%d] drive mode PROF_POS: %s",    slave_id, (prof_pos_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_VEL: %s",    slave_id, (prof_vel_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_TORQUE: %s", slave_id, (prof_torque_sup ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CSP: %s",    slave_id, (prof_csp_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CSV: %s",    slave_id, (prof_csv_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CST: %s",    slave_id, (prof_cst_sup    ? "Supported" : "Unsupported"));
     return 0;
   }
 
