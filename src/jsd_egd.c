@@ -856,9 +856,14 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
 int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
                               jsd_slave_config_t* config) {
+
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id,
                                   jsd_egd_tlc_to_do("AC"), 1, JSD_SDO_DATA_U32,
                                   (void*)&config->egd.max_profile_accel)) {
+    ERROR("EGD[%d] failed to set AC to %u. AC may have a "
+          " minimum permissible profile around 10 counts, try a higher accel!",
+          slave_id, config->egd.max_profile_accel);
+
     return 0;
   }
 
