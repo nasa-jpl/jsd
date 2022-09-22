@@ -309,6 +309,7 @@ typedef struct {
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
   uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits TODO test
   uint8_t in_motion;       ///< if motor is in motion
+  uint8_t servo_enabled;   ///< servo enabled, indicates actual brake status
   uint8_t warning;         ///< from statusword (SW), bit 7
   uint8_t target_reached;  ///< from SW, bit 10 mode dependent
   uint8_t motor_on;        ///< from SW, indicates brake and drive status
@@ -407,7 +408,6 @@ typedef struct {
 
   // Fields parsed data from txpdo data
   uint8_t interlock;  ///< from DINs !(STO status) (firmware >= V1.1.10.7 B00)!
-  uint8_t servo_enabled;               ///< from SR, of limited use
   uint8_t fault_occured_when_enabled;  ///< from SR, of limited use
 
   // Async SDO state

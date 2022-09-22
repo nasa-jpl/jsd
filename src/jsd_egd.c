@@ -1201,7 +1201,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
       state->txpdo.statusword >> 10 & 0x01;  // MAGIC TODO
 
   // Status Register states
-  state->servo_enabled =
+  state->pub.servo_enabled =
       state->txpdo.status_register >> 4 & 0x01;  // MAGIC TODO
   state->fault_occured_when_enabled =
       state->txpdo.status_register >> 6 & 0x01;  // MAGIC TODO
