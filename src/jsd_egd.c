@@ -561,7 +561,7 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   config->PO2SO_success      = false;  // only set true in PO2SO callback
 
   // Disables Complete Access (CA) in EGD devices
-  // This was needed to make PDO mapping work TODO revisit why
+  // This was needed to make PDO mapping work
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
   slave->PO2SOconfigx = jsd_egd_PO2SO_config;

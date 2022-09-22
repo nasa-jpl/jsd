@@ -79,7 +79,6 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
   self->slave_configs[slave_id] = slave_config;
 }
 
-// TODO check more of these return status to ensure clean initialization
 bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
@@ -116,7 +115,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     return false;
   }
   // Print the IOMap input and output pointers for debugging
-  // TODO remove when mature
   int sid;
   for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
     MSG_DEBUG(
@@ -146,7 +144,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   ecx_configdc(&self->ecx_context);
 
   // Read individual slave state and store in self->ecx_context.slavelist[]
-  // TODO Why?
   ecx_readstate(&self->ecx_context);
 
   self->expected_wkc = (self->ecx_context.grouplist[0].outputsWKC * 2) +

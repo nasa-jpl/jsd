@@ -307,7 +307,7 @@ typedef struct {
   bool                          async_sdo_in_prog;
 
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
-  uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits TODO test
+  uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits
   uint8_t in_motion;       ///< if motor is in motion
   uint8_t servo_enabled;   ///< servo enabled, indicates actual brake status
   uint8_t warning;         ///< from statusword (SW), bit 7
