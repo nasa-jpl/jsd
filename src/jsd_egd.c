@@ -1196,23 +1196,23 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   }
   state->last_actual_mode_of_operation = state->pub.actual_mode_of_operation;
 
-  state->pub.warning = state->txpdo.statusword >> 7 & 0x01;  // MAGIC TODO
+  state->pub.warning = state->txpdo.statusword >> 7 & 0x01;
   state->pub.target_reached =
-      state->txpdo.statusword >> 10 & 0x01;  // MAGIC TODO
+      state->txpdo.statusword >> 10 & 0x01;
 
   // Status Register states
   state->pub.servo_enabled =
-      state->txpdo.status_register >> 4 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 4 & 0x01;
   state->fault_occured_when_enabled =
-      state->txpdo.status_register >> 6 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 6 & 0x01;
   state->pub.sto_engaged =
-      !(state->txpdo.status_register >> 14 & 0x01);  // TODO
+      !(state->txpdo.status_register >> 14 & 0x01);
   state->pub.motor_on =
-      state->txpdo.status_register >> 22 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 22 & 0x01;
   state->pub.in_motion =
-      state->txpdo.status_register >> 23 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 23 & 0x01;
   state->pub.hall_state =
-      state->txpdo.status_register >> 24 & 0x07;  // TODO test me
+      state->txpdo.status_register >> 24 & 0x07;
 
   // STO status from status register with smart printing
   if (state->last_sto_engaged != state->pub.sto_engaged) {
@@ -1225,7 +1225,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->last_sto_engaged = state->pub.sto_engaged;
 
   // Digital Inputs
-  state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;  // MAGIC TODO
+  state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;
   int i;
   for (i = 0; i < JSD_EGD_NUM_DIGITAL_INPUTS; ++i) {
     state->pub.digital_inputs[i] =
