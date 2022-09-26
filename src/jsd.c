@@ -86,7 +86,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   if (ecx_init(&self->ecx_context, ifname) <= 0) {
     ERROR("Unable to establish socket connection on %s", ifname);
-    if(geteuid() == 0) {
+    if (geteuid() == 0) {
       ERROR("Is the device on and connected?");
     } else {
       ERROR("Execute as root");
@@ -385,13 +385,13 @@ char* jsd_ec_state_to_string(ec_state state) {
  * Private functions
  ****************************************************/
 
-double jsd_get_time_sec() {
+static double jsd_get_time_sec() {
   struct timespec ts;
   clock_gettime(CLOCK_MONOTONIC, &ts);
   return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
 }
 
-bool jsd_init_all_devices(jsd_t* self) {
+static bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
 
   uint16_t num_found_slaves = *(self->ecx_context.slavecount);
@@ -437,7 +437,7 @@ bool jsd_init_all_devices(jsd_t* self) {
   return true;
 }
 
-bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
+static bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
   assert(self);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -508,7 +508,7 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-void jsd_ecatcheck(jsd_t* self) {
+static void jsd_ecatcheck(jsd_t* self) {
   uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   int     slave;
 

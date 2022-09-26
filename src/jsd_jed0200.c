@@ -9,9 +9,11 @@
  * Public functions
  ****************************************************/
 
-const jsd_jed0200_state_t* jsd_jed0200_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_jed0200_state_t* jsd_jed0200_get_state(jsd_t*   self,
+                                                 uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0200_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_JED0200_PRODUCT_CODE);
 
   jsd_jed0200_state_t* state = &self->slave_states[slave_id].jed0200;
   return state;
@@ -19,36 +21,39 @@ const jsd_jed0200_state_t* jsd_jed0200_get_state(jsd_t* self, uint16_t slave_id)
 
 void jsd_jed0200_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0200_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_JED0200_PRODUCT_CODE);
 
   jsd_jed0200_state_t* state = &self->slave_states[slave_id].jed0200;
-  state->cmd             = cmd;
+  state->cmd                 = cmd;
 }
 
 void jsd_jed0200_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0200_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_JED0200_PRODUCT_CODE);
 
   jsd_jed0200_state_t* state = &self->slave_states[slave_id].jed0200;
   jsd_jed0200_txpdo_t* txpdo =
       (jsd_jed0200_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
-  state->status = txpdo->status;
-  state->ticks = txpdo->ticks;
-  state->voltage_hv = txpdo->voltage_hv;
-  state->voltage_lv = txpdo->voltage_lv;
-  state->voltage_12v = txpdo->voltage_12v;
-  state->temp_ambient = txpdo->temp_ambient;
+  state->status        = txpdo->status;
+  state->ticks         = txpdo->ticks;
+  state->voltage_hv    = txpdo->voltage_hv;
+  state->voltage_lv    = txpdo->voltage_lv;
+  state->voltage_12v   = txpdo->voltage_12v;
+  state->temp_ambient  = txpdo->temp_ambient;
   state->temp_actuator = txpdo->temp_actuator;
-  state->humidity = txpdo->humidity;
-  state->pressure = txpdo->pressure;
+  state->humidity      = txpdo->humidity;
+  state->pressure      = txpdo->pressure;
   state->brake_current = txpdo->brake_current;
-  state->brake_cc_val = txpdo->brake_cc_val;
+  state->brake_cc_val  = txpdo->brake_cc_val;
 }
 
 void jsd_jed0200_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0200_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_JED0200_PRODUCT_CODE);
 
   jsd_jed0200_state_t* state = &self->slave_states[slave_id].jed0200;
   jsd_jed0200_rxpdo_t* rxpdo =
@@ -63,9 +68,10 @@ void jsd_jed0200_process(jsd_t* self, uint16_t slave_id) {
  * Private functions
  ****************************************************/
 
-bool jsd_jed0200_init(jsd_t* self, uint16_t slave_id) {
+static bool jsd_jed0200_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0200_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_JED0200_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_JPL_VENDOR_ID);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -77,12 +83,13 @@ bool jsd_jed0200_init(jsd_t* self, uint16_t slave_id) {
   config->PO2SO_success = false;  // only set true in PO2SO callback
 
   jsd_jed0200_state_t* state = &self->slave_states[slave_id].jed0200;
-  state->cmd             = config->jed0200.initial_cmd;
+  state->cmd                 = config->jed0200.initial_cmd;
 
   return true;
 }
 
-int jsd_jed0200_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+static int jsd_jed0200_PO2SO_config(ecx_contextt* ecx_context,
+                                    uint16_t      slave_id) {
   jsd_slave_config_t* slave_configs =
       (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];

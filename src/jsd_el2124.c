@@ -66,7 +66,7 @@ void jsd_el2124_write_all_channels(jsd_t* self, uint16_t slave_id,
  * Private functions
  ****************************************************/
 
-bool jsd_el2124_init(jsd_t* self, uint16_t slave_id) {
+static bool jsd_el2124_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL2124_PRODUCT_CODE);

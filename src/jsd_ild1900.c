@@ -38,12 +38,12 @@ void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
 
   const jsd_ild1900_config_t* config = &self->slave_configs[slave_id].ild1900;
 
-  state->timestamp_us            = txpdo->timestamp;
-  state->counter                 = txpdo->counter;
-  state->sensor_status           = txpdo->sensor_status;
-  state->distance_raw            = txpdo->peak_distance;
-  state->intensity               = (100 * txpdo->intensity_raw) / 1023.0;
-  state->distance_m = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
+  state->timestamp_us  = txpdo->timestamp;
+  state->counter       = txpdo->counter;
+  state->sensor_status = txpdo->sensor_status;
+  state->distance_raw  = txpdo->peak_distance;
+  state->intensity     = (100 * txpdo->intensity_raw) / 1023.0;
+  state->distance_m    = ((int32_t)txpdo->peak_distance - 98232) / 65536.0 *
                           JSD_ILD1900_MR_MAP[config->model] +
                       JSD_ILD1900_SMR_MAP[config->model];
 
@@ -87,7 +87,7 @@ void jsd_ild1900_process(jsd_t* self, uint16_t slave_id) {
  ****************************************************/
 
 // Determines whether a given number is a power of 2.
-bool is_power2(uint32_t n) {
+static bool is_power2(uint32_t n) {
   // If only one of the bits in the integer is set, it is a power of 2.
   uint32_t num_bits = 0;
   while (n) {
@@ -101,7 +101,7 @@ bool is_power2(uint32_t n) {
   }
 }
 
-bool jsd_ild1900_init(jsd_t* self, uint16_t slave_id) {
+static bool jsd_ild1900_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_ILD1900_PRODUCT_CODE);
@@ -116,7 +116,8 @@ bool jsd_ild1900_init(jsd_t* self, uint16_t slave_id) {
   return true;
 }
 
-int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+static int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context,
+                                    uint16_t      slave_id) {
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_ILD1900_PRODUCT_CODE);
 
@@ -152,8 +153,8 @@ int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   return true;
 }
 
-bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
-                                    uint16_t      slave_id) {
+static bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
+                                           uint16_t      slave_id) {
   MSG_DEBUG("Attempting to map custom ILD1900 PDO...");
 
   /*
@@ -211,9 +212,9 @@ bool jsd_ild1900_config_PDO_mapping(ecx_contextt* ecx_context,
   return true;
 }
 
-bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
-                                    uint16_t            slave_id,
-                                    jsd_slave_config_t* config) {
+static bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
+                                           uint16_t            slave_id,
+                                           jsd_slave_config_t* config) {
   // Set laser power to Full for active operation. See Operating Instructions
   // optoNCDT 1900-IE EtherCAT section 7.3.
   uint8_t laser_power = 1;
