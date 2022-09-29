@@ -88,7 +88,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
 
   switch (data_type) {
     case JSD_SDO_DATA_I8:
-      MSG("Slave[%d] %s 0x%X:%d (I8 ) = %d", slave_id, verb, index, subindex,
+      MSG("Slave[%d] %s 0x%X:%d (I8)  = %d", slave_id, verb, index, subindex,
           data.as_i8);
       break;
 
@@ -103,7 +103,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
       break;
 
     case JSD_SDO_DATA_I64:
-      MSG("Slave[%d] %s 0x%X:%d (I32) = %ld", slave_id, verb, index, subindex,
+      MSG("Slave[%d] %s 0x%X:%d (I64) = %ld", slave_id, verb, index, subindex,
           data.as_i64);
       break;
 
@@ -113,7 +113,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
       break;
 
     case JSD_SDO_DATA_U8:
-      MSG("Slave[%d] %s 0x%X:%d (U8 ) = %u", slave_id, verb, index, subindex,
+      MSG("Slave[%d] %s 0x%X:%d (U8)  = %u", slave_id, verb, index, subindex,
           data.as_u8);
       break;
 
@@ -128,7 +128,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
       break;
 
     case JSD_SDO_DATA_U64:
-      MSG("Slave[%d] %s 0x%X:%d (U32) = %lu", slave_id, verb, index, subindex,
+      MSG("Slave[%d] %s 0x%X:%d (U64) = %lu", slave_id, verb, index, subindex,
           data.as_u64);
       break;
 
