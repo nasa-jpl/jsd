@@ -739,7 +739,7 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   //   it here. In future versions we may not need this requirement on current-only or 
   //   velocity-only drives. 
   uint32_t supported_drive_modes;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, 0x6502, 18, JSD_SDO_DATA_U32,
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, 0x6502, 0, JSD_SDO_DATA_U32,
           (void*)&supported_drive_modes)) {
     ERROR("EGD[%d] Could not read SDO 0x6502 Supported Drive Modes", slave_id);
     return 0;
