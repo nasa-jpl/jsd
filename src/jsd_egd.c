@@ -1314,7 +1314,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave,
               jsd_egd_fault_code_to_string(
                   jsd_egd_get_fault_code_from_ec_error(error)));
-        state->pub.fault_code = error.ErrorCode;
+        state->pub.fault_code = jsd_egd_get_fault_code_from_ec_error(error);
       }
 
       set_controlword(self, slave_id,
