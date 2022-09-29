@@ -12,16 +12,6 @@ static void set_controlword(jsd_t* self, uint16_t slave_id,
                             uint16_t controlword) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
-  /*
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    state->rxpdo_cs.controlword = controlword;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    state->rxpdo_prof.controlword = controlword;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  */
   state->rxpdo_cs.controlword   = controlword;
   state->rxpdo_prof.controlword = controlword;
 }
@@ -46,37 +36,9 @@ static void set_mode_of_operation(jsd_t* self, uint16_t slave_id,
                                   int8_t mode_of_operation) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
 
-  /*
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    state->rxpdo_cs.mode_of_operation = mode_of_operation;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    state->rxpdo_prof.mode_of_operation = mode_of_operation;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  */
   state->rxpdo_cs.mode_of_operation   = mode_of_operation;
   state->rxpdo_prof.mode_of_operation = mode_of_operation;
 }
-/*
-static int8_t get_mode_of_operation(jsd_t* self, uint16_t slave_id){
-  jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-
-  int8_t mop = 0;
-
-  if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
-    mop = state->rxpdo_cs.mode_of_operation;
-  } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
-    mop = state->rxpdo_prof.mode_of_operation;
-  } else {
-    ERROR("Bad Drive Cmd mode: %d", config->egd.drive_cmd_mode);
-  }
-  return mop;
-
-}
-*/
 
 /****************************************************
  * Public functions
@@ -599,7 +561,7 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   config->PO2SO_success      = false;  // only set true in PO2SO callback
 
   // Disables Complete Access (CA) in EGD devices
-  // This was needed to make PDO mapping work TODO revisit why
+  // This was needed to make PDO mapping work
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
   slave->PO2SOconfigx = jsd_egd_PO2SO_config;
@@ -767,6 +729,41 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
+  // Check that the drive supports PROF_POS mode
+  // It's not 100% clear what the mode of operation should be set to when 
+  //   advancing through the EGD state machine before ENABLE_OPERATION state is reached 
+  //   since DISABLED cananot be set by application. 
+  // When only velocity or current loops are tuned for a given drive, the PROF_POS mode
+  //   cannot be used and the drive will through an error.  
+  // In this version of JSD, we'll enforce that a position loop is tuned and check
+  //   it here. In future versions we may not need this requirement on current-only or 
+  //   velocity-only drives. 
+  uint32_t supported_drive_modes;
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, 0x6502, 0, JSD_SDO_DATA_U32,
+          (void*)&supported_drive_modes)) {
+    ERROR("EGD[%d] Could not read SDO 0x6502 Supported Drive Modes", slave_id);
+    return 0;
+  }
+
+  bool prof_pos_sup    = (supported_drive_modes & 0x01);
+  bool prof_vel_sup    = (supported_drive_modes & (0x01 << 2));
+  bool prof_torque_sup = (supported_drive_modes & (0x01 << 3));
+  bool prof_csp_sup    = (supported_drive_modes & (0x01 << 7));
+  bool prof_csv_sup    = (supported_drive_modes & (0x01 << 8));
+  bool prof_cst_sup    = (supported_drive_modes & (0x01 << 9));
+
+  if(!prof_pos_sup) {
+    ERROR("EGD[%d] does not support PROF_POS mode. A valid position controller must be tuned before use", 
+        slave_id);
+    MSG("EGD[%d] drive mode PROF_POS: %s",    slave_id, (prof_pos_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_VEL: %s",    slave_id, (prof_vel_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_TORQUE: %s", slave_id, (prof_torque_sup ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CSP: %s",    slave_id, (prof_csp_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CSV: %s",    slave_id, (prof_csv_sup    ? "Supported" : "Unsupported"));
+    MSG("EGD[%d] drive mode PROF_CST: %s",    slave_id, (prof_cst_sup    ? "Supported" : "Unsupported"));
+    return 0;
+  }
+
   // by default, put drive in PROF_POS mode
   int8_t ctrl_word = JSD_EGD_MODE_OF_OPERATION_PROF_POS;
 
@@ -856,9 +853,14 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
 int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
                               jsd_slave_config_t* config) {
+
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id,
                                   jsd_egd_tlc_to_do("AC"), 1, JSD_SDO_DATA_U32,
                                   (void*)&config->egd.max_profile_accel)) {
+    ERROR("EGD[%d] failed to set AC to %u. AC may have a "
+          " minimum permissible profile around 10 counts, try a higher accel!",
+          slave_id, config->egd.max_profile_accel);
+
     return 0;
   }
 
@@ -1194,23 +1196,23 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   }
   state->last_actual_mode_of_operation = state->pub.actual_mode_of_operation;
 
-  state->pub.warning = state->txpdo.statusword >> 7 & 0x01;  // MAGIC TODO
+  state->pub.warning = state->txpdo.statusword >> 7 & 0x01;
   state->pub.target_reached =
-      state->txpdo.statusword >> 10 & 0x01;  // MAGIC TODO
+      state->txpdo.statusword >> 10 & 0x01;
 
   // Status Register states
-  state->servo_enabled =
-      state->txpdo.status_register >> 4 & 0x01;  // MAGIC TODO
+  state->pub.servo_enabled =
+      state->txpdo.status_register >> 4 & 0x01;
   state->fault_occured_when_enabled =
-      state->txpdo.status_register >> 6 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 6 & 0x01;
   state->pub.sto_engaged =
-      !(state->txpdo.status_register >> 14 & 0x01);  // TODO
+      !(state->txpdo.status_register >> 14 & 0x01);
   state->pub.motor_on =
-      state->txpdo.status_register >> 22 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 22 & 0x01;
   state->pub.in_motion =
-      state->txpdo.status_register >> 23 & 0x01;  // MAGIC TODO
+      state->txpdo.status_register >> 23 & 0x01;
   state->pub.hall_state =
-      state->txpdo.status_register >> 24 & 0x07;  // TODO test me
+      state->txpdo.status_register >> 24 & 0x07;
 
   // STO status from status register with smart printing
   if (state->last_sto_engaged != state->pub.sto_engaged) {
@@ -1223,7 +1225,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->last_sto_engaged = state->pub.sto_engaged;
 
   // Digital Inputs
-  state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;  // MAGIC TODO
+  state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;
   int i;
   for (i = 0; i < JSD_EGD_NUM_DIGITAL_INPUTS; ++i) {
     state->pub.digital_inputs[i] =
