@@ -196,15 +196,15 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     }
   }
 
-  if (0 !=
-      pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
+  // Initialize the sdo request/response queues and start background SDO thread
+  jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq, "Request Queue");
+  jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
+
+  // Make sure to only start this after the PO2OP hooks have completed
+  if (0 != pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
     ERROR("Failed to create SDO thread");
     return false;
   }
-
-  // Initialize the sdo request/response queues
-  jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq, "Request Queue");
-  jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
 
   SUCCESS("JSD is Operational");
 
@@ -255,32 +255,10 @@ void jsd_read(jsd_t* self, int timeout_us) {
     self->attempt_manual_recovery = 0;
   }
 
-  // Need to perform a read to get EMCY error updates
-  ec_mbxbuft MbxIn;
-  ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 0);
-  // If there is an EMCY error, handle it
-  if (ecx_iserror(&self->ecx_context)) {
-    ec_errort error;
-    ecx_poperror(&self->ecx_context, &error);
+  // we need to wake up the SDO thread to have it check for EMCY 
+  // errors
+  pthread_cond_signal(&self->sdo_thread_cond);
 
-    char fault_string[JSD_NAME_LEN];
-    switch (self->ecx_context.slavelist[error.Slave].eep_id) {
-      case JSD_EGD_PRODUCT_CODE: {
-        self->slave_states[error.Slave].egd.pub.fault_code =
-            jsd_egd_get_fault_code_from_ec_error(error);
-        snprintf(fault_string, JSD_NAME_LEN, "%s (0x%x)",
-                 jsd_egd_fault_code_to_string(
-                     self->slave_states[error.Slave].egd.pub.fault_code),
-                 error.ErrorCode);
-        break;
-      }
-      default:
-        snprintf(fault_string, JSD_NAME_LEN, "Unknown Fault (0x%x)",
-                 error.ErrorCode);
-        break;
-    }
-    ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave, fault_string);
-  }
 }
 
 void jsd_write(jsd_t* self) {

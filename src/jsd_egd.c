@@ -1192,9 +1192,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
-
-  ec_mbxbuft               MbxIn;
-  ec_errort                error;
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
 
@@ -1253,15 +1250,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       break;
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
-
-      ecx_mbxreceive(&self->ecx_context, slave_id, (ec_mbxbuft*)&MbxIn, 0);
-      if (ecx_iserror(&self->ecx_context)) {
-        ecx_poperror(&self->ecx_context, &error);
-        ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave,
-              jsd_egd_fault_code_to_string(
-                  jsd_egd_get_fault_code_from_ec_error(error)));
-        state->pub.fault_code = jsd_egd_get_fault_code_from_ec_error(error);
-      }
 
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);

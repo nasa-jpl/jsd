@@ -147,9 +147,24 @@ void* sdo_thread_loop(void* void_data) {
     pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
 
     while (queue_is_empty(&self->jsd_sdo_req_cirq)) {
+
       pthread_cond_wait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex);
+
       if (self->sdo_join_flag) {
+        pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
         return NULL;
+      }
+
+      //// Need to perform a read to get EMCY error updates
+      // TODO unsure if we need to do this or not
+      //ec_mbxbuft MbxIn;
+      //ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 0);
+      while (ecx_iserror(&self->ecx_context)) {
+        ec_errort err;
+        ecx_poperror(&self->ecx_context, &err);
+        ERROR("%s", ecx_err2string(err));
+        // TODO push it onto a protected JSD elist... ugh
+        // could adding another lock here result in deadlock?
       }
     }
 
