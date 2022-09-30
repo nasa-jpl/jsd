@@ -157,12 +157,19 @@ void* sdo_thread_loop(void* void_data) {
 
       //// Need to perform a read to get EMCY error updates
       // TODO unsure if we need to do this or not
-      //ec_mbxbuft MbxIn;
-      //ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 0);
+      ec_mbxbuft MbxIn;
+      ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 1000);
       while (ecx_iserror(&self->ecx_context)) {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
-        ERROR("%s", ecx_err2string(err));
+        char* err_str = ecx_err2string(err);
+
+        size_t len = strlen(err_str);
+        if(err_str[len-1] == '\n'){
+          err_str[len-1] = '\0';
+        }
+
+        ERROR("%s", err_str);
         // TODO push it onto a protected JSD elist... ugh
         // could adding another lock here result in deadlock?
       }
