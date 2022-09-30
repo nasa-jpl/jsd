@@ -69,14 +69,6 @@ void jsd_egd_read_PDO_data(jsd_t* self, uint16_t slave_id);
 void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id);
 
 /**
- * @brief Read this slave's async SDO response queue
- *
- * @param self pointer JSD context
- * @param slave_id index of device on EtherCAT bus
- */
-void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id);
-
-/**
  * @brief Parses RxPDO data to more useful state fields
  *
  * Should be called after jsd_egd_exchange_PDO_data

@@ -12,6 +12,7 @@ uint8_t                           slave_id;
 uint8_t                           first_command = 1;
 double                            command_time;
 jsd_egd_motion_command_prof_pos_t prof_pos_cmd;
+uint16_t                          sdo_app_id = 0;
 
 void telemetry_header() {
   if (!file) {
@@ -135,10 +136,10 @@ void command(void* self) {
     float value = 1.0 + cmd_cnt / 100000.0;
 
     jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_egd_tlc_to_do("PL"), 2,
-                            JSD_SDO_DATA_FLOAT, (void*)&value);
+                            JSD_SDO_DATA_FLOAT, (void*)&value, sdo_app_id++);
 
     jsd_sdo_get_param_async(sds->jsd, slave_id, jsd_egd_tlc_to_do("PL"), 2,
-                            JSD_SDO_DATA_FLOAT);
+                            JSD_SDO_DATA_FLOAT, sdo_app_id++);
   }
   cmd_cnt++;
 }

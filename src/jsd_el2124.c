@@ -41,8 +41,6 @@ void jsd_el2124_process(jsd_t* self, uint16_t slave_id) {
       rxpdo->flags &= ~(0x01 << ch);
     }
   }
-
-  jsd_async_sdo_process_response(self, slave_id);
 }
 
 void jsd_el2124_write_single_channel(jsd_t* self, uint16_t slave_id,
