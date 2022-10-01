@@ -155,11 +155,13 @@ void* sdo_thread_loop(void* void_data) {
         return NULL;
       }
 
-      //// Need to perform a read to get EMCY error updates
-      // TODO unsure if we need to do this or not
       ec_mbxbuft MbxIn;
-      ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 1000);
-      while (ecx_iserror(&self->ecx_context)) {
+      int sid;
+      for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+        ecx_mbxreceive(&self->ecx_context, sid, &MbxIn, 0);
+      }
+
+      while(ecx_iserror(&self->ecx_context)) {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
         char* err_str = ecx_err2string(err);

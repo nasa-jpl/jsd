@@ -1202,10 +1202,12 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_EGD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
+      // to READY_TO_SWITCH_ON
       break;
     case JSD_EGD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SWITCH_ON);
+      // to SWITCHED_ON
       break;
     case JSD_EGD_STATE_MACHINE_STATE_SWITCHED_ON:
       // STO drops us here
@@ -1219,12 +1221,15 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
         set_mode_of_operation(self, slave_id, 
           state->requested_mode_of_operation);
+
+        state->new_reset = false;
       }
       break;
     case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
       // Handle halt
       if (state->new_halt_command){
+        state->new_reset = false;
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
         set_controlword(self, slave_id, cw);
@@ -1251,15 +1256,17 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
 
+      state->new_reset = false;
       set_controlword(self, slave_id,
-                      JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
+                    JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
+      // to SWITCHED_ON_DISABLED
+
       break;
     default:
       ERROR("EGD[%d] Unknown State Machine State: 0x%x", slave_id,
             state->pub.actual_state_machine_state);
   }
 
-  state->new_reset          = false;
   state->new_motion_command = false;
   state->new_halt_command   = false;
 }

@@ -284,8 +284,15 @@ void jsd_free(jsd_t* self) {
 
   self->sdo_join_flag = true;
   pthread_cond_signal(&self->sdo_thread_cond);
+
   MSG("Waiting for SDO Thread to join...");
-  pthread_join(self->sdo_thread, NULL);
+
+  // The following loop should be more robust than just 
+  //   a pthread_join blocking wait
+  while(0 != pthread_tryjoin_np(self->sdo_thread, NULL)) {
+    self->sdo_join_flag = true;
+    pthread_cond_signal(&self->sdo_thread_cond);
+  }
 
   MSG_DEBUG("Closing SOEM socket connection...");
   ecx_close(&self->ecx_context);

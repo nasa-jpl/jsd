@@ -235,39 +235,6 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
     return false;
   }
 
-  // Turn off zeroing/mastering function.
-  //  uint8_t mastering_set = 0;
-  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3450, 0x04,
-  //                                  JSD_SDO_DATA_U8, (void*)&mastering_set)) {
-  //    if (ecx_iserror(ecx_context)) {
-  //      ec_errort error;
-  //      while (ecx_poperror(ecx_context, &error)) {
-  //        if (ecx_context->slavelist[error.Slave].eep_id ==
-  //        JSD_ILD1900_PRODUCT_CODE && error.Etype == EC_ERR_TYPE_SDO_ERROR) {
-  //          MSG("SDO abort code %x", error.AbortCode);
-  //        }
-  //      }
-  //    }
-  //    return false;
-  //  }
-  //  MSG("Zeroing/Mastering Set/Reset: %u", mastering_set);
-  //  float mastering_value = 0;
-  //  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3450, 0x05,
-  //                                  JSD_SDO_DATA_FLOAT,
-  //                                  (void*)&mastering_value)) {
-  //  if (ecx_iserror(ecx_context)) {
-  //    ec_errort error;
-  //    while (ecx_poperror(ecx_context, &error)) {
-  //      if (ecx_context->slavelist[error.Slave].eep_id ==
-  //      JSD_ILD1900_PRODUCT_CODE && error.Etype == EC_ERR_TYPE_SDO_ERROR) {
-  //        MSG("SDO abort code %x", error.AbortCode);
-  //      }
-  //    }
-  //  }
-  //    return false;
-  //  }
-  //  MSG("Zeroing/Mastering value: %f", mastering_value);
-
   // Set the measuring rate.
   if (config->ild1900.measuring_rate > 10000.0) {
     ERROR("ILD1900 slave %u's measuring rate %lf must be less than 10,000 Hz.",

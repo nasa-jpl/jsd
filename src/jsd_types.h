@@ -5,6 +5,7 @@
 extern "C" {
 #endif
 
+#define _GNU_SOURCE 
 #include <pthread.h>
 #include <stdbool.h>
 
