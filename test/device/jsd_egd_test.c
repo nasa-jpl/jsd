@@ -13,6 +13,7 @@ uint8_t                           first_command = 1;
 double                            command_time;
 jsd_egd_motion_command_prof_pos_t prof_pos_cmd;
 uint16_t                          sdo_app_id = 0;
+jsd_egd_fault_code_t              last_fault_code = 0;
 
 void telemetry_header() {
   if (!file) {
@@ -108,6 +109,13 @@ void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_egd_read(sds->jsd, slave_id);
   jsd_egd_process(sds->jsd, slave_id);
+
+  const jsd_egd_state_t* state = jsd_egd_get_state(sds->jsd, slave_id);
+  if(state->fault_code != last_fault_code){
+      MSG("fault code change to : (%u) %s ", state->fault_code, 
+              jsd_egd_fault_code_to_string(state->fault_code));
+      last_fault_code = state->fault_code;
+  }
 }
 
 void command(void* self) {

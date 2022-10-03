@@ -142,13 +142,18 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
 
 void* sdo_thread_loop(void* void_data) {
   jsd_t* self = (jsd_t*)void_data;
+  unsigned int handled_errors = 0;
+  struct timespec ts;
 
   while (true) {
     pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
 
     while (queue_is_empty(&self->jsd_sdo_req_cirq)) {
 
-      pthread_cond_wait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex);
+      // wake up on async jsd conditional trigger for max responsiveness or at 1hz
+      clock_gettime(CLOCK_REALTIME, &ts);
+      ts.tv_sec += 1;
+      pthread_cond_timedwait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex, &ts);
 
       if (self->sdo_join_flag) {
         pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
@@ -161,7 +166,8 @@ void* sdo_thread_loop(void* void_data) {
         ecx_mbxreceive(&self->ecx_context, sid, &MbxIn, 0);
       }
 
-      while(ecx_iserror(&self->ecx_context)) {
+      handled_errors = 0;
+      while(ecx_iserror(&self->ecx_context) && (handled_errors++ < 50)) {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
         char* err_str = ecx_err2string(err);
@@ -374,4 +380,8 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   MSG("Slave[%d] Read 0x%X:%d register by Complete Access", slave_id, index,
       subindex);
   return true;
+}
+
+void jsd_sdo_signal_emcy_check(jsd_t* self){
+  self->raise_sdo_thread_cond = true;
 }

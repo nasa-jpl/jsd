@@ -1127,6 +1127,12 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
         jsd_egd_state_machine_state_to_string(
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
+
+    // promotes timely checking of the EMCY code
+    if(state->pub.actual_state_machine_state == JSD_EGD_STATE_MACHINE_STATE_FAULT){
+      jsd_sdo_signal_emcy_check(self);
+    }
+
   }
 
   state->last_state_machine_state = state->pub.actual_state_machine_state;
@@ -1257,6 +1263,10 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
 
       state->new_reset = false;
+
+      // Only transition once the EMCY code can be extracted from the
+      // error list TODO 
+      
       set_controlword(self, slave_id,
                     JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       // to SWITCHED_ON_DISABLED

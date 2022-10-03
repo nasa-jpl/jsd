@@ -5,7 +5,6 @@
 extern "C" {
 #endif
 
-#define _GNU_SOURCE 
 #include <pthread.h>
 #include <stdbool.h>
 
@@ -148,6 +147,7 @@ typedef struct {
   pthread_t          sdo_thread;
   pthread_cond_t     sdo_thread_cond;
   bool               sdo_join_flag;
+  bool               raise_sdo_thread_cond;
 
 
 } jsd_t;

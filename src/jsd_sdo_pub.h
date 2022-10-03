@@ -113,6 +113,20 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
                                    uint16_t index, uint8_t subindex,
                                    int* param_size_in_out, void* param_out);
 
+
+/** Signal the SDO process to wakeup and check for EMCY codes
+ *
+ * Trigger to wakeup the background SDO thread to check EMCY codes. 
+ * If this trigger is never called, the background SDO thread
+ * will wake up automatically at a 1hz loop rate. This function 
+ * promotes responsiveness of the EMCY code retrieval. 
+ *
+ * @param self the JSD context
+ * @return void
+ *
+ */
+void jsd_sdo_signal_emcy_check(jsd_t* self);
+
 #ifdef __cplusplus
 }
 #endif

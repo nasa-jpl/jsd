@@ -47,6 +47,7 @@ endforeach()
 
 remove_definitions(-DEC_VER1)
 add_definitions(-DEC_VER2)
+add_definitions(-D_GNU_SOURCE)
 
 include(FetchContent)
 FetchContent_Declare(soem

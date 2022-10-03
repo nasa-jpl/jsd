@@ -255,9 +255,10 @@ void jsd_read(jsd_t* self, int timeout_us) {
     self->attempt_manual_recovery = 0;
   }
 
-  // we need to wake up the SDO thread to have it check for EMCY 
-  // errors
-  pthread_cond_signal(&self->sdo_thread_cond);
+  if(self->raise_sdo_thread_cond){
+    pthread_cond_signal(&self->sdo_thread_cond);
+    self->raise_sdo_thread_cond = false;
+  }
 
 }
 
@@ -282,16 +283,23 @@ void jsd_free(jsd_t* self) {
     return;
   }
 
-  self->sdo_join_flag = true;
-  pthread_cond_signal(&self->sdo_thread_cond);
+  struct timespec ts;
 
+  self->sdo_join_flag = true;
   MSG("Waiting for SDO Thread to join...");
+  pthread_cond_signal(&self->sdo_thread_cond);
 
   // The following loop should be more robust than just 
   //   a pthread_join blocking wait
-  while(0 != pthread_tryjoin_np(self->sdo_thread, NULL)) {
+  while(true) {
     self->sdo_join_flag = true;
-    pthread_cond_signal(&self->sdo_thread_cond);
+
+    clock_gettime(CLOCK_REALTIME, &ts);
+    ts.tv_sec += 1;
+
+    if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
+      break;
+    }
   }
 
   MSG_DEBUG("Closing SOEM socket connection...");
