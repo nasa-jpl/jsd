@@ -52,6 +52,7 @@ static bool queue_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
   self->buffer[self->w % JSD_SDO_REQ_CIRQ_LEN] = req;
   self->w++;
   if ((self->w - self->r) > JSD_SDO_REQ_CIRQ_LEN) {
+    self->r++;
     WARNING("[%s] is overflowing: r=%u w=%u", self->name, self->r, self->w);
     status = false;
   }

@@ -205,10 +205,10 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     ERROR("Failed to create SDO thread");
     return false;
   }
+  self->init_complete = true;
 
   SUCCESS("JSD is Operational");
 
-  self->init_complete = true;
   return true;
 }
 
@@ -283,22 +283,24 @@ void jsd_free(jsd_t* self) {
     return;
   }
 
-  struct timespec ts;
+  if(self->init_complete){
+    struct timespec ts;
 
-  self->sdo_join_flag = true;
-  MSG("Waiting for SDO Thread to join...");
-  pthread_cond_signal(&self->sdo_thread_cond);
-
-  // The following loop should be more robust than just 
-  //   a pthread_join blocking wait
-  while(true) {
     self->sdo_join_flag = true;
+    MSG("Waiting for SDO Thread to join...");
+    pthread_cond_signal(&self->sdo_thread_cond);
 
-    clock_gettime(CLOCK_REALTIME, &ts);
-    ts.tv_sec += 1;
+    // The following loop should be more robust than just 
+    //   a pthread_join blocking wait
+    while(true) {
+      self->sdo_join_flag = true;
 
-    if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
-      break;
+      clock_gettime(CLOCK_REALTIME, &ts);
+      ts.tv_sec += 1;
+
+      if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
+        break;
+      }
     }
   }
 

@@ -24,6 +24,8 @@ extern "C" {
 #include "jsd/jsd_jed0101_types.h"
 #include "jsd/jsd_jed0200_types.h"
 
+#include "jsd/jsd_error_cirq.h"
+
 typedef struct {
   bool     configuration_active;
   uint32_t product_code;
@@ -115,6 +117,7 @@ typedef struct {
   int wkc;  // debugging
 } jsd_sdo_req_t;
 
+
 typedef struct {
   jsd_sdo_req_t   buffer[JSD_SDO_REQ_CIRQ_LEN];
   uint16_t        r;
@@ -132,6 +135,7 @@ typedef struct {
 typedef struct {
   jsd_slave_config_t slave_configs[EC_MAXSLAVE];
   jsd_slave_state_t  slave_states[EC_MAXSLAVE];
+  jsd_error_cirq_t   slave_errors[EC_MAXSLAVE];
 
   ecx_contextt ecx_context;              ///< stores SOEM context
   char         IOmap[JSD_IOMAP_BYTES];   ///< IOmap contains read data from bus
@@ -148,7 +152,6 @@ typedef struct {
   pthread_cond_t     sdo_thread_cond;
   bool               sdo_join_flag;
   bool               raise_sdo_thread_cond;
-
 
 } jsd_t;
 
