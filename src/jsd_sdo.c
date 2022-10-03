@@ -181,7 +181,10 @@ void* sdo_thread_loop(void* void_data) {
         ERROR("%s", err_str);
 
         // push it so it can be handled from main thread safety
-        jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
+        // TODO consider handling the other error types too
+        if(err.Etype == EC_ERR_TYPE_EMERGENCY){
+          jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
+        }
       }
     }
 

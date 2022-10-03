@@ -19,7 +19,7 @@ void jsd_error_cirq_init(jsd_error_cirq_t* self, const char* name){
 static ec_errort pop_error(jsd_error_cirq_t* self) {
   ec_errort new_error;
 
-  MSG_DEBUG("[%s] r=%u w=%u", self->name, self->r, self->w);
+  //MSG_DEBUG("[%s] r=%u w=%u", self->name, self->r, self->w);
   new_error = self->buffer[self->r % JSD_ERROR_CIRQ_LEN];
   self->r++;
 
