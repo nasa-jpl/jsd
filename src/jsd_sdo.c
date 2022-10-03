@@ -171,16 +171,17 @@ void* sdo_thread_loop(void* void_data) {
       while(ecx_iserror(&self->ecx_context) && (handled_errors++ < 50)) {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
-        char* err_str = ecx_err2string(err);
 
+        // print it!
+        char* err_str = ecx_err2string(err);
         size_t len = strlen(err_str);
         if(err_str[len-1] == '\n'){
           err_str[len-1] = '\0';
         }
-
         ERROR("%s", err_str);
-        // TODO push it onto a protected JSD elist... ugh
-        // could adding another lock here result in deadlock?
+
+        // push it so it can be handled from main thread safety
+        jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
       }
     }
 

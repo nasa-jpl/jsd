@@ -590,6 +590,9 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   }
   jsd_egd_set_peak_current(self, slave_id, config->egd.peak_current_limit);
 
+  state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+  state->pub.emcy_error_code = 0;
+
   return true;
 }
 
@@ -1131,6 +1134,8 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
     // promotes timely checking of the EMCY code
     if(state->pub.actual_state_machine_state == JSD_EGD_STATE_MACHINE_STATE_FAULT){
       jsd_sdo_signal_emcy_check(self);
+      state->new_reset = false; // clear any potentially ongoing reset request
+      state->fault_time = jsd_get_time_sec();
     }
 
   }
@@ -1194,12 +1199,17 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   // drive temp
   state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
 }
+
+static double ectime_to_double(ec_timet t){
+  return (double)t.sec + (double)(t.usec)*1.0e6;
+}
+
 void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
+  jsd_error_cirq_t* error_cirq = &self->slave_errors[slave_id];
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
-  state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -1233,6 +1243,9 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
+      state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+      state->pub.emcy_error_code = 0;
+
       // Handle halt
       if (state->new_halt_command){
         state->new_reset = false;
@@ -1262,14 +1275,47 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
 
-      state->new_reset = false;
-
       // Only transition once the EMCY code can be extracted from the
-      // error list TODO 
-      
-      set_controlword(self, slave_id,
-                    JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
-      // to SWITCHED_ON_DISABLED
+      // error list
+      if(!jsd_error_cirq_is_empty(error_cirq)) {
+
+        ec_errort error = jsd_error_cirq_pop(error_cirq);
+
+        // printing here is redundant WRT the SDO thread but do it 
+        // to build confidence for now
+        char* err_str = ecx_err2string(error);
+        size_t len = strlen(err_str);
+        if(err_str[len-1] == '\n'){
+          err_str[len-1] = '\0';
+        }
+        ERROR("%s", err_str);
+
+        // if newer than the state-machine issued fault
+        if(ectime_to_double(error.Time) > state->fault_time){
+
+          // TODO consider handling the other error types too
+          if(error.Etype == EC_ERR_TYPE_EMERGENCY){
+            state->pub.emcy_error_code = error.ErrorCode;
+            state->pub.fault_code = 
+              jsd_egd_get_fault_code_from_ec_error(error);  
+
+            ERROR("EMCY: on slave id: %d, code: 0x%X, "
+              "jsd fault enum: %u, Description: %s", 
+              error.Slave,
+              state->pub.emcy_error_code,
+              state->pub.fault_code,
+              jsd_egd_fault_code_to_string(state->pub.fault_code));
+
+            MSG_DEBUG("egd[%d] EMCY handled, transition to SWITCHED_ON_DISABLED", 
+              error.Slave);
+
+            // to SWITCHED_ON_DISABLED
+            set_controlword(self, slave_id,
+                          JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
+
+          }
+        }
+      }
 
       break;
     default:

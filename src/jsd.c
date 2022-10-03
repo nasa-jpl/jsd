@@ -196,6 +196,13 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     }
   }
 
+  // Initialize the error queues used between threads
+  for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+    char qname[JSD_NAME_LEN];
+    snprintf(qname, JSD_NAME_LEN, "Slave %d error cirq", sid);
+    jsd_error_cirq_init(&self->slave_errors[sid], qname);
+  }
+
   // Initialize the sdo request/response queues and start background SDO thread
   jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq, "Request Queue");
   jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
