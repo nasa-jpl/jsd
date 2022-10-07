@@ -387,3 +387,23 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
 void jsd_sdo_signal_emcy_check(jsd_t* self){
   self->raise_sdo_thread_cond = true;
 }
+
+
+bool jsd_sdo_pop_response_queue(jsd_t* self, jsd_sdo_req_t* res) {
+  assert(self);
+  assert(res);
+
+  bool retval = false;
+  jsd_sdo_req_cirq_t* sdo_queue = &self->jsd_sdo_res_cirq;
+
+  pthread_mutex_lock(&sdo_queue->mutex);
+  if(!queue_is_empty(sdo_queue)){
+    jsd_sdo_req_t popped_res = queue_pop(sdo_queue);
+    memcpy(res, &popped_res, sizeof(popped_res));
+    retval = true;
+  }
+  pthread_mutex_unlock(&sdo_queue->mutex);
+
+  return retval;
+}
+

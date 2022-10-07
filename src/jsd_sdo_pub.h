@@ -127,6 +127,16 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
  */
 void jsd_sdo_signal_emcy_check(jsd_t* self);
 
+/** Pop the Async SDO response queue 
+ *
+ * @param self the JSD context
+ * @param response the SDO result of last read/write operation
+ *
+ *  return true if response is populated with a valid result.
+ */
+bool jsd_sdo_pop_response_queue(jsd_t* self, jsd_sdo_req_t* response);
+
+
 #ifdef __cplusplus
 }
 #endif

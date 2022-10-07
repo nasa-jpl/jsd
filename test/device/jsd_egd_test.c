@@ -35,7 +35,6 @@ void telemetry_header() {
 
   fprintf(file, "actual_state_machine_state, ");
   fprintf(file, "actual_mode_of_operation, ");
-  fprintf(file, "async_sdo_in_prog, ");
 
   fprintf(file, "sto_engaged, ");
   fprintf(file, "hall_state, ");
@@ -76,7 +75,6 @@ void telemetry_data(void* self) {
 
   fprintf(file, "%u, ", state->actual_state_machine_state);
   fprintf(file, "%u, ", state->actual_mode_of_operation);
-  fprintf(file, "%u, ", state->async_sdo_in_prog);
 
   fprintf(file, "%u, ", state->sto_engaged);
   fprintf(file, "%u, ", state->hall_state);

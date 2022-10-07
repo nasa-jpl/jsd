@@ -302,7 +302,6 @@ typedef struct {
 
   jsd_egd_state_machine_state_t actual_state_machine_state;
   jsd_egd_mode_of_operation_t   actual_mode_of_operation;
-  bool                          async_sdo_in_prog;
 
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
   uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits
