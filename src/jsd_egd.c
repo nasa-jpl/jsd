@@ -467,9 +467,6 @@ char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code) {
     case JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED:
       return "JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED";
       break;
-    case JSD_EGD_FAULT_SDO_ERROR:
-      return "JSD_EGD_FAULT_SDO_ERROR";
-      break;
     case JSD_EGD_FAULT_UNKNOWN:
       return "JSD_EGD_FAULT_UNKNOWN";
       break;
@@ -1283,12 +1280,12 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
         // printing here is redundant WRT the SDO thread but do it 
         // to build confidence for now
-        char* err_str = ecx_err2string(error);
-        size_t len = strlen(err_str);
-        if(err_str[len-1] == '\n'){
-          err_str[len-1] = '\0';
-        }
-        ERROR("%s", err_str);
+        //char* err_str = ecx_err2string(error);
+        //size_t len = strlen(err_str);
+        //if(err_str[len-1] == '\n'){
+        //  err_str[len-1] = '\0';
+        //}
+        //ERROR("%s", err_str);
 
         // if newer than the state-machine issued fault
         if(ectime_to_double(error.Time) > state->fault_time){
@@ -1299,14 +1296,14 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
             state->pub.fault_code = 
               jsd_egd_get_fault_code_from_ec_error(error);  
 
-            ERROR("EMCY: on slave id: %d, code: 0x%X, "
+            ERROR("EGD[%d] EMCY code: 0x%X, "
               "jsd fault enum: %u, Description: %s", 
               error.Slave,
               state->pub.emcy_error_code,
               state->pub.fault_code,
               jsd_egd_fault_code_to_string(state->pub.fault_code));
 
-            MSG_DEBUG("egd[%d] EMCY handled, transition to SWITCHED_ON_DISABLED", 
+            MSG_DEBUG("EGD[%d] EMCY handled, transition to SWITCHED_ON_DISABLED", 
               error.Slave);
 
             // to SWITCHED_ON_DISABLED
@@ -1315,6 +1312,19 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
           }
         }
+      } else if(jsd_get_time_sec() > (1.0 + state->fault_time) &&
+              state->pub.fault_code != JSD_EGD_FAULT_UNKNOWN)
+      {
+        // If we've been waiting for a long duration, the EMCY is not going to come
+        //   go ahead an advance the state machine to prevent infinite wait. May
+        //   occur on startup.
+        WARNING("EGD[%d] in FAULT state but new EMCY code has not been heard", slave_id);
+        state->pub.emcy_error_code = 0xFFFF;
+        state->pub.fault_code = JSD_EGD_FAULT_UNKNOWN;
+        
+        // to SWITCHED_ON_DISABLED
+        set_controlword(self, slave_id,
+                        JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       }
 
       break;
@@ -1575,11 +1585,6 @@ void jsd_egd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
 
 jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error) {
   // WARNING("ec_err_type: %d", error.Etype);
-
-  if (error.Etype == EC_ERR_TYPE_SDO_ERROR) {
-    return JSD_EGD_FAULT_SDO_ERROR;
-  }
-
   switch (error.ErrorCode) {
     case 0x1000:
       return JSD_EGD_FAULT_RESERVED;
