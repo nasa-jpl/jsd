@@ -159,24 +159,35 @@ void* sdo_thread_loop(void* void_data) {
 
     int param_size = jsd_sdo_data_type_size(req.data_type);
 
-    if (req.request_type == JSD_SDO_REQ_TYPE_WRITE) {
-      req.wkc = ecx_SDOwrite(&self->ecx_context, req.slave_id, req.sdo_index,
+    switch(req.request_type){
+        case JSD_SDO_REQ_TYPE_WRITE:
+            req.wkc = ecx_SDOwrite(&self->ecx_context, req.slave_id, req.sdo_index,
                              req.sdo_subindex,
                              false,  // CA not used
                              param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
 
-      print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+             print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Write");
+             break;
 
-    } else {  // JSD_SDO_REQ_TYPE_READ
+        case JSD_SDO_REQ_TYPE_READ:
 
-      req.wkc = ecx_SDOread(&self->ecx_context, req.slave_id, req.sdo_index,
+            req.wkc = ecx_SDOread(&self->ecx_context, req.slave_id, req.sdo_index,
                             req.sdo_subindex,
                             false,  // CA not used
                             &param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
 
-      print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Read");
+            break;
+
+        case JSD_SDO_REQ_TYPE_INVALID: // fallthrough intended
+        default:
+            req.wkc = 0;
+            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+                      req.sdo_subindex, &req.data, "Invalid operation for ");
+            break;
+
     }
 
     req.success = (req.wkc == 1);
@@ -233,13 +244,18 @@ jsd_sdo_req_t
   req.sdo_index    = index;
   req.sdo_subindex = subindex;
   req.data_type    = data_type;
-  req.request_type = request_type;
   req.app_id       = app_id;
 
-  if (request_type == JSD_SDO_REQ_TYPE_WRITE && data != NULL) {
+  if ( (request_type == JSD_SDO_REQ_TYPE_WRITE) && 
+       (data != NULL) ) 
+  {
     memcpy(&req.data, data, jsd_sdo_data_type_size(data_type));
+    req.request_type = request_type;
   }else{
-    memset(&req.data, 0, sizeof(req.data));
+    WARNING("Slave[%d] Invalid SDO-Write data for async request (0x%X:%d)", 
+        slave_id, index, subindex);
+    req.request_type = JSD_SDO_REQ_TYPE_INVALID;
+    memset(&req.data, 0, sizeof(req.data)); // to be safe
   }
 
   // setting these not strictly needed
@@ -249,34 +265,45 @@ jsd_sdo_req_t
   return req;
 }
 
-void jsd_sdo_push_async_request(jsd_t* self, jsd_sdo_req_t request)
+bool jsd_sdo_push_async_request(jsd_t* self, jsd_sdo_req_t* request)
 {
-  jsd_sdo_req_cirq_push(&self->jsd_sdo_req_cirq, request);
+  bool retval = false;
 
-  pthread_cond_signal(&self->sdo_thread_cond);
+  if(request->request_type == JSD_SDO_REQ_TYPE_INVALID){
+    print_sdo_param(request->data_type, request->slave_id, request->sdo_index,
+      request->sdo_subindex, &(request->data), "Invalid operation for");
+    retval = false;
+  }else{
+    jsd_sdo_req_cirq_push(&self->jsd_sdo_req_cirq, *request);
 
-  jsd_slave_state_t* state = &self->slave_states[request.slave_id];
+    pthread_cond_signal(&self->sdo_thread_cond);
 
-  state->num_async_sdo_requests++;
+    jsd_slave_state_t* state = &self->slave_states[request->slave_id];
+    state->num_async_sdo_requests++;
+
+    retval = true;
+  }
+  return retval;
 }
 
-void jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
+bool jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
                              uint8_t subindex, jsd_sdo_data_type_t data_type,
                              void* data, uint16_t app_id) 
 {
-  jsd_sdo_push_async_request(self, 
-      jsd_sdo_populate_request(slave_id, index, subindex, data_type, data,
-                             JSD_SDO_REQ_TYPE_WRITE, app_id));
+  jsd_sdo_req_t request = jsd_sdo_populate_request(slave_id, index, subindex, 
+      data_type, data, JSD_SDO_REQ_TYPE_WRITE, app_id);
+
+  return jsd_sdo_push_async_request(self, &request);
 }
 
-void jsd_sdo_get_param_async(jsd_t* self, 
-    uint16_t slave_id, uint16_t index,
+bool jsd_sdo_get_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
                              uint8_t subindex, jsd_sdo_data_type_t data_type,
                              uint16_t app_id) 
 {
-  jsd_sdo_push_async_request(self, 
-      jsd_sdo_populate_request(slave_id, index, subindex, data_type, NULL,
-                             JSD_SDO_REQ_TYPE_READ, app_id));
+  jsd_sdo_req_t request = jsd_sdo_populate_request(slave_id, index, subindex, 
+      data_type, NULL, JSD_SDO_REQ_TYPE_READ, app_id);
+
+  return jsd_sdo_push_async_request(self, &request);
 }
 
 ///////////////////  BLOCKING SDO /////////////////////////////
