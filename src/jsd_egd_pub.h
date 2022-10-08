@@ -301,6 +301,9 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
  * the response and use the request data fields (such as the slave_id or app_id)
  * to verify result and handle SDO-set failures.
  *
+ * Subsequent application calls to update the index through 
+ * jsd_egd_set_gain_scheduling_index depends on the result of this SDO operation
+ *
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EGD device
  * @param mode Gain scheduling mode

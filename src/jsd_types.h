@@ -98,6 +98,7 @@ typedef enum {
 } jsd_sdo_data_type_t;
 
 typedef enum {
+  JSD_SDO_REQ_TYPE_INVALID = 0,
   JSD_SDO_REQ_TYPE_READ,
   JSD_SDO_REQ_TYPE_WRITE,
 } jsd_sdo_req_type_t;

@@ -21,9 +21,9 @@ extern "C" {
  * @param data_type the type of the COE parameter e.g. U16
  * @param param_in raw pointer to a value of data_type type
  * @param app_id application-provided id for response tracking, not touched by JSD
- * @return void
+ * @return true if request passes prechecks, otherwise false
  */
-void jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
+bool jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
                              uint8_t subindex, jsd_sdo_data_type_t data_type,
                              void* param_in, uint16_t app_id);
 
@@ -40,9 +40,9 @@ void jsd_sdo_set_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
  * @param subindex the COE parameter subindex value
  * @param data_type the type of the COE parameter e.g. U16
  * @param app_id application-provided id for response tracking, not touched by JSD
- * @return void
+ * @return true if request passes prechecks, otherwise false
  */
-void jsd_sdo_get_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
+bool jsd_sdo_get_param_async(jsd_t* self, uint16_t slave_id, uint16_t index,
                              uint8_t subindex, jsd_sdo_data_type_t data_type, 
                              uint16_t app_id);
 

@@ -28,7 +28,7 @@ jsd_sdo_req_t
                            jsd_sdo_req_type_t request_type,
                            uint16_t app_id);
 
-void jsd_sdo_push_async_request(jsd_t* self, jsd_sdo_req_t request);
+bool jsd_sdo_push_async_request(jsd_t* self, jsd_sdo_req_t* request);
 
 #ifdef __cplusplus
 }
