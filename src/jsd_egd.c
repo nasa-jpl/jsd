@@ -1198,7 +1198,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 }
 
 static double ectime_to_double(ec_timet t){
-  return (double)t.sec + (double)(t.usec)*1.0e6;
+  return (double)t.sec + (double)(t.usec)*1.0e-6;
 }
 
 void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
