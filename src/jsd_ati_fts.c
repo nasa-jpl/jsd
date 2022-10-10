@@ -44,7 +44,7 @@ void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id) {
   state->tz =
       (double)txpdo->tz_counts / (double)config->ati_fts.counts_per_torque;
 
-  // This logic prevente excessive error messages and likely saves some
+  // This logic prevents excessive error messages and likely saves some
   // computation
   if (txpdo->status_code != state->status_code) {
     state->active_error =
@@ -68,8 +68,6 @@ void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id) {
   rxpdo->control1 |= (config->ati_fts.calibration << 8);
 
   rxpdo->control2 = JSD_ATI_FTS_DEFAULT_WORD_CONTROL2;
-
-  jsd_async_sdo_process_response(self, slave_id);
 }
 /****************************************************
  * Private functions

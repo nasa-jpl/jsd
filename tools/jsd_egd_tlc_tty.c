@@ -14,6 +14,7 @@
 pthread_mutex_t mut = PTHREAD_MUTEX_INITIALIZER;
 uint16_t        slave_id;
 bool            quit = false;
+uint16_t        sdo_app_id = 0;
 
 void on_signal(int signal) {
   (void)signal;
@@ -66,7 +67,7 @@ void* tlc_tty_cb(void* jsd_ptr) {
       }
 
       jsd_sdo_get_param_async(jsd, slave_id, jsd_egd_tlc_to_do(tlc), subindex,
-                              data_type);
+                              data_type, sdo_app_id++);
 
     } else if (n_parsed == 4) {  // SDO write
       MSG_DEBUG("\t parsed val_type: %s", val_type);
@@ -92,7 +93,7 @@ void* tlc_tty_cb(void* jsd_ptr) {
       }
 
       jsd_sdo_set_param_async(jsd, slave_id, jsd_egd_tlc_to_do(tlc), subindex,
-                              data_type, &sdo_data);
+                              data_type, &sdo_data, sdo_app_id++);
     } else {
       WARNING("Could not parse user input, n_parsed: %d", n_parsed);
       MSG("Please input commands of the form: float CL[2] = 1.5");

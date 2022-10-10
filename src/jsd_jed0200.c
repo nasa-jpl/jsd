@@ -55,8 +55,6 @@ void jsd_jed0200_process(jsd_t* self, uint16_t slave_id) {
       (jsd_jed0200_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
   rxpdo->cmd = state->cmd;
-
-  jsd_async_sdo_process_response(self, slave_id);
 }
 
 /****************************************************

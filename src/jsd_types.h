@@ -66,8 +66,7 @@ typedef struct {
     jsd_ild1900_state_t     ild1900;
   };
 
-  uint16_t num_async_sdo_requests;   // reserved
-  uint16_t num_async_sdo_responses;  // reserved
+  uint16_t num_async_sdo_requests; // reserved
 
 } jsd_slave_state_t;
 
@@ -97,6 +96,7 @@ typedef enum {
 } jsd_sdo_data_type_t;
 
 typedef enum {
+  JSD_SDO_REQ_TYPE_INVALID = 0,
   JSD_SDO_REQ_TYPE_READ,
   JSD_SDO_REQ_TYPE_WRITE,
 } jsd_sdo_req_type_t;
@@ -109,6 +109,7 @@ typedef struct {
   uint8_t             sdo_subindex;
   jsd_sdo_data_t      data;
   jsd_sdo_data_type_t data_type;
+  uint16_t            app_id;  // for application request tracking
   bool                success;  // response-only
 
   // Reserved parameters
@@ -143,13 +144,11 @@ typedef struct {
   uint8_t      attempt_manual_recovery;  ///< one-time manual recovery attempt
 
   jsd_sdo_req_cirq_t jsd_sdo_req_cirq;
+  jsd_sdo_req_cirq_t jsd_sdo_res_cirq;
   pthread_t          sdo_thread;
   pthread_cond_t     sdo_thread_cond;
   bool               sdo_join_flag;
 
-  // this should be on the order of 100KB, consider allocating on heap if this
-  // grows
-  jsd_sdo_req_cirq_t jsd_sdo_res_cirq[EC_MAXSLAVE];
 
 } jsd_t;
 

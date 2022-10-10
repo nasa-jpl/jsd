@@ -65,8 +65,7 @@ void jsd_el3318_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL3318_PRODUCT_CODE);
-
-  jsd_async_sdo_process_response(self, slave_id);
+  // no-op
 }
 /****************************************************
  * Private functions

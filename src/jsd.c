@@ -202,17 +202,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     return false;
   }
 
-  jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq);
-  snprintf(self->jsd_sdo_req_cirq.name, JSD_NAME_LEN, "Request Queue");
-
-  // technically, overallocates by 1 slave since sid=0 should not be used
-  // leaving so slave_id can directly index this without offset
-  int i;
-  for (i = 0; i < *self->ecx_context.slavecount + 1; i++) {
-    jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq[i]);
-    snprintf(self->jsd_sdo_res_cirq[i].name, JSD_NAME_LEN, "Response Queue %d",
-             i);
-  }
+  // Initialize the sdo request/response queues
+  jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq, "Request Queue");
+  jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
 
   SUCCESS("JSD is Operational");
 

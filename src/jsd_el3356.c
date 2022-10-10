@@ -58,8 +58,6 @@ void jsd_el3356_process(jsd_t* self, uint16_t slave_id) {
     state->pending_tare = 0;
     MSG("Sending Tare");
   }
-
-  jsd_async_sdo_process_response(self, slave_id);
 }
 
 void jsd_el3356_tare(jsd_t* self, uint16_t slave_id) {

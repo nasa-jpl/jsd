@@ -489,7 +489,6 @@ void jsd_egd_read(jsd_t* self, uint16_t slave_id) {
 
   jsd_egd_read_PDO_data(self, slave_id);
   jsd_egd_update_state_from_PDO_data(self, slave_id);
-  jsd_egd_async_sdo_process(self, slave_id);
 }
 
 void jsd_egd_process(jsd_t* self, uint16_t slave_id) {
@@ -523,26 +522,30 @@ uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
 }
 
 void jsd_egd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
-                                          int32_t position) {
+                                          int32_t position, uint16_t app_id) 
+{
   jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("PX"), 1,
-                          JSD_SDO_DATA_I32, &position);
+                          JSD_SDO_DATA_I32, &position, app_id);
 }
 
 void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
-                                     int32_t mode) {
+                                     int32_t mode, uint16_t app_id) 
+{
   jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("UM"), 1,
-                          JSD_SDO_DATA_I32, &mode);
+                          JSD_SDO_DATA_I32, &mode, app_id);
 }
 
 void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
-    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode) {
+    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode, 
+    uint16_t app_id) 
+{
   if (mode < 0 || mode > 68) {
     ERROR("Gain scheduling mode %d for the controller is not valid.", mode);
     return;
   }
   int64_t mode_i64 = mode;
   jsd_sdo_set_param_async(self, slave_id, jsd_egd_tlc_to_do("GS"), 2,
-                          JSD_SDO_DATA_I64, &mode_i64);
+                          JSD_SDO_DATA_I64, &mode_i64, app_id);
 }
 
 /****************************************************
@@ -1065,63 +1068,6 @@ void jsd_egd_write_PDO_data(jsd_t* self, uint16_t slave_id) {
     ERROR("bad drive command mode: %d",
           self->slave_configs[slave_id].egd.drive_cmd_mode);
   }
-}
-
-void jsd_egd_async_sdo_process(jsd_t* self, uint16_t slave_id) {
-  jsd_slave_state_t* state = &self->slave_states[slave_id];
-
-  while (!jsd_sdo_req_cirq_is_empty(&self->jsd_sdo_res_cirq[slave_id])) {
-    jsd_sdo_req_t req = jsd_sdo_req_cirq_pop(&self->jsd_sdo_res_cirq[slave_id]);
-    state->num_async_sdo_responses++;
-
-    // 1) check if SDO operation was success
-    // NOTE: Latch jsd fault type handled by EMCY message
-    if (!req.success) {
-      ERROR("Slave[%u] Failed last SDO operation on 0x%X:%u, wkc = %d",
-            slave_id, req.sdo_index, req.sdo_subindex, req.wkc);
-    }else {
-
-      // NOTE: If there is a usecase for low-frequency SDO
-      // Reads, EGD could parse SDO Read requests
-      // and update public state data here
-
-      if(req.sdo_index == jsd_egd_tlc_to_do("UM")){
-        MSG("EGD[%d]  UM[%d] = %d (0x%X:%d set through async SDO)", 
-            slave_id, 
-            req.sdo_subindex,
-            req.data.as_i32,
-            req.sdo_index,
-            req.sdo_subindex);
-      }
-    }
-  }
-
-  // 2) Check if any SDO operations are ongoing and update state
-  state->egd.pub.async_sdo_in_prog =
-      state->num_async_sdo_requests != state->num_async_sdo_responses;
-
-  // 3) Check if async_sdo_in_prog has been held high for too long, indicating
-  //    a lost SDO Request likely due to a queue overflow
-  if (state->egd.last_async_sdo_in_prog == 0 &&
-      state->egd.pub.async_sdo_in_prog == 1) {
-    state->egd.async_sdo_in_prog_start_time = jsd_get_time_sec();
-  }
-
-  if (state->egd.pub.async_sdo_in_prog) {
-    if (jsd_get_time_sec() - state->egd.async_sdo_in_prog_start_time >
-        JSD_EGD_ASYNC_SDO_TIMEOUT_SEC) {
-      if (state->egd.pub.fault_code != JSD_EGD_FAULT_SDO_ERROR) {
-        // only print this one to not spew to stdout
-        ERROR(
-            "Async SDO has been in progress >%lf sec, likely SDO queue "
-            "overflow. Latching fault.",
-            JSD_EGD_ASYNC_SDO_TIMEOUT_SEC);
-      }
-      state->egd.pub.fault_code = JSD_EGD_FAULT_SDO_ERROR;
-    }
-  }
-
-  state->egd.last_async_sdo_in_prog = state->egd.pub.async_sdo_in_prog;
 }
 
 void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {

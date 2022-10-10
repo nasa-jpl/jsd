@@ -28,8 +28,6 @@ void jsd_el4102_process(jsd_t* self, uint16_t slave_id) {
     rxpdo->channel[ch].value =
         self->slave_states[slave_id].el4102.dac_output[ch];
   }
-
-  jsd_async_sdo_process_response(self, slave_id);
 }
 
 void jsd_el4102_write_single_channel(jsd_t* self, uint16_t slave_id,

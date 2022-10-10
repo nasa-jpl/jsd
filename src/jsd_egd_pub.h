@@ -256,16 +256,19 @@ uint16_t jsd_egd_tlc_to_do(char tlc[2]);
  * Real-time safe, but uses SDO background thread.
  * See MAN-G-CR for more information.
  *
- * It is recommended the application checks the status
- * of the async_sdo_in_prog state field before issuing
- * commands that may depend on this setting.
+ * It is strongly recommended the application checks the result of the SDO-set 
+ * operation. Use the response queue contained in the jsd_t context to check for 
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
  *
  * @param self pointer JSD context
  * @param slave_id id of Elmo Gold Drive on bus
  * @param position new drive position in encoder counts
+ * @param app_id application-provided id for response tracking, not touched by JSD
+ * @return void
  */
 void jsd_egd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
-                                          int32_t position);
+                                          int32_t position, uint16_t app_id);
 
 /**
  * @brief Set unit mode, UM[1]
@@ -273,16 +276,19 @@ void jsd_egd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
  * Real-time safe, but uses SDO background thread.
  * See MAN-G-CR for more information.
  *
- * It is recommended the application checks the status
- * of the async_sdo_in_prog state field before issuing
- * commands that may depend on this setting.
+ * It is strongly recommended the application checks the result of the SDO-set 
+ * operation. Use the response queue contained in the jsd_t context to check for 
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
  *
  * @param self pointer JSD context
  * @param slave_id id of Elmo Gold Drive on bus
  * @param mode user specified drive unit mode in range (1,6)
+ * @param app_id application-provided id for response tracking, not touched by JSD
+ * @return void
  */
 void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
-                                     int32_t mode);
+                                     int32_t mode, uint16_t app_id);
 
 /**
  * @brief Set the gain scheduling mode for the controller, GS[2]
@@ -290,16 +296,23 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
  * Real-time safe, but uses SDO background thread.
  * See MAN-G-CR for more information.
  *
- * It is recommended that the application checks the status of the
- * async_sdo_in_prog state field before issuing commands that may depend on this
- * setting (e.g. jsd_egd_set_gain_scheduling_index).
+ * It is strongly recommended the application checks the result of the SDO-set 
+ * operation. Use the response queue contained in the jsd_t context to check for 
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
+ *
+ * Subsequent application calls to update the index through 
+ * jsd_egd_set_gain_scheduling_index depends on the result of this SDO operation
  *
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EGD device
  * @param mode Gain scheduling mode
+ * @param app_id application-provided id for response tracking, not touched by JSD
+ * @return void
  */
 void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
-    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode);
+    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode,
+    uint16_t app_id);
 
 #ifdef __cplusplus
 }
