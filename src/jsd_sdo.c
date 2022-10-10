@@ -141,10 +141,12 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
   }
 }
 
+#define SDO_MAX_ERRORS_PER_LOOP (32)
 void* sdo_thread_loop(void* void_data) {
   jsd_t* self = (jsd_t*)void_data;
   unsigned int handled_errors = 0;
   struct timespec ts;
+  char error_msgs[SDO_MAX_ERRORS_PER_LOOP][JSD_NAME_LEN];
 
   while (true) {
     pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
@@ -168,17 +170,23 @@ void* sdo_thread_loop(void* void_data) {
       }
 
       handled_errors = 0;
-      while(ecx_iserror(&self->ecx_context) && (handled_errors++ < 50)) {
+      while(ecx_iserror(&self->ecx_context) && 
+            (handled_errors < SDO_MAX_ERRORS_PER_LOOP)) 
+      {
+        handled_errors++;
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
 
-        // print it!
+        // format the print string 
         char* err_str = ecx_err2string(err);
         size_t len = strlen(err_str);
-        if(err_str[len-1] == '\n'){
-          err_str[len-1] = '\0';
+        if(len > 0){
+          if(err_str[len-1] == '\n'){
+            err_str[len-1] = '\0';
+          }
         }
-        ERROR("%s", err_str);
+        snprintf(error_msgs[handled_errors], err_str, JSD_NAME_LEN);
+        error_msgs[handled_errors][JSD_NAME_LEN-1] = '\0';
 
         // push it so it can be handled from main thread safety
         // TODO consider handling the other error types too
@@ -191,6 +199,12 @@ void* sdo_thread_loop(void* void_data) {
     // pop off the request for application handling
     jsd_sdo_req_t req = queue_pop(&self->jsd_sdo_req_cirq);
     pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
+
+    // Print only after releasing the mutex
+    unsigned int i;
+    for(i = 0; i < handled_errors; i++){
+      ERROR("%s", error_msgs[i]);
+    }
 
     int param_size = jsd_sdo_data_type_size(req.data_type);
 
