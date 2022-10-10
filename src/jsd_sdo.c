@@ -246,16 +246,17 @@ jsd_sdo_req_t
   req.data_type    = data_type;
   req.app_id       = app_id;
 
-  if ( (request_type == JSD_SDO_REQ_TYPE_WRITE) && 
-       (data != NULL) ) 
-  {
-    memcpy(&req.data, data, jsd_sdo_data_type_size(data_type));
-    req.request_type = request_type;
-  }else{
-    WARNING("Slave[%d] Invalid SDO-Write data for async request (0x%X:%d)", 
-        slave_id, index, subindex);
-    req.request_type = JSD_SDO_REQ_TYPE_INVALID;
-    memset(&req.data, 0, sizeof(req.data)); // to be safe
+  req.request_type = request_type;
+
+  if (JSD_SDO_REQ_TYPE_WRITE == request_type){
+    if(NULL == data){
+      WARNING("Slave[%d] Invalid SDO-Write data for async request (0x%X:%d)", 
+          slave_id, index, subindex);
+      req.request_type = JSD_SDO_REQ_TYPE_INVALID;
+      memset(&req.data, 0, sizeof(req.data)); // to be safe
+    }else{
+      memcpy(&req.data, data, jsd_sdo_data_type_size(data_type));
+    }
   }
 
   // setting these not strictly needed
