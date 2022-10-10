@@ -173,7 +173,6 @@ void* sdo_thread_loop(void* void_data) {
       while(ecx_iserror(&self->ecx_context) && 
             (handled_errors < SDO_MAX_ERRORS_PER_LOOP)) 
       {
-        handled_errors++;
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
 
@@ -187,6 +186,8 @@ void* sdo_thread_loop(void* void_data) {
         }
         strncpy(error_msgs[handled_errors], err_str, JSD_NAME_LEN);
         error_msgs[handled_errors][JSD_NAME_LEN-1] = '\0';
+
+        handled_errors++;
 
         // push it so it can be handled from main thread safety
         // TODO consider handling the other error types too
@@ -214,9 +215,15 @@ void* sdo_thread_loop(void* void_data) {
                              req.sdo_subindex,
                              false,  // CA not used
                              param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+             req.success = (req.wkc == 1);
 
-             print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+             if(req.success){
+               print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Write");
+             }else{
+               WARNING("Slave[%d] Bad SDO Write on 0x%X:%d app_id: (%u)", 
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+             }
              break;
 
         case JSD_SDO_REQ_TYPE_READ:
@@ -225,21 +232,26 @@ void* sdo_thread_loop(void* void_data) {
                             req.sdo_subindex,
                             false,  // CA not used
                             &param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+            req.success = (req.wkc == 1);
 
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+            if(req.success){
+              print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Read");
+            }else{
+              WARNING("Slave[%d] Bad SDO read on 0x%X:%d app_id: (%u)",
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+            }
             break;
 
         case JSD_SDO_REQ_TYPE_INVALID: // fallthrough intended
         default:
-            req.wkc = 0;
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
-                      req.sdo_subindex, &req.data, "Invalid operation for ");
+            req.success = false;
+            WARNING("Slave[%d] invalid SDO request on 0x%X:%d app_id: (%u)",
+                 req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
             break;
 
     }
 
-    req.success = (req.wkc == 1);
 
     // push to the response queue for application handling
     jsd_sdo_req_cirq_push(&self->jsd_sdo_res_cirq, req);
