@@ -201,12 +201,6 @@ void* sdo_thread_loop(void* void_data) {
     jsd_sdo_req_t req = queue_pop(&self->jsd_sdo_req_cirq);
     pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
 
-    // Print only after releasing the mutex
-    unsigned int i;
-    for(i = 0; i < handled_errors; i++){
-      ERROR("%s", error_msgs[i]);
-    }
-
     int param_size = jsd_sdo_data_type_size(req.data_type);
 
     switch(req.request_type){
