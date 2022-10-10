@@ -146,7 +146,6 @@ void* sdo_thread_loop(void* void_data) {
   jsd_t* self = (jsd_t*)void_data;
   unsigned int handled_errors = 0;
   struct timespec ts;
-  char error_msgs[SDO_MAX_ERRORS_PER_LOOP][JSD_NAME_LEN];
 
   while (true) {
     pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
@@ -157,9 +156,9 @@ void* sdo_thread_loop(void* void_data) {
       clock_gettime(CLOCK_REALTIME, &ts);
       ts.tv_sec += 1;
       pthread_cond_timedwait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex, &ts);
+      pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
 
       if (self->sdo_join_flag) {
-        pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
         return NULL;
       }
 
@@ -176,6 +175,8 @@ void* sdo_thread_loop(void* void_data) {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
 
+        handled_errors++;
+
         // format the print string 
         char* err_str = ecx_err2string(err);
         size_t len = strlen(err_str);
@@ -184,10 +185,8 @@ void* sdo_thread_loop(void* void_data) {
             err_str[len-1] = '\0';
           }
         }
-        strncpy(error_msgs[handled_errors], err_str, JSD_NAME_LEN);
-        error_msgs[handled_errors][JSD_NAME_LEN-1] = '\0';
+        ERROR("%s", err_str);
 
-        handled_errors++;
 
         // push it so it can be handled from main thread safety
         // TODO consider handling the other error types too
@@ -195,6 +194,7 @@ void* sdo_thread_loop(void* void_data) {
           jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
         }
       }
+      pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
     }
 
     // pop off the request for application handling
