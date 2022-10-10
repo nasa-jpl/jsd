@@ -1278,15 +1278,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
         ec_errort error = jsd_error_cirq_pop(error_cirq);
 
-        // printing here is redundant WRT the SDO thread but do it 
-        // to build confidence for now
-        //char* err_str = ecx_err2string(error);
-        //size_t len = strlen(err_str);
-        //if(err_str[len-1] == '\n'){
-        //  err_str[len-1] = '\0';
-        //}
-        //ERROR("%s", err_str);
-
         // if newer than the state-machine issued fault
         if(ectime_to_double(error.Time) > state->fault_time){
 
