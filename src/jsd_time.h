@@ -13,9 +13,9 @@ extern "C" {
  * @return Number of seconds since Unix Epoch.
  */
 static inline double jsd_time_get_time_sec() {
-  struct timeval tv;
-  gettimeofday(&tv, NULL);
-  return (double)tv.tv_sec + (double)tv.tv_usec / 1000000;
+  struct timespec ts;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  return (double)ts.tv_sec + (double)ts.tv_nsec / 1000000000;
 }
 
 #ifdef __cplusplus

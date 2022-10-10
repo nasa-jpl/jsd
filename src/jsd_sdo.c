@@ -185,7 +185,7 @@ void* sdo_thread_loop(void* void_data) {
             err_str[len-1] = '\0';
           }
         }
-        snprintf(error_msgs[handled_errors], err_str, JSD_NAME_LEN);
+        strncpy(error_msgs[handled_errors], err_str, JSD_NAME_LEN);
         error_msgs[handled_errors][JSD_NAME_LEN-1] = '\0';
 
         // push it so it can be handled from main thread safety
