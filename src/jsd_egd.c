@@ -1207,6 +1207,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
   jsd_error_cirq_t* error_cirq = &self->slave_errors[slave_id];
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
+  ec_errort error;
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -1274,9 +1275,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
       // Only transition once the EMCY code can be extracted from the
       // error list
-      if(!jsd_error_cirq_is_empty(error_cirq)) {
-
-        ec_errort error = jsd_error_cirq_pop(error_cirq);
+      if(jsd_error_cirq_pop(error_cirq, &error)) {
 
         // if newer than the state-machine issued fault
         if(ectime_to_double(error.Time) > state->fault_time){
