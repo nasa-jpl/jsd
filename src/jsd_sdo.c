@@ -141,6 +141,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
   }
 }
 
+#define SDO_MAX_ERRORS_PER_LOOP (32)
 void* sdo_thread_loop(void* void_data) {
   jsd_t* self = (jsd_t*)void_data;
   unsigned int handled_errors = 0;
@@ -155,9 +156,9 @@ void* sdo_thread_loop(void* void_data) {
       clock_gettime(CLOCK_REALTIME, &ts);
       ts.tv_sec += 1;
       pthread_cond_timedwait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex, &ts);
+      pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
 
       if (self->sdo_join_flag) {
-        pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
         return NULL;
       }
 
@@ -168,17 +169,24 @@ void* sdo_thread_loop(void* void_data) {
       }
 
       handled_errors = 0;
-      while(ecx_iserror(&self->ecx_context) && (handled_errors++ < 50)) {
+      while(ecx_iserror(&self->ecx_context) && 
+            (handled_errors < SDO_MAX_ERRORS_PER_LOOP)) 
+      {
         ec_errort err;
         ecx_poperror(&self->ecx_context, &err);
 
-        // print it!
+        handled_errors++;
+
+        // format the print string 
         char* err_str = ecx_err2string(err);
         size_t len = strlen(err_str);
-        if(err_str[len-1] == '\n'){
-          err_str[len-1] = '\0';
+        if(len > 0){
+          if(err_str[len-1] == '\n'){
+            err_str[len-1] = '\0';
+          }
         }
         ERROR("%s", err_str);
+
 
         // push it so it can be handled from main thread safety
         // TODO consider handling the other error types too
@@ -186,6 +194,7 @@ void* sdo_thread_loop(void* void_data) {
           jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
         }
       }
+      pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
     }
 
     // pop off the request for application handling
@@ -200,9 +209,15 @@ void* sdo_thread_loop(void* void_data) {
                              req.sdo_subindex,
                              false,  // CA not used
                              param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+             req.success = (req.wkc == 1);
 
-             print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+             if(req.success){
+               print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Write");
+             }else{
+               WARNING("Slave[%d] Bad SDO Write on 0x%X:%d app_id: (%u)", 
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+             }
              break;
 
         case JSD_SDO_REQ_TYPE_READ:
@@ -211,21 +226,26 @@ void* sdo_thread_loop(void* void_data) {
                             req.sdo_subindex,
                             false,  // CA not used
                             &param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+            req.success = (req.wkc == 1);
 
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+            if(req.success){
+              print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Read");
+            }else{
+              WARNING("Slave[%d] Bad SDO read on 0x%X:%d app_id: (%u)",
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+            }
             break;
 
         case JSD_SDO_REQ_TYPE_INVALID: // fallthrough intended
         default:
-            req.wkc = 0;
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
-                      req.sdo_subindex, &req.data, "Invalid operation for ");
+            req.success = false;
+            WARNING("Slave[%d] invalid SDO request on 0x%X:%d app_id: (%u)",
+                 req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
             break;
 
     }
 
-    req.success = (req.wkc == 1);
 
     // push to the response queue for application handling
     jsd_sdo_req_cirq_push(&self->jsd_sdo_res_cirq, req);
@@ -281,16 +301,17 @@ jsd_sdo_req_t
   req.data_type    = data_type;
   req.app_id       = app_id;
 
-  if ( (request_type == JSD_SDO_REQ_TYPE_WRITE) && 
-       (data != NULL) ) 
-  {
-    memcpy(&req.data, data, jsd_sdo_data_type_size(data_type));
-    req.request_type = request_type;
-  }else{
-    WARNING("Slave[%d] Invalid SDO-Write data for async request (0x%X:%d)", 
-        slave_id, index, subindex);
-    req.request_type = JSD_SDO_REQ_TYPE_INVALID;
-    memset(&req.data, 0, sizeof(req.data)); // to be safe
+  req.request_type = request_type;
+
+  if (JSD_SDO_REQ_TYPE_WRITE == request_type){
+    if(NULL == data){
+      WARNING("Slave[%d] Invalid SDO-Write data for async request (0x%X:%d)", 
+          slave_id, index, subindex);
+      req.request_type = JSD_SDO_REQ_TYPE_INVALID;
+      memset(&req.data, 0, sizeof(req.data)); // to be safe
+    }else{
+      memcpy(&req.data, data, jsd_sdo_data_type_size(data_type));
+    }
   }
 
   // setting these not strictly needed
