@@ -498,7 +498,7 @@ void jsd_egd_process(jsd_t* self, uint16_t slave_id) {
 
 ///////////////////  ASYNC SDO /////////////////////////////
 //
-uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
+uint16_t jsd_egd_tlc_to_do(const char tlc[2]) {
   if ((tlc[0] < 65 || tlc[0] > 90) || (tlc[1] < 65 || tlc[1] > 90)) {
     ERROR("Two-Letter Command string must be uppercased: %s", tlc);
   }
