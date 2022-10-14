@@ -52,6 +52,7 @@ static bool queue_push(jsd_sdo_req_cirq_t* self, jsd_sdo_req_t req) {
   self->buffer[self->w % JSD_SDO_REQ_CIRQ_LEN] = req;
   self->w++;
   if ((self->w - self->r) > JSD_SDO_REQ_CIRQ_LEN) {
+    self->r++;
     WARNING("[%s] is overflowing: r=%u w=%u", self->name, self->r, self->w);
     status = false;
   }
@@ -140,17 +141,60 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
   }
 }
 
+#define SDO_MAX_ERRORS_PER_LOOP (32)
 void* sdo_thread_loop(void* void_data) {
   jsd_t* self = (jsd_t*)void_data;
+  unsigned int handled_errors = 0;
+  struct timespec ts;
 
   while (true) {
     pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
 
     while (queue_is_empty(&self->jsd_sdo_req_cirq)) {
-      pthread_cond_wait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex);
+
+      // wake up on async jsd conditional trigger for max responsiveness or at 1hz
+      clock_gettime(CLOCK_REALTIME, &ts);
+      ts.tv_sec += 1;
+      pthread_cond_timedwait(&self->sdo_thread_cond, &self->jsd_sdo_req_cirq.mutex, &ts);
+      pthread_mutex_unlock(&self->jsd_sdo_req_cirq.mutex);
+
       if (self->sdo_join_flag) {
         return NULL;
       }
+
+      ec_mbxbuft MbxIn;
+      int sid;
+      for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+        ecx_mbxreceive(&self->ecx_context, sid, &MbxIn, 0);
+      }
+
+      handled_errors = 0;
+      while(ecx_iserror(&self->ecx_context) && 
+            (handled_errors < SDO_MAX_ERRORS_PER_LOOP)) 
+      {
+        ec_errort err;
+        ecx_poperror(&self->ecx_context, &err);
+
+        handled_errors++;
+
+        // format the print string 
+        char* err_str = ecx_err2string(err);
+        size_t len = strlen(err_str);
+        if(len > 0){
+          if(err_str[len-1] == '\n'){
+            err_str[len-1] = '\0';
+          }
+        }
+        ERROR("%s", err_str);
+
+
+        // push it so it can be handled from main thread safety
+        // TODO consider handling the other error types too
+        if(err.Etype == EC_ERR_TYPE_EMERGENCY){
+          jsd_error_cirq_push(&self->slave_errors[err.Slave], err);
+        }
+      }
+      pthread_mutex_lock(&self->jsd_sdo_req_cirq.mutex);
     }
 
     // pop off the request for application handling
@@ -165,9 +209,15 @@ void* sdo_thread_loop(void* void_data) {
                              req.sdo_subindex,
                              false,  // CA not used
                              param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+             req.success = (req.wkc == 1);
 
-             print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+             if(req.success){
+               print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Write");
+             }else{
+               WARNING("Slave[%d] Bad SDO Write on 0x%X:%d app_id: (%u)", 
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+             }
              break;
 
         case JSD_SDO_REQ_TYPE_READ:
@@ -176,21 +226,26 @@ void* sdo_thread_loop(void* void_data) {
                             req.sdo_subindex,
                             false,  // CA not used
                             &param_size, (void*)&req.data, JSD_SDO_TIMEOUT);
+            req.success = (req.wkc == 1);
 
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
+            if(req.success){
+              print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
                       req.sdo_subindex, &req.data, "Read");
+            }else{
+              WARNING("Slave[%d] Bad SDO read on 0x%X:%d app_id: (%u)",
+                   req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
+            }
             break;
 
         case JSD_SDO_REQ_TYPE_INVALID: // fallthrough intended
         default:
-            req.wkc = 0;
-            print_sdo_param(req.data_type, req.slave_id, req.sdo_index,
-                      req.sdo_subindex, &req.data, "Invalid operation for ");
+            req.success = false;
+            WARNING("Slave[%d] invalid SDO request on 0x%X:%d app_id: (%u)",
+                 req.slave_id, req.sdo_index, req.sdo_subindex, req.app_id);
             break;
 
     }
 
-    req.success = (req.wkc == 1);
 
     // push to the response queue for application handling
     jsd_sdo_req_cirq_push(&self->jsd_sdo_res_cirq, req);
@@ -379,3 +434,27 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
       subindex);
   return true;
 }
+
+void jsd_sdo_signal_emcy_check(jsd_t* self){
+  self->raise_sdo_thread_cond = true;
+}
+
+
+bool jsd_sdo_pop_response_queue(jsd_t* self, jsd_sdo_req_t* res) {
+  assert(self);
+  assert(res);
+
+  bool retval = false;
+  jsd_sdo_req_cirq_t* sdo_queue = &self->jsd_sdo_res_cirq;
+
+  pthread_mutex_lock(&sdo_queue->mutex);
+  if(!queue_is_empty(sdo_queue)){
+    jsd_sdo_req_t popped_res = queue_pop(sdo_queue);
+    memcpy(res, &popped_res, sizeof(popped_res));
+    retval = true;
+  }
+  pthread_mutex_unlock(&sdo_queue->mutex);
+
+  return retval;
+}
+

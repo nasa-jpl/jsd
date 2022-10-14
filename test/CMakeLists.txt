@@ -18,6 +18,10 @@ if(BUILD_JSD_TESTS)
     target_link_libraries(jsd_soem_init_close_test ${jsd_test_libs})
     add_test(NAME jsd_soem_init_close_test COMMAND jsd_soem_init_close_test)
 
+    add_executable(jsd_error_cirq_test unit/jsd_error_cirq_test.c)
+    target_link_libraries(jsd_error_cirq_test ${jsd_test_libs})
+    add_test(NAME jsd_error_cirq_test COMMAND jsd_error_cirq_test)
+
     ######### Device Tests #########
     add_executable(jsd_minimal_example_el3602 device/jsd_minimal_example_el3602.c)
     target_link_libraries(jsd_minimal_example_el3602 ${jsd_test_libs})

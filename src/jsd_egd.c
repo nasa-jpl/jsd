@@ -467,9 +467,6 @@ char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code) {
     case JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED:
       return "JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED";
       break;
-    case JSD_EGD_FAULT_SDO_ERROR:
-      return "JSD_EGD_FAULT_SDO_ERROR";
-      break;
     case JSD_EGD_FAULT_UNKNOWN:
       return "JSD_EGD_FAULT_UNKNOWN";
       break;
@@ -501,7 +498,7 @@ void jsd_egd_process(jsd_t* self, uint16_t slave_id) {
 
 ///////////////////  ASYNC SDO /////////////////////////////
 //
-uint16_t jsd_egd_tlc_to_do(char tlc[2]) {
+uint16_t jsd_egd_tlc_to_do(const char tlc[2]) {
   if ((tlc[0] < 65 || tlc[0] > 90) || (tlc[1] < 65 || tlc[1] > 90)) {
     ERROR("Two-Letter Command string must be uppercased: %s", tlc);
   }
@@ -589,6 +586,9 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
     return false;
   }
   jsd_egd_set_peak_current(self, slave_id, config->egd.peak_current_limit);
+
+  state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+  state->pub.emcy_error_code = 0;
 
   return true;
 }
@@ -1127,6 +1127,14 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
         jsd_egd_state_machine_state_to_string(
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
+
+    // promotes timely checking of the EMCY code
+    if(state->pub.actual_state_machine_state == JSD_EGD_STATE_MACHINE_STATE_FAULT){
+      jsd_sdo_signal_emcy_check(self);
+      state->new_reset = false; // clear any potentially ongoing reset request
+      state->fault_time = jsd_get_time_sec();
+    }
+
   }
 
   state->last_state_machine_state = state->pub.actual_state_machine_state;
@@ -1188,15 +1196,18 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   // drive temp
   state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
 }
+
+static double ectime_to_double(ec_timet t){
+  return (double)t.sec + (double)(t.usec)*1.0e-6;
+}
+
 void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
-
-  ec_mbxbuft               MbxIn;
-  ec_errort                error;
+  jsd_error_cirq_t* error_cirq = &self->slave_errors[slave_id];
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
-  state->pub.fault_code   = JSD_EGD_FAULT_OKAY;
+  ec_errort error;
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -1205,10 +1216,12 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_EGD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
+      // to READY_TO_SWITCH_ON
       break;
     case JSD_EGD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SWITCH_ON);
+      // to SWITCHED_ON
       break;
     case JSD_EGD_STATE_MACHINE_STATE_SWITCHED_ON:
       // STO drops us here
@@ -1222,12 +1235,18 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
         set_mode_of_operation(self, slave_id, 
           state->requested_mode_of_operation);
+
+        state->new_reset = false;
       }
       break;
     case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
+      state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+      state->pub.emcy_error_code = 0;
+
       // Handle halt
       if (state->new_halt_command){
+        state->new_reset = false;
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
         set_controlword(self, slave_id, cw);
@@ -1254,24 +1273,56 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_EGD_STATE_MACHINE_STATE_FAULT:
 
-      ecx_mbxreceive(&self->ecx_context, slave_id, (ec_mbxbuft*)&MbxIn, 0);
-      if (ecx_iserror(&self->ecx_context)) {
-        ecx_poperror(&self->ecx_context, &error);
-        ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave,
-              jsd_egd_fault_code_to_string(
-                  jsd_egd_get_fault_code_from_ec_error(error)));
-        state->pub.fault_code = jsd_egd_get_fault_code_from_ec_error(error);
+      // Only transition once the EMCY code can be extracted from the
+      // error list
+      if(jsd_error_cirq_pop(error_cirq, &error)) {
+
+        // if newer than the state-machine issued fault
+        if(ectime_to_double(error.Time) > state->fault_time){
+
+          // TODO consider handling the other error types too
+          if(error.Etype == EC_ERR_TYPE_EMERGENCY){
+            state->pub.emcy_error_code = error.ErrorCode;
+            state->pub.fault_code = 
+              jsd_egd_get_fault_code_from_ec_error(error);  
+
+            ERROR("EGD[%d] EMCY code: 0x%X, "
+              "jsd fault enum: %u, Description: %s", 
+              error.Slave,
+              state->pub.emcy_error_code,
+              state->pub.fault_code,
+              jsd_egd_fault_code_to_string(state->pub.fault_code));
+
+            MSG_DEBUG("EGD[%d] EMCY handled, transition to SWITCHED_ON_DISABLED", 
+              error.Slave);
+
+            // to SWITCHED_ON_DISABLED
+            set_controlword(self, slave_id,
+                          JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
+
+          }
+        }
+      } else if(jsd_get_time_sec() > (1.0 + state->fault_time) &&
+              state->pub.fault_code != JSD_EGD_FAULT_UNKNOWN)
+      {
+        // If we've been waiting for a long duration, the EMCY is not going to come
+        //   go ahead an advance the state machine to prevent infinite wait. May
+        //   occur on startup.
+        WARNING("EGD[%d] in FAULT state but new EMCY code has not been heard", slave_id);
+        state->pub.emcy_error_code = 0xFFFF;
+        state->pub.fault_code = JSD_EGD_FAULT_UNKNOWN;
+        
+        // to SWITCHED_ON_DISABLED
+        set_controlword(self, slave_id,
+                        JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       }
 
-      set_controlword(self, slave_id,
-                      JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       break;
     default:
       ERROR("EGD[%d] Unknown State Machine State: 0x%x", slave_id,
             state->pub.actual_state_machine_state);
   }
 
-  state->new_reset          = false;
   state->new_motion_command = false;
   state->new_halt_command   = false;
 }
@@ -1524,11 +1575,6 @@ void jsd_egd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
 
 jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error) {
   // WARNING("ec_err_type: %d", error.Etype);
-
-  if (error.Etype == EC_ERR_TYPE_SDO_ERROR) {
-    return JSD_EGD_FAULT_SDO_ERROR;
-  }
-
   switch (error.ErrorCode) {
     case 0x1000:
       return JSD_EGD_FAULT_RESERVED;

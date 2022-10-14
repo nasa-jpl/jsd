@@ -13,6 +13,7 @@ uint8_t                           first_command = 1;
 double                            command_time;
 jsd_egd_motion_command_prof_pos_t prof_pos_cmd;
 uint16_t                          sdo_app_id = 0;
+jsd_egd_fault_code_t              last_fault_code = 0;
 
 void telemetry_header() {
   if (!file) {
@@ -34,7 +35,6 @@ void telemetry_header() {
 
   fprintf(file, "actual_state_machine_state, ");
   fprintf(file, "actual_mode_of_operation, ");
-  fprintf(file, "async_sdo_in_prog, ");
 
   fprintf(file, "sto_engaged, ");
   fprintf(file, "hall_state, ");
@@ -75,7 +75,6 @@ void telemetry_data(void* self) {
 
   fprintf(file, "%u, ", state->actual_state_machine_state);
   fprintf(file, "%u, ", state->actual_mode_of_operation);
-  fprintf(file, "%u, ", state->async_sdo_in_prog);
 
   fprintf(file, "%u, ", state->sto_engaged);
   fprintf(file, "%u, ", state->hall_state);
@@ -108,6 +107,13 @@ void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
   jsd_egd_read(sds->jsd, slave_id);
   jsd_egd_process(sds->jsd, slave_id);
+
+  const jsd_egd_state_t* state = jsd_egd_get_state(sds->jsd, slave_id);
+  if(state->fault_code != last_fault_code){
+      MSG("fault code change to : (%u) %s ", state->fault_code, 
+              jsd_egd_fault_code_to_string(state->fault_code));
+      last_fault_code = state->fault_code;
+  }
 }
 
 void command(void* self) {
@@ -127,18 +133,21 @@ void command(void* self) {
       command_time = jsd_timer_get_time_sec();
     }
   } else {
-    MSG("sending reset");
-    jsd_egd_reset(sds->jsd, slave_id);
+    static uint64_t reset_cnt = 0;
+    if ((reset_cnt++) % 100 == 0) {
+      MSG("sending reset");
+      jsd_egd_reset(sds->jsd, slave_id);
+    }
   }
 
   static uint64_t cmd_cnt = 1;
-  if (cmd_cnt % 100 == 0) {
+  if (cmd_cnt % 1000 == 0) {
     float value = 1.0 + cmd_cnt / 100000.0;
 
     jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_egd_tlc_to_do("PL"), 2,
                             JSD_SDO_DATA_FLOAT, (void*)&value, sdo_app_id++);
 
-    jsd_sdo_get_param_async(sds->jsd, slave_id, jsd_egd_tlc_to_do("PL"), 2,
+    jsd_sdo_get_param_async(sds->jsd, slave_id, jsd_egd_tlc_to_do("PL"), 45,
                             JSD_SDO_DATA_FLOAT, sdo_app_id++);
   }
   cmd_cnt++;
@@ -186,8 +195,8 @@ int main(int argc, char* argv[]) {
   my_config.egd.torque_slope                  = 1e7;
   my_config.egd.max_profile_accel             = 1e6;
   my_config.egd.max_profile_decel             = 1e7;
-  my_config.egd.velocity_tracking_error       = 1e8;
-  my_config.egd.position_tracking_error       = 1e9;
+  my_config.egd.velocity_tracking_error       = 5000;
+  my_config.egd.position_tracking_error       = 1000;
   my_config.egd.peak_current_limit            = peak_current;
   my_config.egd.peak_current_time             = 3.0;
   my_config.egd.continuous_current_limit      = continuous_current;

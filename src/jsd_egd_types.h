@@ -127,8 +127,6 @@ typedef enum {
   JSD_EGD_FAULT_NUMERIC_OVERFLOW,
   JSD_EGD_FAULT_GANTRY_SLAVE_DISABLED,
 
-  JSD_EGD_FAULT_SDO_ERROR,
-
   JSD_EGD_FAULT_UNKNOWN,
 
 } jsd_egd_fault_code_t;
@@ -302,7 +300,6 @@ typedef struct {
 
   jsd_egd_state_machine_state_t actual_state_machine_state;
   jsd_egd_mode_of_operation_t   actual_mode_of_operation;
-  bool                          async_sdo_in_prog;
 
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
   uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits
@@ -312,6 +309,7 @@ typedef struct {
   uint8_t target_reached;  ///< from SW, bit 10 mode dependent
   uint8_t motor_on;        ///< from SW, indicates brake and drive status
   jsd_egd_fault_code_t fault_code;  ///< from EMCY, != 0 indicates fault
+  uint16_t emcy_error_code;         ///< EMCY code, see DS-301 Section 7.1 
 
   double   bus_voltage;           ///< bus voltage in volts
   double   analog_input_voltage;  ///< Analog 1 input in volts
@@ -417,6 +415,9 @@ typedef struct {
   jsd_egd_mode_of_operation_t   last_requested_mode_of_operation;
   uint8_t                       last_sto_engaged;
   bool                          last_async_sdo_in_prog;
+
+  // Time of statusword fault state change
+  double                        fault_time;
 
 } jsd_egd_private_state_t;
 

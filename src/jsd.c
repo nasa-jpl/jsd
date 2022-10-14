@@ -196,19 +196,26 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     }
   }
 
-  if (0 !=
-      pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
-    ERROR("Failed to create SDO thread");
-    return false;
+  // Initialize the error queues used between threads
+  for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+    char qname[JSD_NAME_LEN];
+    snprintf(qname, JSD_NAME_LEN, "Slave %d error cirq", sid);
+    jsd_error_cirq_init(&self->slave_errors[sid], qname);
   }
 
-  // Initialize the sdo request/response queues
+  // Initialize the sdo request/response queues and start background SDO thread
   jsd_sdo_req_cirq_init(&self->jsd_sdo_req_cirq, "Request Queue");
   jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
 
+  // Make sure to only start this after the PO2OP hooks have completed
+  if (0 != pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
+    ERROR("Failed to create SDO thread");
+    return false;
+  }
+  self->init_complete = true;
+
   SUCCESS("JSD is Operational");
 
-  self->init_complete = true;
   return true;
 }
 
@@ -255,32 +262,11 @@ void jsd_read(jsd_t* self, int timeout_us) {
     self->attempt_manual_recovery = 0;
   }
 
-  // Need to perform a read to get EMCY error updates
-  ec_mbxbuft MbxIn;
-  ecx_mbxreceive(&self->ecx_context, 0, (ec_mbxbuft*)&MbxIn, 0);
-  // If there is an EMCY error, handle it
-  if (ecx_iserror(&self->ecx_context)) {
-    ec_errort error;
-    ecx_poperror(&self->ecx_context, &error);
-
-    char fault_string[JSD_NAME_LEN];
-    switch (self->ecx_context.slavelist[error.Slave].eep_id) {
-      case JSD_EGD_PRODUCT_CODE: {
-        self->slave_states[error.Slave].egd.pub.fault_code =
-            jsd_egd_get_fault_code_from_ec_error(error);
-        snprintf(fault_string, JSD_NAME_LEN, "%s (0x%x)",
-                 jsd_egd_fault_code_to_string(
-                     self->slave_states[error.Slave].egd.pub.fault_code),
-                 error.ErrorCode);
-        break;
-      }
-      default:
-        snprintf(fault_string, JSD_NAME_LEN, "Unknown Fault (0x%x)",
-                 error.ErrorCode);
-        break;
-    }
-    ERROR("EMCY: on slave id: %d, Description:  %s", error.Slave, fault_string);
+  if(self->raise_sdo_thread_cond){
+    pthread_cond_signal(&self->sdo_thread_cond);
+    self->raise_sdo_thread_cond = false;
   }
+
 }
 
 void jsd_write(jsd_t* self) {
@@ -304,10 +290,26 @@ void jsd_free(jsd_t* self) {
     return;
   }
 
-  self->sdo_join_flag = true;
-  pthread_cond_signal(&self->sdo_thread_cond);
-  MSG("Waiting for SDO Thread to join...");
-  pthread_join(self->sdo_thread, NULL);
+  if(self->init_complete){
+    struct timespec ts;
+
+    self->sdo_join_flag = true;
+    MSG("Waiting for SDO Thread to join...");
+    pthread_cond_signal(&self->sdo_thread_cond);
+
+    // The following loop should be more robust than just 
+    //   a pthread_join blocking wait
+    while(true) {
+      self->sdo_join_flag = true;
+
+      clock_gettime(CLOCK_REALTIME, &ts);
+      ts.tv_sec += 1;
+
+      if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
+        break;
+      }
+    }
+  }
 
   MSG_DEBUG("Closing SOEM socket connection...");
   ecx_close(&self->ecx_context);

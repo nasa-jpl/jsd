@@ -47,11 +47,14 @@ endforeach()
 
 remove_definitions(-DEC_VER1)
 add_definitions(-DEC_VER2)
+add_definitions(-D_GNU_SOURCE)
 
 include(FetchContent)
+
+# Updated 2022-09-18
 FetchContent_Declare(soem
   GIT_REPOSITORY https://github.com/OpenEtherCATsociety/SOEM.git
-    GIT_TAG f9db4f2b23455e83d9871568e3a69ab124e0c1a0
+  GIT_TAG 26fc5dd8e3c8981b4e8f83d736e691417bebacdb
     )
 FetchContent_MakeAvailable(soem)
 

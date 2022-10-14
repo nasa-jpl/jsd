@@ -18,8 +18,6 @@
 */
 
 // Standard C Headers
-#define _GNU_SOURCE
-
 #include <assert.h>
 #include <sched.h>
 #include <stdio.h>

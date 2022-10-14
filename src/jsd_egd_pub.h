@@ -248,7 +248,7 @@ char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code);
  * @param tlc Two-Letter Command in capital chars  e.g. "PX"
  * @return Data Object register
  */
-uint16_t jsd_egd_tlc_to_do(char tlc[2]);
+uint16_t jsd_egd_tlc_to_do(const char tlc[2]);
 
 /**
  * @brief Set drive position in encoder counts, PX[1]
