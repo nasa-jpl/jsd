@@ -390,7 +390,6 @@ typedef struct {
   jsd_egd_txpdo_data_t               txpdo;       ///< Raw TxPDO data
   jsd_egd_rxpdo_data_cs_mode_t       rxpdo_cs;    ///< Raw RxPDO data
   jsd_egd_rxpdo_data_profiled_mode_t rxpdo_prof;  ///< Raw RxPDO data
-  int8_t* mode_of_operation;  ///< ptr to active rxdpo mode of op
 
   uint32_t motor_rated_current;  ///< CL[1] in mA
 
