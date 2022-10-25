@@ -24,14 +24,6 @@ const jsd_el3162_state_t* jsd_el3162_get_state(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el3162_read(jsd_t* self, uint16_t slave_id);
 
-/**
- * @brief Processes asynchronous SDO responses
- *
- * @param self Pointer to JSD context
- * @param slave_id ID of EL3162 device
- */
-void jsd_el3162_process(jsd_t* self, uint16_t slave_id);
-
 #ifdef __cplusplus
 }
 #endif
