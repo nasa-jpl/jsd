@@ -9,12 +9,6 @@ extern "C" {
 
 #define JSD_PO2OP_MAX_ATTEMPTS 3
 
-/** @brief Gets current time in seconds
- *
- *  @return monotonic clock time in seconds
- */
-double jsd_get_time_sec();
-
 /**
  * @brief converts ec_state int to human-readable string
  *
