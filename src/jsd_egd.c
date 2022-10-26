@@ -53,7 +53,7 @@ const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id) {
 void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
-  double now = jsd_get_time_sec();
+  double now = jsd_time_get_time_sec();
   if ((now - self->slave_states[slave_id].egd.last_reset_time) >
       JSD_EGD_RESET_DERATE_SEC) {
     self->slave_states[slave_id].egd.new_reset       = true;
@@ -1132,7 +1132,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
     if(state->pub.actual_state_machine_state == JSD_EGD_STATE_MACHINE_STATE_FAULT){
       jsd_sdo_signal_emcy_check(self);
       state->new_reset = false; // clear any potentially ongoing reset request
-      state->fault_time = jsd_get_time_sec();
+      state->fault_time = jsd_time_get_time_sec();
     }
 
   }
@@ -1302,7 +1302,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
           }
         }
-      } else if(jsd_get_time_sec() > (1.0 + state->fault_time) &&
+      } else if(jsd_time_get_time_sec() > (1.0 + state->fault_time) &&
               state->pub.fault_code != JSD_EGD_FAULT_UNKNOWN)
       {
         // If we've been waiting for a long duration, the EMCY is not going to come

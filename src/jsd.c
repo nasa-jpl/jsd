@@ -376,12 +376,6 @@ char* jsd_ec_state_to_string(ec_state state) {
  * Private functions
  ****************************************************/
 
-double jsd_get_time_sec() {
-  struct timespec ts;
-  clock_gettime(CLOCK_MONOTONIC, &ts);
-  return (double)ts.tv_sec + (double)ts.tv_nsec / 1e9;
-}
-
 bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
 
