@@ -304,10 +304,18 @@ typedef struct {
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
   uint8_t hall_state;      ///< 3 Hall channels (ABC) in first 3 bits
   uint8_t in_motion;       ///< if motor is in motion
-  uint8_t servo_enabled;   ///< servo enabled, indicates actual brake status
+  uint8_t servo_enabled;   ///< Servo enabled (commands can be processed);
+                           ///< indicates actual brake status.
+                           ///< For transition into Operation Enabled state,
+                           ///< servo_enabled is 1 after time to disengage brake
+                           ///< elapses. Given that this driver is set up to
+                           ///< only transition into Power Disabled states from
+                           ///< Quick Stop Active and Fault, the servo and motor
+                           ///< are immediately disabled and the brake engaged
+                           ///< in those cases.
   uint8_t warning;         ///< from statusword (SW), bit 7
   uint8_t target_reached;  ///< from SW, bit 10 mode dependent
-  uint8_t motor_on;        ///< from SW, indicates brake and drive status
+  uint8_t motor_on;        ///< Motor enabled (powered)
   jsd_egd_fault_code_t fault_code;  ///< from EMCY, != 0 indicates fault
   uint16_t emcy_error_code;         ///< EMCY code, see DS-301 Section 7.1 
 
