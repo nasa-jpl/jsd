@@ -43,12 +43,6 @@ void jsd_el3104_read(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_el3104_process(jsd_t* self, uint16_t slave_id) {
-  assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL3104_PRODUCT_CODE);
-  // no-op
-}
 /****************************************************
  * Private functions
  ****************************************************/
