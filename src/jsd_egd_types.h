@@ -308,9 +308,11 @@ typedef struct {
                            ///< indicates actual brake status.
                            ///< For transition into Operation Enabled state,
                            ///< servo_enabled is 1 after time to disengage brake
-                           ///< elapses. For a transition into any of the Power
-                           ///< Disabled states, servo_enabled is 0 after time
-                           ///< to engage brake elapses.
+                           ///< elapses. Given that this driver is set up to
+                           ///< only transition into Power Disabled states from
+                           ///< Quick Stop Active and Fault, the servo and motor
+                           ///< are immediately disabled and the brake engaged
+                           ///< in those cases.
   uint8_t warning;         ///< from statusword (SW), bit 7
   uint8_t target_reached;  ///< from SW, bit 10 mode dependent
   uint8_t motor_on;        ///< Motor enabled (powered)
