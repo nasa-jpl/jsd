@@ -58,6 +58,10 @@ void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
       JSD_EGD_RESET_DERATE_SEC) {
     self->slave_states[slave_id].egd.new_reset       = true;
     self->slave_states[slave_id].egd.last_reset_time = now;
+
+    self->slave_states[slave_id].egd.pub.fault_code = JSD_EGD_FAULT_OKAY;
+    self->slave_states[slave_id].egd.pub.emcy_error_code = 0;
+
   } else {
     WARNING(
         "EGD Reset Derate Protection feature is preventing reset, ignoring "
