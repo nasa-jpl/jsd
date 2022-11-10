@@ -50,7 +50,7 @@ const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id) {
   return &self->slave_states[slave_id].egd.pub;
 }
 
-void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
+void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
