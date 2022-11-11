@@ -50,6 +50,15 @@ const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id) {
   return &self->slave_states[slave_id].egd.pub;
 }
 
+void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
+
+  self->slave_states[slave_id].egd.pub.fault_code = JSD_EGD_FAULT_OKAY;
+  self->slave_states[slave_id].egd.pub.emcy_error_code = 0;
+
+}
+
 void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
@@ -58,6 +67,11 @@ void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
       JSD_EGD_RESET_DERATE_SEC) {
     self->slave_states[slave_id].egd.new_reset       = true;
     self->slave_states[slave_id].egd.last_reset_time = now;
+
+    // and clear the latched errors errors
+    self->slave_states[slave_id].egd.pub.fault_code = JSD_EGD_FAULT_OKAY;
+    self->slave_states[slave_id].egd.pub.emcy_error_code = 0;
+
   } else {
     WARNING(
         "EGD Reset Derate Protection feature is preventing reset, ignoring "

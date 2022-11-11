@@ -19,7 +19,19 @@ extern "C" {
 const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id);
 
 /**
- * @brief Reset the EGD after a fault
+ * @brief clears any latched state error fields
+ *
+ * Real-time safe. 
+ * Does not reset drive to an operational state, drive will remain in 
+ * SWITCHED_ON state until the reset is called.
+ *
+ * @param self pointer JSD context
+ * @param slave_id slave id of EGD device
+ */
+void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id);
+
+/**
+ * @brief Reset the EGD after a fault and clear errors
  *
  * Real-time safe.
  *
