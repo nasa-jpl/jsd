@@ -424,7 +424,8 @@ typedef struct {
   bool                          last_async_sdo_in_prog;
 
   // Time of statusword fault state change
-  double                        fault_time;
+  double fault_real_time;  // Used to compare against SOEM error's timestamp
+  double fault_mono_time;  // Used to compute elapsed time.
 
 } jsd_egd_private_state_t;
 
