@@ -99,6 +99,10 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
       JSD_EPD_RESET_DERATE_SEC) {
     self->slave_states[slave_id].epd.new_reset       = true;
     self->slave_states[slave_id].epd.last_reset_time = now;
+  } else {
+    WARNING(
+        "EPD Reset Derate Protection feature is preventing reset, ignoring "
+        "request");
   }
   // TODO(dloret): EGD code prints a warning as an else case about ignoring
   // reset.
@@ -154,6 +158,9 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
   slave->PO2SOconfigx = jsd_epd_PO2SO_config;
+
+  // Platinum's EtherCAT Slave Controller requires to block LRW.
+  slave->blockLRW = 1;
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   state->last_reset_time         = 0;
@@ -558,14 +565,20 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
       state->txpdo.statusword & JSD_EPD_STATE_MACHINE_STATE_BITMASK;
   // TODO(dloret): EGD code prints a change of state here.
   if (state->pub.actual_state_machine_state !=
-          state->last_state_machine_state &&
-      state->pub.actual_state_machine_state ==
-          JSD_EPD_STATE_MACHINE_STATE_FAULT) {
-    jsd_sdo_signal_emcy_check(self);
-    // TODO(dloret): Check if setting state->new_reset to false like in EGD code
-    // is actually needed. Commands are handled after reading functions.
-    state->fault_real_time = jsd_time_get_time_sec();
-    state->fault_mono_time = jsd_time_get_mono_time_sec();
+      state->last_state_machine_state) {
+    MSG("EPD[%d] actual State Machine State changed to %s (0x%x)", slave_id,
+        jsd_epd_state_machine_state_to_string(
+            state->pub.actual_state_machine_state),
+        state->pub.actual_state_machine_state);
+
+    if (state->pub.actual_state_machine_state ==
+        JSD_EPD_STATE_MACHINE_STATE_FAULT) {
+      jsd_sdo_signal_emcy_check(self);
+      // TODO(dloret): Check if setting state->new_reset to false like in EGD
+      // code is actually needed. Commands are handled after reading functions.
+      state->fault_real_time = jsd_time_get_time_sec();
+      state->fault_mono_time = jsd_time_get_mono_time_sec();
+    }
   }
   state->last_state_machine_state = state->pub.actual_state_machine_state;
 
@@ -782,4 +795,28 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
       cmd.csp.torque_offset_amps * 1e6 / state->motor_rated_current;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
+}
+
+const char* jsd_epd_state_machine_state_to_string(
+    jsd_epd_state_machine_state_t state) {
+  switch (state) {
+    case JSD_EPD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
+      return "Not Ready to Switch On";
+    case JSD_EPD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
+      return "Switch On Disabled";
+    case JSD_EPD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
+      return "Ready to Switch On";
+    case JSD_EPD_STATE_MACHINE_STATE_SWITCHED_ON:
+      return "Switched On";
+    case JSD_EPD_STATE_MACHINE_STATE_OPERATION_ENABLED:
+      return "Operation Enabled";
+    case JSD_EPD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
+      return "Quick Stop Active";
+    case JSD_EPD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
+      return "Fault Reaction Active";
+    case JSD_EPD_STATE_MACHINE_STATE_FAULT:
+      return "Fault";
+    default:
+      return "Unknown State Machine State";
+  }
 }

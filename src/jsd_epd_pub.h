@@ -108,6 +108,14 @@ uint16_t jsd_epd_lc_to_do(char letter_command[2]);
 // TODO(dloret): Add SDO-based functions to set position, unit mode, and
 // controller gain scheduling mode.
 
+/**
+ * @brief Converts jsd_epd_mode_of_operation label to string
+ *
+ * @return string representation of enumeration label
+ */
+const char* jsd_epd_state_machine_state_to_string(
+    jsd_epd_state_machine_state_t state);
+
 #ifdef __cplusplus
 }
 #endif
