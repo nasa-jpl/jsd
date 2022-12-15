@@ -494,58 +494,73 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
 }
 
 void jsd_ecatcheck(jsd_t* self) {
+
   uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   int     slave;
 
   ec_state bus_state = jsd_get_device_state(self, 0);
 
-  if ((bus_state == EC_STATE_OPERATIONAL && self->wkc < self->expected_wkc) ||
-      self->ecx_context.grouplist[currentgroup].docheckstate) {
+  if (bus_state == EC_STATE_OPERATIONAL && self->wkc < self->expected_wkc)
     /* one ore more slaves are not responding */
-    self->ecx_context.grouplist[currentgroup].docheckstate = FALSE;
     ecx_readstate(&self->ecx_context);
+
     for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+
       if ((self->ecx_context.slavelist[slave].group == currentgroup) &&
-          (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL)) {
-        self->ecx_context.grouplist[currentgroup].docheckstate = TRUE;
-        if (self->ecx_context.slavelist[slave].state ==
-            (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-          MSG_DEBUG("slave[%d] is in SAFE_OP + ERROR, attempting ack.", slave);
+          (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL)) 
+      {
+        // Need to re-arm the entry condition to advance the statemachine next time
+        self->attempt_manual_recovery = 1;
+
+        if (self->ecx_context.slavelist[slave].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+          MSG("slave[%d] is in SAFE_OP + ERROR, attempting ack.", slave);
           self->ecx_context.slavelist[slave].state =
               (EC_STATE_SAFE_OP + EC_STATE_ACK);
           ecx_writestate(&self->ecx_context, slave);
-        } else if (self->ecx_context.slavelist[slave].state ==
-                   EC_STATE_SAFE_OP) {
-          MSG_DEBUG("slave[%d] is in SAFE_OP, changing to OPERATIONAL.", slave);
+
+        } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
+
+          MSG("slave[%d] is in SAFE_OP, changing to OPERATIONAL.", slave);
           self->ecx_context.slavelist[slave].state = EC_STATE_OPERATIONAL;
           ecx_writestate(&self->ecx_context, slave);
+
         } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
+
           if (ecx_reconfig_slave(&self->ecx_context, slave, EC_TIMEOUTRET3)) {
             self->ecx_context.slavelist[slave].islost = FALSE;
             MSG("slave[%d] was reconfigured", slave);
           }
+
         } else if (!self->ecx_context.slavelist[slave].islost) {
+
           /* re-check state */
-          ecx_statecheck(&self->ecx_context, 0, EC_STATE_OPERATIONAL,
-                         EC_TIMEOUTRET);
+          ecx_statecheck(&self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
           if (self->ecx_context.slavelist[slave].state == EC_STATE_NONE) {
             self->ecx_context.slavelist[slave].islost = TRUE;
             ERROR("slave[%d] is lost", slave);
           }
+
         }
       }
+
       if (self->ecx_context.slavelist[slave].islost) {
+
         if (self->ecx_context.slavelist[slave].state == EC_STATE_NONE) {
+
           if (ecx_recover_slave(&self->ecx_context, slave, EC_TIMEOUTRET3)) {
             self->ecx_context.slavelist[slave].islost = FALSE;
             MSG("slave[%d] recovered", slave);
           }
+
         } else {
           self->ecx_context.slavelist[slave].islost = FALSE;
           MSG("slave %d found", slave);
         }
+
       }
     }
+
+    // TODO
     if (!self->ecx_context.grouplist[currentgroup].docheckstate)
       SUCCESS("all slaves resumed OPERATIONAL.");
   }
