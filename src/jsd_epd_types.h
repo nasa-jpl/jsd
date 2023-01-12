@@ -218,7 +218,8 @@ typedef struct __attribute__((__packed__)) {
   int32_t  velocity_offset;    ///< 0x60B1
   int16_t  torque_offset;      ///< 0x60B2
   int8_t   mode_of_operation;  ///< 0x6060
-  uint16_t max_current;        ///< 0x6073
+  uint16_t max_current;  ///< 0x6073 TODO(dloret): might need to remove since it
+                         ///< does not have an effect on PL.
   uint32_t digital_outputs;    ///< 0x60FE
   uint16_t controlword;  ///< 0x6040. NOTE(dloret): bit arrangement is different
                          ///< from Gold line.

@@ -115,6 +115,20 @@ void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
   self->slave_states[slave_id].epd.new_halt_command = true;
 }
 
+void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
+                                uint8_t output) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(index < JSD_EPD_NUM_DIGITAL_OUTPUTS);
+
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  if (output > 0) {
+    state->rxpdo.digital_outputs |= (0x01 << (16 + index));
+  } else {
+    state->rxpdo.digital_outputs &= ~(0x01 << (16 + index));
+  }
+}
+
 void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
                               double peak_current) {
   assert(self);
@@ -173,6 +187,7 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
     ERROR("continuous_current_limit not set on EPD[%d]", slave_id);
     return false;
   }
+  jsd_epd_set_peak_current(self, slave_id, config->epd.peak_current_limit);
 
   state->pub.emcy_error_code = 0;
 

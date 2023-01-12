@@ -62,8 +62,20 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id);
 void jsd_epd_halt(jsd_t* self, uint16_t slave_id);
 
 // TODO(dloret): add the following functions:
-// - jsd_epd_set_digital_output
 // - jsd_epd_set_gain_scheduling_index
+
+/**
+ * @brief Sets the value of the given digital output.
+ *
+ * Real-time safe.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param index Index of the digital output, [0, JSD_EPD_NUM_DIGITAL_OUTPUT)
+ * @param output Output value (0 or 1)
+ */
+void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
+                                uint8_t output);
 
 /**
  * @brief Sets the peak current limit for the drive, P_PL[1]
