@@ -99,13 +99,18 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
       JSD_EPD_RESET_DERATE_SEC) {
     self->slave_states[slave_id].epd.new_reset       = true;
     self->slave_states[slave_id].epd.last_reset_time = now;
+
+    // TODO(dloret): EGD code clears fault_code/emcy_error_code here. However,
+    // the clearing is also done when entering the OPERATION_ENABLED state. It
+    // seems only one is needed and clearing in OPERATION_ENABLED is more in
+    // line with only 2 states visible for user: error and non-error (i.e.
+    // OPERATION_ENABLED).
   } else {
+    // TODO(dloret): Remove printing to not affect real-time guarantees.
     WARNING(
         "EPD Reset Derate Protection feature is preventing reset, ignoring "
         "request");
   }
-  // TODO(dloret): EGD code prints a warning as an else case about ignoring
-  // reset.
 }
 
 void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
@@ -189,6 +194,7 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   }
   jsd_epd_set_peak_current(self, slave_id, config->epd.peak_current_limit);
 
+  state->pub.fault_code      = JSD_EPD_FAULT_OKAY;
   state->pub.emcy_error_code = 0;
 
   return true;
@@ -588,11 +594,12 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
     if (state->pub.actual_state_machine_state ==
         JSD_EPD_STATE_MACHINE_STATE_FAULT) {
-      jsd_sdo_signal_emcy_check(self);
       // TODO(dloret): Check if setting state->new_reset to false like in EGD
       // code is actually needed. Commands are handled after reading functions.
       state->fault_real_time = jsd_time_get_time_sec();
       state->fault_mono_time = jsd_time_get_mono_time_sec();
+
+      jsd_sdo_signal_emcy_check(self);
     }
   }
   state->last_state_machine_state = state->pub.actual_state_machine_state;
@@ -665,8 +672,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       }
       break;
     case JSD_EPD_STATE_MACHINE_STATE_OPERATION_ENABLED:
-      // TODO(dloret): Set state->pub.fault_code to JSD_EPD_FAULT_OKAY when
-      // available.
+      state->pub.fault_code      = JSD_EPD_FAULT_OKAY;
       state->pub.emcy_error_code = 0;
 
       // Handle halt (Quick Stop)
@@ -720,10 +726,12 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
           // Might want to handle other types of errors too in the future.
           if (error.Etype == EC_ERR_TYPE_EMERGENCY) {
             state->pub.emcy_error_code = error.ErrorCode;
-            // TODO(dloret): Set state->pub.fault_code here.
+            state->pub.fault_code = jsd_epd_get_fault_code_from_ec_error(error);
 
-            // TODO(dloret): EGD code prints an error message here with the
-            // description of the EMCY code.
+            // TODO(dloret): Remove printing to not affect real-time guarantees.
+            ERROR("EPD[%d] EMCY code: 0x%X, fault description: %s", error.Slave,
+                  state->pub.emcy_error_code,
+                  jsd_epd_fault_code_to_string(state->pub.fault_code));
 
             // Transition to SWITCHED ON DISABLED
             state->rxpdo.controlword =
@@ -739,8 +747,12 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // because it might never arrive (e.g. error at startup).
       if (!error_found &&
           jsd_time_get_mono_time_sec() > (1.0 + state->fault_mono_time)) {
+        // TODO(dloret): Remove printing to not affect real-time guarantees.
+        WARNING("EPD[%d] in FAULT state but new EMCY code has not arrived",
+                slave_id);
+
         state->pub.emcy_error_code = 0xFFFF;
-        // TODO(dloret): Set state->pub.fault_coder here too.
+        state->pub.fault_code      = JSD_EPD_FAULT_UNKNOWN;
 
         // Transition to SWITCHED ON DISABLED
         state->rxpdo.controlword =
@@ -812,6 +824,117 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
 }
 
+jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
+  jsd_epd_fault_code_t fault_code = JSD_EPD_FAULT_OKAY;
+  switch (error.ErrorCode) {
+    case 0x2340:
+      fault_code = JSD_EPD_FAULT_SHORT_PROTECTION;
+      break;
+    case 0x3120:
+      fault_code = JSD_EPD_FAULT_UNDER_VOLTAGE;
+      break;
+    case 0x3130:
+      fault_code = JSD_EPD_FAULT_LOSS_OF_PHASE;
+      break;
+    case 0x3310:
+      fault_code = JSD_EPD_FAULT_OVER_VOLTAGE;
+      break;
+    case 0x4210:
+      fault_code = JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE;
+      break;
+    case 0x4310:
+      fault_code = JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE;
+      break;
+    case 0x5280:
+      fault_code = JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED;
+      break;
+    case 0x5441:
+      fault_code = JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED;
+      break;
+    case 0x5442:
+      fault_code = JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE;
+      break;
+    case 0x6181:
+      fault_code = JSD_EPD_FAULT_VECTOR_ABORT;
+      break;
+    case 0x6300:
+      fault_code = JSD_EPD_FAULT_RPDO_FAILED;
+      break;
+    case 0x7121:
+      fault_code = JSD_EPD_FAULT_MOTOR_STUCK;
+      break;
+    case 0x7300:
+      fault_code = JSD_EPD_FAULT_FEEDBACK_ERROR;
+      break;
+    case 0x7380:
+      fault_code = JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH;
+      break;
+    case 0x7381:
+      fault_code = JSD_EPD_FAULT_HALL_BAD_CHANGE;
+      break;
+    case 0x7382:
+      fault_code = JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL;
+      break;
+    case 0x8110:
+      fault_code = JSD_EPD_FAULT_CAN_MESSAGE_LOST;
+      break;
+    case 0x8130:
+      fault_code = JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS;
+      break;
+    case 0x8140:
+      fault_code = JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF;
+      break;
+    case 0x8200:
+      fault_code = JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO;
+      break;
+    case 0x8210:
+      fault_code = JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH;
+      break;
+    case 0x8311:
+      fault_code = JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED;
+      break;
+    case 0x8480:
+      fault_code = JSD_EPD_FAULT_SPEED_TRACKING_ERROR;
+      break;
+    case 0x8481:
+      fault_code = JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED;
+      break;
+    case 0x8611:
+      fault_code = JSD_EPD_FAULT_POSITION_TRACKING_ERROR;
+      break;
+    case 0x8680:
+      fault_code = JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED;
+      break;
+    case 0xFF02:
+      fault_code = JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY;
+      break;
+    case 0xFF10:
+      fault_code = JSD_EPD_FAULT_CANNOT_START_MOTOR;
+      break;
+    case 0xFF20:
+      fault_code = JSD_EPD_FAULT_STO_ENGAGED;
+      break;
+    case 0xFF30:
+      fault_code = JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND;
+      break;
+    case 0xFF34:
+      fault_code = JSD_EPD_FAULT_KINEMATICS_ERROR;
+      break;
+    case 0xFF35:
+      fault_code = JSD_EPD_FAULT_GANTRY_MASTER_ERROR;
+      break;
+    case 0xFF40:
+      fault_code = JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED;
+      break;
+    case 0xFF50:
+      fault_code = JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT;
+      break;
+    default:
+      fault_code = JSD_EPD_FAULT_UNKNOWN;
+  }
+  return fault_code;
+}
+
 const char* jsd_epd_state_machine_state_to_string(
     jsd_epd_state_machine_state_t state) {
   switch (state) {
@@ -833,5 +956,84 @@ const char* jsd_epd_state_machine_state_to_string(
       return "Fault";
     default:
       return "Unknown State Machine State";
+  }
+}
+
+const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
+  switch (fault_code) {
+    case JSD_EPD_FAULT_OKAY:
+      return "JSD_EPD_FAULT_OKAY";
+    case JSD_EPD_FAULT_SHORT_PROTECTION:
+      return "JSD_EPD_FAULT_SHORT_PROTECTION";
+    case JSD_EPD_FAULT_UNDER_VOLTAGE:
+      return "JSD_EPD_FAULT_UNDER_VOLTAGE";
+    case JSD_EPD_FAULT_LOSS_OF_PHASE:
+      return "JSD_EPD_FAULT_LOSS_OF_PHASE";
+    case JSD_EPD_FAULT_OVER_VOLTAGE:
+      return "JSD_EPD_FAULT_OVER_VOLTAGE";
+    case JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE:
+      return "JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE";
+    case JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE:
+      return "JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE";
+    case JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED:
+      return "JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED";
+    case JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE:
+      return "JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE";
+    case JSD_EPD_FAULT_VECTOR_ABORT:
+      return "JSD_EPD_FAULT_VECTOR_ABORT";
+    case JSD_EPD_FAULT_RPDO_FAILED:
+      return "JSD_EPD_FAULT_RPDO_FAILED";
+    case JSD_EPD_FAULT_MOTOR_STUCK:
+      return "JSD_EPD_FAULT_MOTOR_STUCK";
+    case JSD_EPD_FAULT_FEEDBACK_ERROR:
+      return "JSD_EPD_FAULT_FEEDBACK_ERROR";
+    case JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH:
+      return "JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH";
+    case JSD_EPD_FAULT_HALL_BAD_CHANGE:
+      return "JSD_EPD_FAULT_HALL_BAD_CHANGE";
+    case JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL:
+      return "JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL";
+    case JSD_EPD_FAULT_CAN_MESSAGE_LOST:
+      return "JSD_EPD_FAULT_CAN_MESSAGE_LOST";
+    case JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS:
+      return "JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS";
+    case JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF:
+      return "JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF";
+    case JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO:
+      return "JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO";
+    case JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH:
+      return "JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH";
+    case JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED:
+      return "JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED";
+    case JSD_EPD_FAULT_SPEED_TRACKING_ERROR:
+      return "JSD_EPD_FAULT_SPEED_TRACKING_ERROR";
+    case JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_POSITION_TRACKING_ERROR:
+      return "JSD_EPD_FAULT_POSITION_TRACKING_ERROR";
+    case JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY:
+      return "JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY";
+    case JSD_EPD_FAULT_CANNOT_START_MOTOR:
+      return "JSD_EPD_FAULT_CANNOT_START_MOTOR";
+    case JSD_EPD_FAULT_STO_ENGAGED:
+      return "JSD_EPD_FAULT_STO_ENGAGED";
+    case JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND:
+      return "JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND";
+    case JSD_EPD_FAULT_KINEMATICS_ERROR:
+      return "JSD_EPD_FAULT_KINEMATICS_ERROR";
+    case JSD_EPD_FAULT_GANTRY_MASTER_ERROR:
+      return "JSD_EPD_FAULT_GANTRY_MASTER_ERROR";
+    case JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED:
+      return "JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED";
+    case JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT:
+      return "JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT";
+    case JSD_EPD_FAULT_UNKNOWN:
+      return "JSD_EPD_FAULT_UNKNOWN";
+    default:
+      return "Unknown Fault Code";
   }
 }

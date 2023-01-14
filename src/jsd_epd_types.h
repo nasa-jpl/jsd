@@ -51,8 +51,49 @@ typedef enum {
   JSD_EPD_STATE_MACHINE_STATE_FAULT                  = 0x08
 } jsd_epd_state_machine_state_t;
 
-// TODO(dloret): add fault codes (i.e. jsd_epd_fault_code_t) once the Emergency
-// Error codes for the Platinum are known.
+/**
+ * @brief Elmo Platinum Drive Fault Code
+ *
+ * See Platinum Administrator Guide, chapter 7
+ */
+typedef enum {
+  JSD_EPD_FAULT_OKAY = 0,
+  JSD_EPD_FAULT_SHORT_PROTECTION,
+  JSD_EPD_FAULT_UNDER_VOLTAGE,
+  JSD_EPD_FAULT_LOSS_OF_PHASE,
+  JSD_EPD_FAULT_OVER_VOLTAGE,
+  JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE,
+  JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE,
+  JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED,
+  JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED,
+  JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE,
+  JSD_EPD_FAULT_VECTOR_ABORT,
+  JSD_EPD_FAULT_RPDO_FAILED,
+  JSD_EPD_FAULT_MOTOR_STUCK,
+  JSD_EPD_FAULT_FEEDBACK_ERROR,
+  JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH,
+  JSD_EPD_FAULT_HALL_BAD_CHANGE,
+  JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL,
+  JSD_EPD_FAULT_CAN_MESSAGE_LOST,
+  JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS,
+  JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF,
+  JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO,
+  JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH,
+  JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED,
+  JSD_EPD_FAULT_SPEED_TRACKING_ERROR,
+  JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED,
+  JSD_EPD_FAULT_POSITION_TRACKING_ERROR,
+  JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED,
+  JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY,
+  JSD_EPD_FAULT_CANNOT_START_MOTOR,
+  JSD_EPD_FAULT_STO_ENGAGED,
+  JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND,
+  JSD_EPD_FAULT_KINEMATICS_ERROR,
+  JSD_EPD_FAULT_GANTRY_MASTER_ERROR,
+  JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED,
+  JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT,
+  JSD_EPD_FAULT_UNKNOWN
+} jsd_epd_fault_code_t;
 
 // TODO(dloret): Add gain scheduling mode type later. Same values. HOWEVER, the
 // corresponding object is different: 0x30F4.
@@ -170,7 +211,7 @@ typedef struct {
                           ///< time to engage brake elapses.
   uint8_t warning;        ///< From statusword, bit 7
   uint8_t target_reached;  ///< From statusword, bit 10, mode dependent.
-  // TODO(dloret): Add fault_code field once the fault codes are known.
+  jsd_epd_fault_code_t fault_code;  ///< Fault based on Emergency error code.
   uint16_t emcy_error_code;  ///< Emergency error codes.
 
   double  bus_voltage;           ///< Bus voltage, V

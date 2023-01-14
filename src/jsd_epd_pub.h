@@ -128,6 +128,13 @@ uint16_t jsd_epd_lc_to_do(char letter_command[2]);
 const char* jsd_epd_state_machine_state_to_string(
     jsd_epd_state_machine_state_t state);
 
+/**
+ * @brief Converts jsd_epd_fault_code_t label to string
+ *
+ * @return string representation of enumeration label
+ */
+const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code);
+
 #ifdef __cplusplus
 }
 #endif

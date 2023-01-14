@@ -92,8 +92,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id);
 // TODO(dloret): add the functions for the other types of motion commands.
 
-// TODO(dloret): Add jsd_epd_get_fault_code_from_ec_error after confirming error
-// codes for Platinum.
+jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
 
 #ifdef __cplusplus
 }
