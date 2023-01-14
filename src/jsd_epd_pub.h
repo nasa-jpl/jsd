@@ -102,8 +102,22 @@ void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
  * @param motion_command Set of parameters of the CSP command
  */
 void jsd_epd_set_motion_command_csp(
-    jsd_t* slef, uint16_t slave_id,
+    jsd_t* self, uint16_t slave_id,
     jsd_epd_motion_command_csp_t motion_command);
+
+/**
+ * @brief Sends a Cyclic Synchronous Velocity (CSV) motion command to the EPD
+ * device
+ *
+ * Real-time safe
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param motion_command Set of parameters of the CSV command
+ */
+void jsd_epd_set_motion_command_csv(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_csv_t motion_command);
 
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,

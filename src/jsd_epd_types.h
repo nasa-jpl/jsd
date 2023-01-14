@@ -112,6 +112,16 @@ typedef struct {
   double  torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
 } jsd_epd_motion_command_csp_t;
 
+/**
+ * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Velocity
+ * mode of operation
+ */
+typedef struct {
+  int32_t target_velocity;     ///< 0x60FF
+  int32_t velocity_offset;     ///< 0x60B1
+  double  torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
+} jsd_epd_motion_command_csv_t;
+
 // TODO(dloret): Add command structures for Cyclic Synchronous Velocity and
 // Cyclic Synchronous Torque.
 
@@ -123,6 +133,7 @@ typedef struct {
 typedef struct {
   union {
     jsd_epd_motion_command_csp_t csp;
+    jsd_epd_motion_command_csv_t csv;
   };
 } jsd_epd_motion_command_t;
 

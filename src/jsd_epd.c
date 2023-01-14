@@ -156,6 +156,18 @@ void jsd_epd_set_motion_command_csp(
   state->motion_command.csp          = motion_command;
 }
 
+void jsd_epd_set_motion_command_csv(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_csv_t motion_command) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  state->new_motion_command          = true;
+  state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
+  state->motion_command.csv          = motion_command;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -795,7 +807,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
       jsd_epd_mode_of_op_handle_csp(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CSV:
-      ERROR("JSD_EPD_MODE_OF_OPERATION_CSV not implemented yet.");
+      jsd_epd_mode_of_op_handle_csv(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CST:
       ERROR("JSD_EPD_MODE_OF_OPERATION_CST not implemented yet.");
@@ -822,6 +834,21 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
       cmd.csp.torque_offset_amps * 1e6 / state->motor_rated_current;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
+}
+
+void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_motion_command_t cmd   = state->motion_command;
+
+  state->rxpdo.target_position = 0;
+  state->rxpdo.position_offset = 0;
+  state->rxpdo.target_velocity = cmd.csv.target_velocity;
+  state->rxpdo.velocity_offset = cmd.csv.velocity_offset;
+  state->rxpdo.target_torque   = 0;
+  state->rxpdo.torque_offset =
+      cmd.csv.torque_offset_amps * 1e6 / state->motor_rated_current;
+
+  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
 }
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
