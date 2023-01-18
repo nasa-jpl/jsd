@@ -91,6 +91,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id);
 // Helper functions to handle the different types of motion commands
 void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id);
+void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
 // TODO(dloret): add the functions for the other types of motion commands.
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
