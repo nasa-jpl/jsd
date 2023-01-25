@@ -189,6 +189,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
 
+  ERROR("INIT, HELLO, THERE!");
+
   ec_slavet* slave = &self->ecx_context.slavelist[slave_id];
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
@@ -203,7 +205,7 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   slave->PO2SOconfigx = jsd_epd_PO2SO_config;
 
   // Platinum's EtherCAT Slave Controller requires to block LRW.
-  slave->blockLRW = 1;
+  //  slave->blockLRW = 1;
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   state->last_reset_time         = 0;
@@ -227,6 +229,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
   assert(ecx_context->slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  ERROR("HELLO, THERE!");
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within the ecx_context and extract it here.

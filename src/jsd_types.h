@@ -145,6 +145,7 @@ typedef struct {
 
   ecx_contextt ecx_context;              ///< stores SOEM context
   char         IOmap[JSD_IOMAP_BYTES];   ///< IOmap contains read data from bus
+  char         IOmap_overlap[JSD_IOMAP_BYTES];
   int          expected_wkc;             ///< Expected Working Counter
   int          wkc;                      ///< processdata Working Counter
   int          last_wkc;                 ///< the previous processdata wkc
