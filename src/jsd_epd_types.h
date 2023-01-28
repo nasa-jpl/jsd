@@ -131,6 +131,20 @@ typedef struct {
   double torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
 } jsd_epd_motion_command_cst_t;
 
+/**
+ * @brief Elmo Platinum drive's motion command for Profiled Position mode of
+ * operation.
+ */
+typedef struct {
+  int32_t  target_position;   ///< 0x6074
+  uint32_t profile_velocity;  ///< 0x6081
+  uint32_t end_velocity;      ///< 0x6082
+  uint32_t profile_accel;     ///< 0x6083
+  uint32_t profile_decel;     ///< 0x6084
+  uint8_t
+      relative;  ///< target_position is relative to actuator's actual position.
+} jsd_epd_motion_command_prof_pos_t;
+
 // TODO(dloret): Update jsd_epd_motion_command_t once the other command types
 // are added.
 /**
@@ -141,6 +155,7 @@ typedef struct {
     jsd_epd_motion_command_csp_t csp;
     jsd_epd_motion_command_csv_t csv;
     jsd_epd_motion_command_cst_t cst;
+    jsd_epd_motion_command_prof_pos_t prof_pos;
   };
 } jsd_epd_motion_command_t;
 
@@ -277,11 +292,18 @@ typedef struct __attribute__((__packed__)) {
   int32_t  velocity_offset;    ///< 0x60B1
   int16_t  torque_offset;      ///< 0x60B2
   int8_t   mode_of_operation;  ///< 0x6060
-  uint16_t max_current;  ///< 0x6073 TODO(dloret): might need to remove since it
-                         ///< does not have an effect on PL.
+  uint16_t max_current;        ///< 0x6073
+  // TODO(dloret): max_current
+  // - Might need to remove since it does not have an effect on PL.
+  // - EGD's Profile rxPDO maps max_current to 0x6072 (Max Torque) instead of
+  //   0x6073 (Max Current). But they should be equal in this case.
   uint32_t digital_outputs;    ///< 0x60FE
   uint16_t controlword;  ///< 0x6040. NOTE(dloret): bit arrangement is different
                          ///< from Gold line.
+  uint32_t profile_velocity;  ///< 0x6081
+  uint32_t end_velocity;      ///< 0x6082
+  uint32_t profile_accel;     ///< 0x6083
+  uint32_t profile_decel;     ///< 0x6084
   // TODO(dloret): Add gain scheduling index field (0x2E00).
 } jsd_epd_rxpdo_data_t;
 

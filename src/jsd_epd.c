@@ -180,6 +180,18 @@ void jsd_epd_set_motion_command_cst(
   state->motion_command.cst          = motion_command;
 }
 
+void jsd_epd_set_motion_command_prof_pos(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_prof_pos_t motion_command) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  state->new_motion_command          = true;
+  state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
+  state->motion_command.prof_pos     = motion_command;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -280,9 +292,13 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   // TODO(dloret): Add gain scheduling index mapping
   uint16_t map_output_pdos_1603[] = {
-      0x0002,          // Number of mapped parameters
+      0x0006,          // Number of mapped parameters
       0x0120, 0x60FE,  // digital_outputs
       0x0010, 0x6040,  // controlword
+      0x0020, 0x6081,  // profile_velocity
+      0x0020, 0x6082,  // end_velocity
+      0x0020, 0x6083,  // profile_accel
+      0x0020, 0x6084,  // profile_decel
   };
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1603, 0x00,
                                      sizeof(map_output_pdos_1603),
@@ -807,7 +823,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
     case JSD_EPD_MODE_OF_OPERATION_DISABLED:
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_POS:
-      ERROR("JSD_EPD_MODE_OF_OPERATION_PROF_POS not implemented yet.");
+      jsd_epd_mode_of_op_handle_prof_pos(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_VEL:
       ERROR("JSD_EPD_MODE_OF_OPERATION_PROF_VEL not implemented yet.");
@@ -833,6 +849,11 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
   }
 }
 
+// TODO(dloret): Determine if it is appropriate to set to zero command variables
+// of other motion modes when handling a particular mode. If the mode of
+// operation does not transition in that cycle, the current motion could be
+// abruptly interrupted.
+
 void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
@@ -844,6 +865,10 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.target_torque   = 0;
   state->rxpdo.torque_offset =
       cmd.csp.torque_offset_amps * 1e6 / state->motor_rated_current;
+  state->rxpdo.profile_velocity = 0;
+  state->rxpdo.end_velocity     = 0;
+  state->rxpdo.profile_accel    = 0;
+  state->rxpdo.profile_decel    = 0;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
 }
@@ -859,6 +884,10 @@ void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.target_torque   = 0;
   state->rxpdo.torque_offset =
       cmd.csv.torque_offset_amps * 1e6 / state->motor_rated_current;
+  state->rxpdo.profile_velocity = 0;
+  state->rxpdo.end_velocity     = 0;
+  state->rxpdo.profile_accel    = 0;
+  state->rxpdo.profile_decel    = 0;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
 }
@@ -875,8 +904,39 @@ void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
       cmd.cst.target_torque_amps * 1e6 / state->motor_rated_current;
   state->rxpdo.torque_offset =
       cmd.cst.torque_offset_amps * 1e6 / state->motor_rated_current;
+  state->rxpdo.profile_velocity = 0;
+  state->rxpdo.end_velocity     = 0;
+  state->rxpdo.profile_accel    = 0;
+  state->rxpdo.profile_decel    = 0;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CST;
+}
+
+void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_motion_command_t cmd   = state->motion_command;
+
+  state->rxpdo.target_position  = cmd.prof_pos.target_position;
+  state->rxpdo.position_offset  = 0;
+  state->rxpdo.target_velocity  = 0;
+  state->rxpdo.velocity_offset  = 0;
+  state->rxpdo.target_torque    = 0;
+  state->rxpdo.torque_offset    = 0;
+  state->rxpdo.profile_velocity = cmd.prof_pos.profile_velocity;
+  state->rxpdo.end_velocity     = cmd.prof_pos.end_velocity;
+  state->rxpdo.profile_accel    = cmd.prof_pos.profile_accel;
+  state->rxpdo.profile_decel    = cmd.prof_pos.profile_decel;
+
+  if (state->new_motion_command) {
+    // Signal new set-point
+    state->rxpdo.controlword |= (0x01 << 4);
+  }
+  // Request immediate change of set-point
+  state->rxpdo.controlword |= (0x01 << 5);
+  // Indicate whether motion is relative
+  state->rxpdo.controlword |= (cmd.prof_pos.relative << 6);
+
+  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
 }
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
