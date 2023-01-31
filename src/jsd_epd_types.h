@@ -98,9 +98,6 @@ typedef enum {
 // TODO(dloret): Add gain scheduling mode type later. Same values. HOWEVER, the
 // corresponding object is different: 0x30F4.
 
-// TODO(dloret): Add command structures for profile position, profile velocity,
-// and profile torque.
-
 /**
  * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Position
  * mode of operation
@@ -155,8 +152,14 @@ typedef struct {
   uint32_t profile_decel;    ///< 0x6084
 } jsd_epd_motion_command_prof_vel_t;
 
-// TODO(dloret): Update jsd_epd_motion_command_t once the other command types
-// are added.
+/**
+ * @brief Elmo Platinum drive's motion command for Profile Torque mode of
+ * operation.
+ */
+typedef struct {
+  double target_torque_amps;  ///< Converted to 0x6071 using CL[1]
+} jsd_epd_motion_command_prof_torque_t;
+
 /**
  * @brief Union of all motion commands.
  */
@@ -167,6 +170,7 @@ typedef struct {
     jsd_epd_motion_command_cst_t cst;
     jsd_epd_motion_command_prof_pos_t prof_pos;
     jsd_epd_motion_command_prof_vel_t prof_vel;
+    jsd_epd_motion_command_prof_torque_t prof_torque;
   };
 } jsd_epd_motion_command_t;
 
@@ -246,8 +250,6 @@ typedef struct {
   jsd_epd_state_machine_state_t actual_state_machine_state;
   jsd_epd_mode_of_operation_t   actual_mode_of_operation;
 
-  // TODO(dloret): Find out which PDO-mappable object contains STO (0x6640?) and
-  // hall statuses (0x1002 for Gold).
   uint8_t sto_engaged;    ///< Safe Torque Off (EStop) status
   uint8_t hall_state;     ///< 3 Hall channels (ABC) in first 3 bits.
   uint8_t motor_on;       ///< Whether the motor is enabled (powered).
@@ -283,7 +285,6 @@ typedef struct __attribute__((__packed__)) {
   int32_t velocity_actual_value;      ///< 0x6069
   int16_t current_actual_value;       ///< 0x6078
   int8_t  mode_of_operation_display;  ///< 0x6061
-  // TODO(dloret): need additional objects for data no longer in SR[1]
   uint32_t dc_link_circuit_voltage;  ///< 0x6079
   float    drive_temperature_deg_c;  ///< 0x3610
   uint32_t digital_inputs;           ///< 0x60FD
@@ -299,7 +300,6 @@ typedef struct __attribute__((__packed__)) {
  *
  * Note: struct order matters and must be packed.
  */
-// TODO(dloret): Implement other cyclic synchronous and the profile modes.
 typedef struct __attribute__((__packed__)) {
   int32_t  target_position;    ///< 0x607A
   int32_t  target_velocity;    ///< 0x60FF

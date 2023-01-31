@@ -94,7 +94,7 @@ void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id);
-// TODO(dloret): add the functions for the other types of motion commands.
+void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id);
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
 

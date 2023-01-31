@@ -89,8 +89,6 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
 void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
                               double peak_current);
 
-// TODO(dloret): add the functions for the other types of motion commands.
-
 /**
  * @brief Sends a Cyclic Synchronous Position (CSP) motion command to the EPD
  * device
@@ -158,6 +156,19 @@ void jsd_epd_set_motion_command_prof_pos(
 void jsd_epd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
     jsd_epd_motion_command_prof_vel_t motion_command);
+
+/**
+ * @brief Sends a Profiled Torque motion command to the EPD device.
+ *
+ * Real-time safe
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param motion_command Set of parameters of the Profiled Torque command
+ */
+void jsd_epd_set_motion_command_prof_torque(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_prof_torque_t motion_command);
 
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,

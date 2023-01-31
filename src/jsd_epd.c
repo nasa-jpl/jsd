@@ -204,6 +204,18 @@ void jsd_epd_set_motion_command_prof_vel(
   state->motion_command.prof_vel     = motion_command;
 }
 
+void jsd_epd_set_motion_command_prof_torque(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_prof_torque_t motion_command) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  state->new_motion_command          = true;
+  state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
+  state->motion_command.prof_torque  = motion_command;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -846,7 +858,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
       jsd_epd_mode_of_op_handle_prof_vel(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE:
-      ERROR("JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE not implemented yet.");
+      jsd_epd_mode_of_op_handle_prof_torque(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CSP:
       jsd_epd_mode_of_op_handle_csp(self, slave_id);
@@ -972,6 +984,25 @@ void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.profile_decel    = cmd.prof_vel.profile_decel;
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
+}
+
+void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_motion_command_t cmd   = state->motion_command;
+
+  state->rxpdo.target_position = 0;
+  state->rxpdo.position_offset = 0;
+  state->rxpdo.target_velocity = 0;
+  state->rxpdo.velocity_offset = 0;
+  state->rxpdo.target_torque =
+      cmd.prof_torque.target_torque_amps * 1e6 / state->motor_rated_current;
+  state->rxpdo.torque_offset    = 0;
+  state->rxpdo.profile_velocity = 0;
+  state->rxpdo.end_velocity     = 0;
+  state->rxpdo.profile_accel    = 0;
+  state->rxpdo.profile_decel    = 0;
+
+  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
 }
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
