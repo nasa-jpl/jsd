@@ -132,6 +132,11 @@ if(BUILD_JSD_TESTS)
             jsd_test_utils.c)
     target_link_libraries(jsd_epd_prof_pos_test ${jsd_test_libs})
 
+    add_executable(jsd_epd_prof_vel_test
+            device/jsd_epd_prof_vel_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_prof_vel_test ${jsd_test_libs})
+
     find_program(VALGRIND_EXECUTABLE NAMES valgrind)
     if(VALGRIND_EXECUTABLE)
         set(CTEST_MEMORYCHECK_COMMAND ${VALGRIND_EXECUTABLE})

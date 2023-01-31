@@ -1,18 +1,21 @@
 #include <assert.h>
-#include <math.h>
 #include <string.h>
 
 #include "jsd/jsd_epd_pub.h"
 #include "jsd/jsd_time.h"
 #include "jsd_test_utils.h"
 
+#define NUM_VEL_FACTORS 7
+
 extern bool  quit;
 extern FILE* file;
 uint8_t      slave_id;
 double       server_startup_s;
-double       amplitude;
-double       sine_freq;
-uint8_t      enable_velocity_offset;
+int32_t      max_target_vel;
+uint32_t     profile_accel;
+uint32_t     profile_decel;
+double       target_vel_factors[NUM_VEL_FACTORS] = {0.0,  0.2,  0.8, 0.4,
+                                              -0.3, -1.0, -0.5};
 
 int16_t BRAKE_TIME_MSEC = 100;
 
@@ -114,9 +117,8 @@ void extract_data(void* self) {
 }
 
 void command(void* self) {
-  static int32_t pos_offset       = 0;
-  static double  motion_startup_s = 0.0;
-  static bool    first_motion_cmd = true;
+  static int32_t iter    = 0;
+  static size_t  vel_idx = 0;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -134,57 +136,59 @@ void command(void* self) {
   if (!state->servo_enabled) {
     MSG("Sending reset.");
     jsd_epd_reset(sds->jsd, slave_id);
+    iter = 0;
     return;
   }
 
-  if (first_motion_cmd) {
-    pos_offset       = state->actual_position;
-    motion_startup_s = jsd_time_get_mono_time_sec();
-    now_s = motion_startup_s;  // Force first value of time variable in
-                               // sinusoidal command to be 0 for simplicity.
-    first_motion_cmd = false;
+  // Change target velocity every 10 seconds.
+  if (iter % (sds->loop_rate_hz * 10) == 0) {
+    ++vel_idx;
+    vel_idx %= NUM_VEL_FACTORS;
+
+    jsd_epd_motion_command_prof_vel_t cmd;
+    cmd.target_velocity = max_target_vel * target_vel_factors[vel_idx];
+    cmd.profile_accel   = profile_accel;
+    cmd.profile_decel   = profile_decel;
+
+    jsd_epd_set_motion_command_prof_vel(sds->jsd, slave_id, cmd);
   }
 
-  jsd_epd_motion_command_csp_t csp;
-  double                       t = now_s - motion_startup_s;
-  double                       w = 2.0 * M_PI * sine_freq;
-  csp.target_position            = amplitude * sin(w * t) + pos_offset;
-  csp.position_offset            = 0;
-  if (enable_velocity_offset) {
-    csp.velocity_offset = amplitude * w * cos(w * t);
-  } else {
-    csp.velocity_offset = 0;
-  }
-  csp.torque_offset_amps = 0.0;
-
-  jsd_epd_set_motion_command_csp(sds->jsd, slave_id, csp);
+  ++iter;
 }
 
 int main(int argc, char* argv[]) {
   if (argc != 10) {
     ERROR("Expecting exactly 9 arguments");
-    MSG("Usage: jsd_epd_csp_sine_test <ifname> <epd_slave_index> "
-        "<loop_freq_hz> <amplitude> <sine_freq> <enable_velocity_offset> "
+    MSG("Usage: jsd_epd_prof_vel_test <ifname> <epd_slave_index> "
+        "<loop_freq_hz> <max_target_velocity> <profile_accel> <profile_decel> "
         "<peak_current_amps> <continuous_current_amps> <max_motor_speed> ");
-    MSG("Example: $ jsd_epd_csp_sine_test eth0 2 100 25000 0.25 1 0.25 0.45 "
-        "50000");
+    MSG("Example: $ jsd_epd_prof_vel_test eth0 2 100 50000 25000 40000 0.5 "
+        "0.25 100000");
     return 0;
+  }
+
+  if (atoi(argv[5]) < 0 || atoi(argv[6]) < 0) {
+    ERROR(
+        "Profile acceleration and profile deceleration must be positive "
+        "integers.");
+    return 1;
   }
 
   char* ifname              = strdup(argv[1]);
   slave_id                  = atoi(argv[2]);
   int32_t loop_freq_hz      = atoi(argv[3]);
-  amplitude                 = atof(argv[4]);
-  sine_freq                 = atof(argv[5]);
-  enable_velocity_offset    = atoi(argv[6]);
+  max_target_vel            = atoi(argv[4]);
+  profile_accel             = atoi(argv[5]);
+  profile_decel             = atoi(argv[6]);
   float  peak_current       = atof(argv[7]);
   float  continuous_current = atof(argv[8]);
   double max_motor_speed    = atof(argv[9]);
 
   MSG("Configuring device %s, using slave %d", ifname, slave_id);
   MSG("Using loop frequency of %i hz", loop_freq_hz);
-  MSG("Using amplitude of %lf counts", amplitude);
-  MSG("Using sine frequency of %lf hz", sine_freq);
+  MSG("Using maximum target velocity of %i counts/s", max_target_vel);
+  MSG("Using profile acceleration %u counts/s/s", profile_accel);
+  MSG("Using profile deceleration %u counts/s/s", profile_decel);
   MSG("Using peak current of %f A", peak_current);
   MSG("Using continuous current of %f A", continuous_current);
   MSG("Using max_motor_speed of %lf cnts/sec", max_motor_speed);
@@ -232,7 +236,7 @@ int main(int argc, char* argv[]) {
 
   server_startup_s = jsd_time_get_mono_time_sec();
 
-  sds_run(&sds, ifname, "/tmp/jsd_epd_csp_sine_test.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_epd_prof_vel_test.csv");
 
   return 0;
 }

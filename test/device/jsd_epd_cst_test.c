@@ -1,5 +1,4 @@
 #include <assert.h>
-#include <math.h>
 #include <string.h>
 
 #include "jsd/jsd_epd_pub.h"
@@ -31,6 +30,10 @@ void telemetry_header() {
   fprintf(file, "cmd_ff_position, ");
   fprintf(file, "cmd_ff_velocity, ");
   fprintf(file, "cmd_ff_current, ");
+  fprintf(file, "cmd_prof_velocity, ");
+  fprintf(file, "cmd_prof_end_velocity, ");
+  fprintf(file, "cmd_prof_accel, ");
+  fprintf(file, "cmd_prof_decel, ");
   fprintf(file, "actual_state_machine_state, ");
   fprintf(file, "actual_mode_of_operation, ");
   fprintf(file, "sto_engaged, ");
@@ -76,6 +79,10 @@ void telemetry_data(void* self) {
   fprintf(file, "%i, ", state->cmd_ff_position);
   fprintf(file, "%i, ", state->cmd_ff_velocity);
   fprintf(file, "%lf, ", state->cmd_ff_current);
+  fprintf(file, "%u, ", state->cmd_prof_velocity);
+  fprintf(file, "%u, ", state->cmd_prof_end_velocity);
+  fprintf(file, "%u, ", state->cmd_prof_accel);
+  fprintf(file, "%u, ", state->cmd_prof_decel);
   fprintf(file, "%u, ", state->actual_state_machine_state);
   fprintf(file, "%u, ", state->actual_mode_of_operation);
   fprintf(file, "%u, ", state->sto_engaged);
@@ -154,7 +161,7 @@ int main(int argc, char* argv[]) {
     ERROR("Expecting exactly 6 arguments");
     MSG("Usage: jsd_epd_cst_test <ifname> <epd_slave_index> <loop_freq_hz> "
         "<target_current> <peak_current_amps> <continuous_current_amps> ");
-    MSG("Example: $ jsd_epd_csv_test eth0 2 100 0.1 1.0 0.45");
+    MSG("Example: $ jsd_epd_cst_test eth0 2 100 0.1 1.0 0.45");
     return 0;
   }
 

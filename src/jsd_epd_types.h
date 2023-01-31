@@ -145,6 +145,16 @@ typedef struct {
       relative;  ///< target_position is relative to actuator's actual position.
 } jsd_epd_motion_command_prof_pos_t;
 
+/**
+ * @brief Elmo Platinum drive's motion command for Profiled Velocity mode of
+ * operation.
+ */
+typedef struct {
+  int32_t  target_velocity;  ///< 0x60FF
+  uint32_t profile_accel;    ///< 0x6083
+  uint32_t profile_decel;    ///< 0x6084
+} jsd_epd_motion_command_prof_vel_t;
+
 // TODO(dloret): Update jsd_epd_motion_command_t once the other command types
 // are added.
 /**
@@ -156,6 +166,7 @@ typedef struct {
     jsd_epd_motion_command_csv_t csv;
     jsd_epd_motion_command_cst_t cst;
     jsd_epd_motion_command_prof_pos_t prof_pos;
+    jsd_epd_motion_command_prof_vel_t prof_vel;
   };
 } jsd_epd_motion_command_t;
 
@@ -226,6 +237,11 @@ typedef struct {
   int32_t cmd_ff_position;  ///< Commanded feed-forward position, cnt
   int32_t cmd_ff_velocity;  ///< Commanded feed-forward velocity, cnt/s
   double  cmd_ff_current;   ///< Commanded feed-forward current, A
+
+  uint32_t cmd_prof_velocity;      ///< Commanded profile velocity, cnt/s
+  uint32_t cmd_prof_end_velocity;  ///< Commanded profile end velocity, cnt/s
+  uint32_t cmd_prof_accel;         ///< Commanded profile acceleration, cnt/s/s
+  uint32_t cmd_prof_decel;         ///< Commanded profile deceleration, cnt/s/s
 
   jsd_epd_state_machine_state_t actual_state_machine_state;
   jsd_epd_mode_of_operation_t   actual_mode_of_operation;

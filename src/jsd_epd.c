@@ -192,6 +192,18 @@ void jsd_epd_set_motion_command_prof_pos(
   state->motion_command.prof_pos     = motion_command;
 }
 
+void jsd_epd_set_motion_command_prof_vel(
+    jsd_t* self, uint16_t slave_id,
+    jsd_epd_motion_command_prof_vel_t motion_command) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  state->new_motion_command          = true;
+  state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
+  state->motion_command.prof_vel     = motion_command;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -610,13 +622,18 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->pub.cmd_velocity = state->rxpdo.target_velocity;
   state->pub.cmd_current =
       (double)state->rxpdo.target_torque * state->motor_rated_current / 1e6;
+  state->pub.cmd_max_current =
+      (double)state->rxpdo.max_current * state->motor_rated_current / 1e6;
 
   state->pub.cmd_ff_position = state->rxpdo.position_offset;
   state->pub.cmd_ff_velocity = state->rxpdo.velocity_offset;
   state->pub.cmd_ff_current =
       (double)state->rxpdo.torque_offset * state->motor_rated_current / 1e6;
-  state->pub.cmd_max_current =
-      (double)state->rxpdo.max_current * state->motor_rated_current / 1e6;
+
+  state->pub.cmd_prof_velocity     = state->rxpdo.profile_velocity;
+  state->pub.cmd_prof_end_velocity = state->rxpdo.end_velocity;
+  state->pub.cmd_prof_accel        = state->rxpdo.profile_accel;
+  state->pub.cmd_prof_decel        = state->rxpdo.profile_decel;
 
   state->pub.actual_mode_of_operation = state->txpdo.mode_of_operation_display;
   // TODO(dloret): EGD code prints a change of mode of operation here.
@@ -826,7 +843,7 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
       jsd_epd_mode_of_op_handle_prof_pos(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_VEL:
-      ERROR("JSD_EPD_MODE_OF_OPERATION_PROF_VEL not implemented yet.");
+      jsd_epd_mode_of_op_handle_prof_vel(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE:
       ERROR("JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE not implemented yet.");
@@ -937,6 +954,24 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.controlword |= (cmd.prof_pos.relative << 6);
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
+}
+
+void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_motion_command_t cmd   = state->motion_command;
+
+  state->rxpdo.target_position  = 0;
+  state->rxpdo.position_offset  = 0;
+  state->rxpdo.target_velocity  = cmd.prof_vel.target_velocity;
+  state->rxpdo.velocity_offset  = 0;
+  state->rxpdo.target_torque    = 0;
+  state->rxpdo.torque_offset    = 0;
+  state->rxpdo.profile_velocity = 0;
+  state->rxpdo.end_velocity     = 0;
+  state->rxpdo.profile_accel    = cmd.prof_vel.profile_accel;
+  state->rxpdo.profile_decel    = cmd.prof_vel.profile_decel;
+
+  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
 }
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
