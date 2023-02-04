@@ -129,9 +129,9 @@ void extract_data(void* self) {
 }
 
 void command(void* self) {
-  static bool first_motion_cmd = true;
-  static bool displ_sent       = false;
-  static bool first_reset_sent = false;
+  static bool    abs_cmd_sent       = false;
+  static int32_t iter               = 0;
+  static int32_t abs_cmd_iter_stamp = 0;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -140,8 +140,8 @@ void command(void* self) {
   jsd_epd_read(sds->jsd, slave_id);
   const jsd_epd_state_t* state = jsd_epd_get_state(sds->jsd, slave_id);
 
-  // Wait 2 seconds after server starts to issue first reset.
-  if ((now_s - server_startup_s) < 2.0) {
+  // Wait 4 seconds after server starts to issue first reset.
+  if ((now_s - server_startup_s) < 4.0) {
     return;
   }
 
@@ -149,12 +149,11 @@ void command(void* self) {
   if (!state->servo_enabled) {
     MSG("Sending reset.");
     jsd_epd_reset(sds->jsd, slave_id);
-    first_reset_sent = true;
+    iter = 0;
     return;
   }
 
-  if (first_motion_cmd && first_reset_sent &&
-      (now_s - server_startup_s) > 5.0) {
+  if (!abs_cmd_sent) {
     jsd_epd_motion_command_prof_pos_t cmd;
     cmd.target_position  = initial_target_pos;
     cmd.profile_velocity = profile_velocity;
@@ -163,14 +162,19 @@ void command(void* self) {
     cmd.profile_decel    = profile_decel;
     cmd.relative         = 0;
 
-    first_motion_cmd = false;
-
     jsd_epd_set_motion_command_prof_pos(sds->jsd, slave_id, cmd);
-    return;
+
+    abs_cmd_sent       = true;
+    abs_cmd_iter_stamp = iter;
   }
 
-  if (!displ_sent &&
-      (now_s - server_startup_s) > 8.0) {  // state->target_reached == 1) {
+  // Wait a few cycles after the absolute profiled position command is sent
+  // before checking whether the target has been reached. This is necessary
+  // because target_reached is 1 when entering the drive's Enabled state until
+  // a new command is issued.
+  // Afterwards, command a displacement every 10 seconds.
+  if (((iter - abs_cmd_iter_stamp) > 10) &&
+      (iter % (sds->loop_rate_hz * 10) == 0) && (state->target_reached == 1)) {
     jsd_epd_motion_command_prof_pos_t cmd;
     displ_from_initial_target *= -1;
     cmd.target_position  = displ_from_initial_target;
@@ -180,15 +184,10 @@ void command(void* self) {
     cmd.profile_decel    = profile_decel;
     cmd.relative         = 1;
 
-    displ_sent = true;
-
     jsd_epd_set_motion_command_prof_pos(sds->jsd, slave_id, cmd);
   }
-  // Toggle the flag until motor starts moving again to avoid toggling the sign
-  // of the commanded displacement before the command is accepted by the drive.
-  //  if (displ_sent && state->in_motion) {
-  //    displ_sent = false;
-  //  }
+
+  ++iter;
 }
 
 int main(int argc, char* argv[]) {
