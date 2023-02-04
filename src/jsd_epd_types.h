@@ -214,8 +214,7 @@ typedef struct {
   int16_t brake_disengage_msec;  ///< BP[2] ms, [0, 1000]
 
   // Verification parameters
-  // TODO(dloret): Add crc field once I know which Platinum command is
-  // equivalent to OV[52]
+  uint32_t crc;  ///< CZ[1], changes whenever drive parameters change
   // TODO(dloret): Consider whether it is worth to have a parameter that
   // determines whether peak current limit is compared against the drive's
   // maximum current as in EGD. A potential option is to simply warn if PL[1] >

@@ -16,8 +16,9 @@ typedef struct {
 } jsd_epd_lc_pair_t;
 
 // Lookup table to map letter command characters to the corresponding object
-// dictionary index. IMPORTANT! This table must be kept in alphabetical order so
-// that the lookup function works.
+// dictionary index.
+// IMPORTANT! This table must be kept in alphabetical order so that the lookup
+// function works.
 static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"AC", 0x300C},
     {"BP", 0x303D},  // TODO(dloret): verify this is the right
@@ -25,6 +26,7 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
                      // indeces.
     {"CA", 0x3052},
     {"CL", 0x305D},
+    {"CZ", 0x306B},
     {"DC", 0x3078},
     {"ER", 0x30AB},
     {"HL", 0x3111},
@@ -580,7 +582,23 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   // Verify startup parameters
-  // TODO(dloret): verify CRC once I know how to retrieve it.
+
+  // Verify checksum from the drive matches checksum recorded in configuration
+  uint64_t crc = 0;
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CZ"),
+                                  1, JSD_SDO_DATA_U64, &crc)) {
+    return 0;
+  }
+  MSG("EPD[%d] CRC = %lu", slave_id, crc);
+  if (config->epd.crc == 0) {
+    MSG("EPD[%d] drive parameter CRC check overridden", slave_id);
+  } else {
+    if (crc != config->epd.crc) {
+      ERROR("EPD[%d] CRC mismatch - YAML value: %u, actual drive value: %lu",
+            slave_id, config->epd.crc, crc);
+      return 0;
+    }
+  }
 
   // Verify current limits
   float drive_max_current = 0;
