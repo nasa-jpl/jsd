@@ -33,6 +33,7 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"LL", 0x31A1},
     {"MC", 0x31BC},
     {"PL", 0x3231},
+    {"PX", 0x323D},
     {"SF", 0x3297},
     {"UM", 0x32E6},
 };
@@ -218,6 +219,121 @@ void jsd_epd_set_motion_command_prof_torque(
   state->motion_command.prof_torque  = motion_command;
 }
 
+void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
+                                          double position, uint16_t app_id) {
+  jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("PX"), 1,
+                          JSD_SDO_DATA_DOUBLE, &position, app_id);
+}
+
+void jsd_epd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
+                                     int16_t mode, uint16_t app_id) {
+  jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("UM"), 1,
+                          JSD_SDO_DATA_I16, &mode, app_id);
+}
+
+const char* jsd_epd_state_machine_state_to_string(
+    jsd_epd_state_machine_state_t state) {
+  switch (state) {
+    case JSD_EPD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
+      return "Not Ready to Switch On";
+    case JSD_EPD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
+      return "Switch On Disabled";
+    case JSD_EPD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
+      return "Ready to Switch On";
+    case JSD_EPD_STATE_MACHINE_STATE_SWITCHED_ON:
+      return "Switched On";
+    case JSD_EPD_STATE_MACHINE_STATE_OPERATION_ENABLED:
+      return "Operation Enabled";
+    case JSD_EPD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
+      return "Quick Stop Active";
+    case JSD_EPD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
+      return "Fault Reaction Active";
+    case JSD_EPD_STATE_MACHINE_STATE_FAULT:
+      return "Fault";
+    default:
+      return "Unknown State Machine State";
+  }
+}
+
+const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
+  switch (fault_code) {
+    case JSD_EPD_FAULT_OKAY:
+      return "JSD_EPD_FAULT_OKAY";
+    case JSD_EPD_FAULT_SHORT_PROTECTION:
+      return "JSD_EPD_FAULT_SHORT_PROTECTION";
+    case JSD_EPD_FAULT_UNDER_VOLTAGE:
+      return "JSD_EPD_FAULT_UNDER_VOLTAGE";
+    case JSD_EPD_FAULT_LOSS_OF_PHASE:
+      return "JSD_EPD_FAULT_LOSS_OF_PHASE";
+    case JSD_EPD_FAULT_OVER_VOLTAGE:
+      return "JSD_EPD_FAULT_OVER_VOLTAGE";
+    case JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE:
+      return "JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE";
+    case JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE:
+      return "JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE";
+    case JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED:
+      return "JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED";
+    case JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE:
+      return "JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE";
+    case JSD_EPD_FAULT_VECTOR_ABORT:
+      return "JSD_EPD_FAULT_VECTOR_ABORT";
+    case JSD_EPD_FAULT_RPDO_FAILED:
+      return "JSD_EPD_FAULT_RPDO_FAILED";
+    case JSD_EPD_FAULT_MOTOR_STUCK:
+      return "JSD_EPD_FAULT_MOTOR_STUCK";
+    case JSD_EPD_FAULT_FEEDBACK_ERROR:
+      return "JSD_EPD_FAULT_FEEDBACK_ERROR";
+    case JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH:
+      return "JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH";
+    case JSD_EPD_FAULT_HALL_BAD_CHANGE:
+      return "JSD_EPD_FAULT_HALL_BAD_CHANGE";
+    case JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL:
+      return "JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL";
+    case JSD_EPD_FAULT_CAN_MESSAGE_LOST:
+      return "JSD_EPD_FAULT_CAN_MESSAGE_LOST";
+    case JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS:
+      return "JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS";
+    case JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF:
+      return "JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF";
+    case JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO:
+      return "JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO";
+    case JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH:
+      return "JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH";
+    case JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED:
+      return "JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED";
+    case JSD_EPD_FAULT_SPEED_TRACKING_ERROR:
+      return "JSD_EPD_FAULT_SPEED_TRACKING_ERROR";
+    case JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_POSITION_TRACKING_ERROR:
+      return "JSD_EPD_FAULT_POSITION_TRACKING_ERROR";
+    case JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED:
+      return "JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED";
+    case JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY:
+      return "JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY";
+    case JSD_EPD_FAULT_CANNOT_START_MOTOR:
+      return "JSD_EPD_FAULT_CANNOT_START_MOTOR";
+    case JSD_EPD_FAULT_STO_ENGAGED:
+      return "JSD_EPD_FAULT_STO_ENGAGED";
+    case JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND:
+      return "JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND";
+    case JSD_EPD_FAULT_KINEMATICS_ERROR:
+      return "JSD_EPD_FAULT_KINEMATICS_ERROR";
+    case JSD_EPD_FAULT_GANTRY_MASTER_ERROR:
+      return "JSD_EPD_FAULT_GANTRY_MASTER_ERROR";
+    case JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED:
+      return "JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED";
+    case JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT:
+      return "JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT";
+    case JSD_EPD_FAULT_UNKNOWN:
+      return "JSD_EPD_FAULT_UNKNOWN";
+    default:
+      return "Unknown Fault Code";
+  }
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -399,7 +515,11 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   // Set relative motion to be relative to actual position
-  uint16_t pos_opt_code = 0x02;
+  // TODO(dloret): Latest Platinum's firmware has a bug with option 0x02
+  // (relative to actual position). Until the issue is fixed, 0x01 (relative to
+  // desired position, not target profiled position) will be used to have a
+  // similar behavior.
+  uint16_t pos_opt_code = 0x01;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60F2, 0x00,
                                   JSD_SDO_DATA_U16, &pos_opt_code)) {
     return 0;
@@ -1132,107 +1252,4 @@ jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
       fault_code = JSD_EPD_FAULT_UNKNOWN;
   }
   return fault_code;
-}
-
-const char* jsd_epd_state_machine_state_to_string(
-    jsd_epd_state_machine_state_t state) {
-  switch (state) {
-    case JSD_EPD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
-      return "Not Ready to Switch On";
-    case JSD_EPD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
-      return "Switch On Disabled";
-    case JSD_EPD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
-      return "Ready to Switch On";
-    case JSD_EPD_STATE_MACHINE_STATE_SWITCHED_ON:
-      return "Switched On";
-    case JSD_EPD_STATE_MACHINE_STATE_OPERATION_ENABLED:
-      return "Operation Enabled";
-    case JSD_EPD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
-      return "Quick Stop Active";
-    case JSD_EPD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
-      return "Fault Reaction Active";
-    case JSD_EPD_STATE_MACHINE_STATE_FAULT:
-      return "Fault";
-    default:
-      return "Unknown State Machine State";
-  }
-}
-
-const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
-  switch (fault_code) {
-    case JSD_EPD_FAULT_OKAY:
-      return "JSD_EPD_FAULT_OKAY";
-    case JSD_EPD_FAULT_SHORT_PROTECTION:
-      return "JSD_EPD_FAULT_SHORT_PROTECTION";
-    case JSD_EPD_FAULT_UNDER_VOLTAGE:
-      return "JSD_EPD_FAULT_UNDER_VOLTAGE";
-    case JSD_EPD_FAULT_LOSS_OF_PHASE:
-      return "JSD_EPD_FAULT_LOSS_OF_PHASE";
-    case JSD_EPD_FAULT_OVER_VOLTAGE:
-      return "JSD_EPD_FAULT_OVER_VOLTAGE";
-    case JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE:
-      return "JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE";
-    case JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE:
-      return "JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE";
-    case JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED:
-      return "JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED";
-    case JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED:
-      return "JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED";
-    case JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE:
-      return "JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE";
-    case JSD_EPD_FAULT_VECTOR_ABORT:
-      return "JSD_EPD_FAULT_VECTOR_ABORT";
-    case JSD_EPD_FAULT_RPDO_FAILED:
-      return "JSD_EPD_FAULT_RPDO_FAILED";
-    case JSD_EPD_FAULT_MOTOR_STUCK:
-      return "JSD_EPD_FAULT_MOTOR_STUCK";
-    case JSD_EPD_FAULT_FEEDBACK_ERROR:
-      return "JSD_EPD_FAULT_FEEDBACK_ERROR";
-    case JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH:
-      return "JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH";
-    case JSD_EPD_FAULT_HALL_BAD_CHANGE:
-      return "JSD_EPD_FAULT_HALL_BAD_CHANGE";
-    case JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL:
-      return "JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL";
-    case JSD_EPD_FAULT_CAN_MESSAGE_LOST:
-      return "JSD_EPD_FAULT_CAN_MESSAGE_LOST";
-    case JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS:
-      return "JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS";
-    case JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF:
-      return "JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF";
-    case JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO:
-      return "JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO";
-    case JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH:
-      return "JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH";
-    case JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED:
-      return "JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED";
-    case JSD_EPD_FAULT_SPEED_TRACKING_ERROR:
-      return "JSD_EPD_FAULT_SPEED_TRACKING_ERROR";
-    case JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED:
-      return "JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED";
-    case JSD_EPD_FAULT_POSITION_TRACKING_ERROR:
-      return "JSD_EPD_FAULT_POSITION_TRACKING_ERROR";
-    case JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED:
-      return "JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED";
-    case JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY:
-      return "JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY";
-    case JSD_EPD_FAULT_CANNOT_START_MOTOR:
-      return "JSD_EPD_FAULT_CANNOT_START_MOTOR";
-    case JSD_EPD_FAULT_STO_ENGAGED:
-      return "JSD_EPD_FAULT_STO_ENGAGED";
-    case JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND:
-      return "JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND";
-    case JSD_EPD_FAULT_KINEMATICS_ERROR:
-      return "JSD_EPD_FAULT_KINEMATICS_ERROR";
-    case JSD_EPD_FAULT_GANTRY_MASTER_ERROR:
-      return "JSD_EPD_FAULT_GANTRY_MASTER_ERROR";
-    case JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED:
-      return "JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED";
-    case JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT:
-      return "JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT";
-    case JSD_EPD_FAULT_UNKNOWN:
-      return "JSD_EPD_FAULT_UNKNOWN";
-    default:
-      return "Unknown Fault Code";
-  }
 }
