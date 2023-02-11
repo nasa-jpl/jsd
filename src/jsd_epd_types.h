@@ -15,6 +15,12 @@ extern "C" {
 // - jsd_*_mode_of_operation_t
 // - jsd_*_state_machine_state_t
 // - jsd_*_motion_command_csp_t
+// - jsd_*_motion_command_csv_t
+// - jsd_*_motion_command_cst_t
+// - jsd_*_motion_command_prof_pos_t
+// - jsd_*_motion_command_vel_pos_t
+// - jsd_*_motion_command_torque_pos_t
+
 // NOTE: Used numbers specified in DS-402
 #define JSD_EPD_NUM_DIGITAL_OUTPUTS 6
 #define JSD_EPD_NUM_DIGITAL_INPUTS 16
@@ -97,6 +103,31 @@ typedef enum {
 
 // TODO(dloret): Add gain scheduling mode type later. Same values. HOWEVER, the
 // corresponding object is different: 0x30F4.
+
+// TODO(dloret): Consider making jsd_epd_gain_scheduling_mode_t common between
+// the EGD and EPD drivers.
+// TODO(dloret): Double check with Elmo that type specified for P_GS in command
+// reference is correct. Type is double even though values are integers. In Gold
+// drive it was an integer.
+/**
+ * @brief Elmo Platinum drive's gain scheduling mode for the controller and
+ * filters.
+ *
+ * See Platinum's Command Reference, command P_GS[2, 16, 17, 18].
+ *
+ */
+typedef enum {
+  JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED =
+      -1,  ///< Scheduling mode currently set in the drive
+  JSD_EPD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
+  JSD_EPD_GAIN_SCHEDULING_MODE_SPEED    = 64,  ///< Scheduling by speed
+  JSD_EPD_GAIN_SCHEDULING_MODE_POSITION = 65,  ///< Scheduling by position
+  JSD_EPD_GAIN_SCHEDULING_MODE_SETTLING = 66,  ///< Scheduling by Best Settling
+  JSD_EPD_GAIN_SCHEDULING_MODE_MANUAL_LOW =
+      67,  ///< Manual selection via lower byte of 0x36E0 object
+  JSD_EPD_GAIN_SCHEDULING_MODE_MANUAL_HIGH =
+      68,  ///< Manual selection via upper byte of 0x36E0 object
+} jsd_epd_gain_scheduling_mode_t;
 
 /**
  * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Position
@@ -221,7 +252,9 @@ typedef struct {
   // MC[1].
   int32_t smooth_factor;  ///< SF[1] ms, [0, 2048*P_TS*P_HS/1000]
 
-  // TODO(dloret): add ctrl_gain_scheduling_mode later.
+  jsd_epd_gain_scheduling_mode_t
+      ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
+                                  ///< set in the drive.
 } jsd_epd_config_t;
 
 /**
@@ -319,7 +352,7 @@ typedef struct __attribute__((__packed__)) {
   uint32_t end_velocity;      ///< 0x6082
   uint32_t profile_accel;     ///< 0x6083
   uint32_t profile_decel;     ///< 0x6084
-  // TODO(dloret): Add gain scheduling index field (0x2E00).
+  uint16_t gain_scheduling_index;  ///< 0x36E0
 } jsd_epd_rxpdo_data_t;
 
 /**

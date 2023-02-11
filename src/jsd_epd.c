@@ -29,6 +29,7 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"CZ", 0x306B},
     {"DC", 0x3078},
     {"ER", 0x30AB},
+    {"GS", 0x30F4},
     {"HL", 0x3111},
     {"LL", 0x31A1},
     {"MC", 0x31BC},
@@ -121,6 +122,31 @@ void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
 
   self->slave_states[slave_id].epd.new_halt_command = true;
+}
+
+void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
+                                       bool     lsb_byte,
+                                       uint16_t gain_scheduling_index) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+
+  if (gain_scheduling_index < 1 || gain_scheduling_index > 63) {
+    ERROR("The provided gain scheduling index %d is out of range [1,63]",
+          gain_scheduling_index);
+    return;
+  }
+
+  jsd_epd_private_state_t* state   = &self->slave_states[slave_id].epd;
+  uint16_t                 bitmask = 0x00FF;
+  if (lsb_byte) {
+    state->rxpdo.gain_scheduling_index =
+        (state->rxpdo.gain_scheduling_index & (bitmask << 8)) |
+        gain_scheduling_index;
+  } else {
+    state->rxpdo.gain_scheduling_index =
+        (state->rxpdo.gain_scheduling_index & bitmask) |
+        (gain_scheduling_index << 8);
+  }
 }
 
 void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
@@ -229,6 +255,18 @@ void jsd_epd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
                                      int16_t mode, uint16_t app_id) {
   jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("UM"), 1,
                           JSD_SDO_DATA_I16, &mode, app_id);
+}
+
+void jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode(
+    jsd_t* self, uint16_t slave_id, jsd_epd_gain_scheduling_mode_t mode,
+    uint16_t app_id) {
+  if (mode < 0 || mode > 68) {
+    ERROR("Gain scheduling mode %d for the controller is not valid.", mode);
+    return;
+  }
+  int64_t mode_i64 = mode;
+  jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("GS"), 2,
+                          JSD_SDO_DATA_I64, &mode_i64, app_id);
 }
 
 const char* jsd_epd_state_machine_state_to_string(
@@ -432,15 +470,15 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
     return 0;
   }
 
-  // TODO(dloret): Add gain scheduling index mapping
   uint16_t map_output_pdos_1603[] = {
-      0x0006,          // Number of mapped parameters
+      0x0007,          // Number of mapped parameters
       0x0120, 0x60FE,  // digital_outputs
       0x0010, 0x6040,  // controlword
       0x0020, 0x6081,  // profile_velocity
       0x0020, 0x6082,  // end_velocity
       0x0020, 0x6083,  // profile_accel
       0x0020, 0x6084,  // profile_decel
+      0x0010, 0x36E0,  // gain_scheduling_index
   };
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1603, 0x00,
                                      sizeof(map_output_pdos_1603),
@@ -693,7 +731,12 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
-  // TODO(dloret): Set gain scheduling mode later.
+  int64_t ctrl_gs_mode_i64 = config->epd.ctrl_gain_scheduling_mode;
+  if (ctrl_gs_mode_i64 != JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED &&
+      !jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("GS"),
+                                  2, JSD_SDO_DATA_I64, &ctrl_gs_mode_i64)) {
+    return 0;
+  }
 
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("SF"),
                                   1, JSD_SDO_DATA_I64,

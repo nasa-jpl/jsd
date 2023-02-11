@@ -61,8 +61,31 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id);
  */
 void jsd_epd_halt(jsd_t* self, uint16_t slave_id);
 
-// TODO(dloret): add the following functions:
-// - jsd_epd_set_gain_scheduling_index
+// TODO(dloret): Platinum drive is currently not responding to the index set in
+// 0x36E0 when the controller scheduling mode is manual (GS[2]=67 or GS[2]=68).
+// Need to wait for Elmo Support's solution.
+/**
+ * @brief Set the gain scheduling index manually
+ *
+ * Real-time safe
+ *
+ * Sets the index of the gain/parameter set for the controller or one of the
+ * filters via Dictionary Object 0x36E0. Two indexes can be selected
+ * independently through the LSB or MSB byte of the object. The GS command
+ * determines which controller or filter is assigned the gains/parameters
+ * specified by the index. See Platinum's Command Reference, command P_GS.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param lsb_byte Whether the provided index is for the controller/filter
+ * assigned to the LSB (true) or MSB (false) of 0x36E0.
+ * @param gain_scheduling_index Index of the gain/parameter set. It can range
+ * from 1-63, and each value corresponds to a particular set of gains for the
+ * controller or parameters for a filter.
+ */
+void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
+                                       bool     lsb_byte,
+                                       uint16_t gain_scheduling_index);
 
 /**
  * @brief Sets the value of the given digital output.
@@ -182,8 +205,6 @@ void jsd_epd_set_motion_command_prof_torque(
  */
 uint16_t jsd_epd_lc_to_do(char letter_command[2]);
 
-// TODO(dloret): Add SDO-based function controller gain scheduling mode.
-
 /**
  * @brief Sets drive's actual position (PX[1])
  *
@@ -221,6 +242,29 @@ void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
  */
 void jsd_epd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
                                      int16_t mode, uint16_t app_id);
+
+/**
+ * @brief Set the gain scheduling mode for the controller, GS[2]
+ *
+ * Real-time safe as long as SDO thread holds the mutex to retrieve the SDO for
+ * a deterministic amount of time. SDO is sent asynchronously in SDO thread.
+ *
+ * It is strongly recommended the application checks the result of the SDO-set
+ * operation. Use the response queue contained in the jsd_t context to check for
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
+ *
+ * Subsequent application calls to update the index through
+ * jsd_epd_set_gain_scheduling_index depend on the result of this SDO operation.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param mode Gain scheduling mode
+ * @param app_id Application-provided ID for response tracking
+ */
+void jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode(
+    jsd_t* self, uint16_t slave_id, jsd_epd_gain_scheduling_mode_t mode,
+    uint16_t app_id);
 
 /**
  * @brief Converts jsd_epd_mode_of_operation label to string
