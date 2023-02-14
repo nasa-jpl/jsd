@@ -19,6 +19,7 @@ add_library(jsd-lib STATIC
     jsd_el3318.c
     jsd_el3162.c
     jsd_el4102.c
+    jsd_el6001.c
     jsd_ild1900.c
     )
 
