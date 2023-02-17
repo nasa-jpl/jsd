@@ -352,7 +352,7 @@ typedef struct __attribute__((__packed__)) {
   uint32_t end_velocity;      ///< 0x6082
   uint32_t profile_accel;     ///< 0x6083
   uint32_t profile_decel;     ///< 0x6084
-  uint16_t gain_scheduling_index;  ///< 0x36E0
+  int16_t  gain_scheduling_index;  ///< 0x36E0
 } jsd_epd_rxpdo_data_t;
 
 /**
