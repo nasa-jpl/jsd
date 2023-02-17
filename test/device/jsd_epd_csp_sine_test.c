@@ -145,7 +145,7 @@ void command(void* self) {
     first_motion_cmd = false;
   }
 
-  jsd_epd_motion_command_csp_t csp;
+  jsd_elmo_motion_command_csp_t csp;
   double                       t = now_s - motion_startup_s;
   double                       w = 2.0 * M_PI * sine_freq;
   csp.target_position            = amplitude * sin(w * t) + pos_offset;
@@ -225,7 +225,8 @@ int main(int argc, char* argv[]) {
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode = JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED;
+  config.epd.ctrl_gain_scheduling_mode =
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
 

@@ -3,6 +3,7 @@ add_library(jsd-lib STATIC
     jsd_sdo.c
     jsd_error_cirq.c
     jsd_common_device_types.c
+    jsd_elmo_common.c
 
     # Devices
     jsd_el3602.c

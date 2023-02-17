@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "jsd/jsd_common_device_types.h"
+#include "jsd/jsd_elmo_common_types.h"
 
 #define JSD_EPD_PRODUCT_CODE (uint32_t)0x01100002
 
@@ -13,13 +14,6 @@ extern "C" {
 // EGD and EPD drivers:
 // - JSD_*_NUM_DIGITAL_(OUTPUTS|INPUTS)
 // - jsd_*_mode_of_operation_t
-// - jsd_*_state_machine_state_t
-// - jsd_*_motion_command_csp_t
-// - jsd_*_motion_command_csv_t
-// - jsd_*_motion_command_cst_t
-// - jsd_*_motion_command_prof_pos_t
-// - jsd_*_motion_command_vel_pos_t
-// - jsd_*_motion_command_torque_pos_t
 
 // NOTE: Used numbers specified in DS-402
 #define JSD_EPD_NUM_DIGITAL_OUTPUTS 6
@@ -42,20 +36,6 @@ typedef enum {
   JSD_EPD_MODE_OF_OPERATION_CSV         = 9,
   JSD_EPD_MODE_OF_OPERATION_CST         = 10
 } jsd_epd_mode_of_operation_t;
-
-/**
- * @brief Elmo Platinum Drive State Machine's State
- */
-typedef enum {
-  JSD_EPD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON = 0X00,
-  JSD_EPD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED     = 0X40,
-  JSD_EPD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON     = 0x21,
-  JSD_EPD_STATE_MACHINE_STATE_SWITCHED_ON            = 0x23,
-  JSD_EPD_STATE_MACHINE_STATE_OPERATION_ENABLED      = 0x27,
-  JSD_EPD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE      = 0x07,
-  JSD_EPD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE  = 0x0F,
-  JSD_EPD_STATE_MACHINE_STATE_FAULT                  = 0x08
-} jsd_epd_state_machine_state_t;
 
 /**
  * @brief Elmo Platinum Drive Fault Code
@@ -101,107 +81,17 @@ typedef enum {
   JSD_EPD_FAULT_UNKNOWN
 } jsd_epd_fault_code_t;
 
-// TODO(dloret): Add gain scheduling mode type later. Same values. HOWEVER, the
-// corresponding object is different: 0x30F4.
-
-// TODO(dloret): Consider making jsd_epd_gain_scheduling_mode_t common between
-// the EGD and EPD drivers.
-// TODO(dloret): Double check with Elmo that type specified for P_GS in command
-// reference is correct. Type is double even though values are integers. In Gold
-// drive it was an integer.
 /**
- * @brief Elmo Platinum drive's gain scheduling mode for the controller and
- * filters.
- *
- * See Platinum's Command Reference, command P_GS[2, 16, 17, 18].
- *
- */
-typedef enum {
-  JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED =
-      -1,  ///< Scheduling mode currently set in the drive
-  JSD_EPD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
-  JSD_EPD_GAIN_SCHEDULING_MODE_SPEED    = 64,  ///< Scheduling by speed
-  JSD_EPD_GAIN_SCHEDULING_MODE_POSITION = 65,  ///< Scheduling by position
-  JSD_EPD_GAIN_SCHEDULING_MODE_SETTLING = 66,  ///< Scheduling by Best Settling
-  JSD_EPD_GAIN_SCHEDULING_MODE_MANUAL_LOW =
-      67,  ///< Manual selection via lower byte of 0x36E0 object
-  JSD_EPD_GAIN_SCHEDULING_MODE_MANUAL_HIGH =
-      68,  ///< Manual selection via upper byte of 0x36E0 object
-} jsd_epd_gain_scheduling_mode_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Position
- * mode of operation
- */
-typedef struct {
-  int32_t target_position;     ///< 0x607A
-  int32_t position_offset;     ///< 0x60B0
-  int32_t velocity_offset;     ///< 0x60B1
-  double  torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
-} jsd_epd_motion_command_csp_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Velocity
- * mode of operation
- */
-typedef struct {
-  int32_t target_velocity;     ///< 0x60FF
-  int32_t velocity_offset;     ///< 0x60B1
-  double  torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
-} jsd_epd_motion_command_csv_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Cyclic Synchronous Torque
- * mode of operation.
- */
-typedef struct {
-  double target_torque_amps;  ///< Converted to 0x6071 using CL[1]
-  double torque_offset_amps;  ///< Converted to 0x60B2 using CL[1]
-} jsd_epd_motion_command_cst_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Profiled Position mode of
- * operation.
- */
-typedef struct {
-  int32_t  target_position;   ///< 0x6074
-  uint32_t profile_velocity;  ///< 0x6081
-  uint32_t end_velocity;      ///< 0x6082
-  uint32_t profile_accel;     ///< 0x6083
-  uint32_t profile_decel;     ///< 0x6084
-  uint8_t
-      relative;  ///< target_position is relative to actuator's actual position.
-} jsd_epd_motion_command_prof_pos_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Profiled Velocity mode of
- * operation.
- */
-typedef struct {
-  int32_t  target_velocity;  ///< 0x60FF
-  uint32_t profile_accel;    ///< 0x6083
-  uint32_t profile_decel;    ///< 0x6084
-} jsd_epd_motion_command_prof_vel_t;
-
-/**
- * @brief Elmo Platinum drive's motion command for Profile Torque mode of
- * operation.
- */
-typedef struct {
-  double target_torque_amps;  ///< Converted to 0x6071 using CL[1]
-} jsd_epd_motion_command_prof_torque_t;
-
-/**
- * @brief Union of all motion commands.
+ * @brief Union of all motion commands
  */
 typedef struct {
   union {
-    jsd_epd_motion_command_csp_t csp;
-    jsd_epd_motion_command_csv_t csv;
-    jsd_epd_motion_command_cst_t cst;
-    jsd_epd_motion_command_prof_pos_t prof_pos;
-    jsd_epd_motion_command_prof_vel_t prof_vel;
-    jsd_epd_motion_command_prof_torque_t prof_torque;
+    jsd_elmo_motion_command_csp_t         csp;
+    jsd_elmo_motion_command_csv_t         csv;
+    jsd_elmo_motion_command_cst_t         cst;
+    jsd_elmo_motion_command_prof_pos_t    prof_pos;
+    jsd_elmo_motion_command_prof_vel_t    prof_vel;
+    jsd_elmo_motion_command_prof_torque_t prof_torque;
   };
 } jsd_epd_motion_command_t;
 
@@ -252,7 +142,7 @@ typedef struct {
   // MC[1].
   int32_t smooth_factor;  ///< SF[1] ms, [0, 2048*P_TS*P_HS/1000]
 
-  jsd_epd_gain_scheduling_mode_t
+  jsd_elmo_gain_scheduling_mode_t
       ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
                                   ///< set in the drive.
 } jsd_epd_config_t;
@@ -279,7 +169,7 @@ typedef struct {
   uint32_t cmd_prof_accel;         ///< Commanded profile acceleration, cnt/s/s
   uint32_t cmd_prof_decel;         ///< Commanded profile deceleration, cnt/s/s
 
-  jsd_epd_state_machine_state_t actual_state_machine_state;
+  jsd_elmo_state_machine_state_t actual_state_machine_state;
   jsd_epd_mode_of_operation_t   actual_mode_of_operation;
 
   uint8_t sto_engaged;    ///< Safe Torque Off (EStop) status
@@ -383,7 +273,7 @@ typedef struct {
   uint8_t fault_occured_when_enabled;  ///< From Status Register
 
   // State tracking
-  jsd_epd_state_machine_state_t last_state_machine_state;
+  jsd_elmo_state_machine_state_t last_state_machine_state;
   // TODO(dloret): Figure out debugging messages related to state changes
   // without affecting real-time guarantees.
 

@@ -6,6 +6,7 @@
 
 #include "ethercat.h"
 #include "jsd/jsd.h"
+#include "jsd/jsd_elmo_common.h"
 #include "jsd/jsd_sdo.h"
 
 static void set_controlword(jsd_t* self, uint16_t slave_id,
@@ -166,7 +167,7 @@ void jsd_egd_set_peak_current(jsd_t* self, uint16_t slave_id,
 
 void jsd_egd_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_pos_t motion_command) {
+    jsd_elmo_motion_command_prof_pos_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -185,7 +186,7 @@ void jsd_egd_set_motion_command_prof_pos(
 
 void jsd_egd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_vel_t motion_command) {
+    jsd_elmo_motion_command_prof_vel_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -204,7 +205,7 @@ void jsd_egd_set_motion_command_prof_vel(
 
 void jsd_egd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_torque_t motion_command) {
+    jsd_elmo_motion_command_prof_torque_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -223,7 +224,7 @@ void jsd_egd_set_motion_command_prof_torque(
 
 void jsd_egd_set_motion_command_csp(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csp_t motion_command) {
+    jsd_elmo_motion_command_csp_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -242,7 +243,7 @@ void jsd_egd_set_motion_command_csp(
 
 void jsd_egd_set_motion_command_csv(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csv_t motion_command) {
+    jsd_elmo_motion_command_csv_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -261,7 +262,7 @@ void jsd_egd_set_motion_command_csv(
 
 void jsd_egd_set_motion_command_cst(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_cst_t motion_command) {
+    jsd_elmo_motion_command_cst_t motion_command) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
 
@@ -304,42 +305,6 @@ char* jsd_egd_mode_of_operation_to_string(jsd_egd_mode_of_operation_t mode) {
     default: {
       char str[JSD_NAME_LEN];
       snprintf(str, JSD_NAME_LEN, "Bad Mode of Operation: 0x%x", mode);
-      return strdup(str);
-      break;
-    }
-  }
-}
-
-char* jsd_egd_state_machine_state_to_string(
-    jsd_egd_state_machine_state_t state) {
-  switch (state) {
-    case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
-      return "Not Ready to Switch On";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
-      return "Switch On Disabled";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
-      return "Ready to Switch On";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_SWITCHED_ON:
-      return "Switched On";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
-      return "Operation Enabled";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
-      return "Quick Stop Active";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
-      return "Fault Reaction Active";
-      break;
-    case JSD_EGD_STATE_MACHINE_STATE_FAULT:
-      return "Fault";
-      break;
-    default: {
-      char str[JSD_NAME_LEN];
-      snprintf(str, JSD_NAME_LEN, "Bad State Machine State: 0x%x", state);
       return strdup(str);
       break;
     }
@@ -547,9 +512,8 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
 }
 
 void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
-    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode, 
-    uint16_t app_id) 
-{
+    jsd_t* self, uint16_t slave_id, jsd_elmo_gain_scheduling_mode_t mode,
+    uint16_t app_id) {
   if (mode < 0 || mode > 68) {
     ERROR("Gain scheduling mode %d for the controller is not valid.", mode);
     return;
@@ -971,7 +935,7 @@ int jsd_egd_config_TLC_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   int64_t ctrl_gs_mode_i64 = config->egd.ctrl_gain_scheduling_mode;
-  if (ctrl_gs_mode_i64 != JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED &&
+  if (ctrl_gs_mode_i64 != JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED &&
       !jsd_sdo_set_param_blocking(ecx_context, slave_id,
                                   jsd_egd_tlc_to_do("GS"), 2, JSD_SDO_DATA_I64,
                                   (void*)&ctrl_gs_mode_i64)) {
@@ -1138,18 +1102,18 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   if (state->pub.actual_state_machine_state !=
       state->last_state_machine_state) {
     MSG("EGD[%d] actual State Machine State changed to %s (0x%x)", slave_id,
-        jsd_egd_state_machine_state_to_string(
+        jsd_elmo_state_machine_state_to_string(
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
 
     // promotes timely checking of the EMCY code
-    if(state->pub.actual_state_machine_state == JSD_EGD_STATE_MACHINE_STATE_FAULT){
+    if (state->pub.actual_state_machine_state ==
+        JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
       jsd_sdo_signal_emcy_check(self);
       state->new_reset = false; // clear any potentially ongoing reset request
       state->fault_real_time = jsd_time_get_time_sec();
       state->fault_mono_time = jsd_time_get_mono_time_sec();
     }
-
   }
 
   state->last_state_machine_state = state->pub.actual_state_machine_state;
@@ -1221,20 +1185,20 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   ec_errort error;
 
   switch (state->pub.actual_state_machine_state) {
-    case JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
+    case JSD_ELMO_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
       // no-op
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
+    case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
       // to READY_TO_SWITCH_ON
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
+    case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SWITCH_ON);
       // to SWITCHED_ON
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_SWITCHED_ON:
+    case JSD_ELMO_STATE_MACHINE_STATE_SWITCHED_ON:
       // STO drops us here
       // Handle reset
       if (state->new_reset) {
@@ -1250,7 +1214,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->new_reset = false;
       }
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED:
+    case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
 
       state->pub.fault_code = JSD_EGD_FAULT_OKAY;
       state->pub.emcy_error_code = 0;
@@ -1274,15 +1238,15 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       jsd_egd_process_mode_of_operation(self, slave_id);
 
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
+    case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
+    case JSD_ELMO_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_FAULT_RESET);
       break;
-    case JSD_EGD_STATE_MACHINE_STATE_FAULT:
+    case JSD_ELMO_STATE_MACHINE_STATE_FAULT:
 
       // Only transition once the EMCY code can be extracted from the
       // error list

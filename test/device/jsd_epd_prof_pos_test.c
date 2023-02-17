@@ -154,7 +154,7 @@ void command(void* self) {
   }
 
   if (!abs_cmd_sent) {
-    jsd_epd_motion_command_prof_pos_t cmd;
+    jsd_elmo_motion_command_prof_pos_t cmd;
     cmd.target_position  = initial_target_pos;
     cmd.profile_velocity = profile_velocity;
     cmd.end_velocity     = 0;
@@ -175,7 +175,7 @@ void command(void* self) {
   // Afterwards, command a displacement every 10 seconds.
   if (((iter - abs_cmd_iter_stamp) > 10) &&
       (iter % (sds->loop_rate_hz * 10) == 0) && (state->target_reached == 1)) {
-    jsd_epd_motion_command_prof_pos_t cmd;
+    jsd_elmo_motion_command_prof_pos_t cmd;
     displ_from_initial_target *= -1;
     cmd.target_position  = displ_from_initial_target;
     cmd.profile_velocity = profile_velocity;
@@ -268,7 +268,8 @@ int main(int argc, char* argv[]) {
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode = JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED;
+  config.epd.ctrl_gain_scheduling_mode =
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
 

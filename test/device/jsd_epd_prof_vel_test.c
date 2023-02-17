@@ -145,7 +145,7 @@ void command(void* self) {
     ++vel_idx;
     vel_idx %= NUM_FACTORS;
 
-    jsd_epd_motion_command_prof_vel_t cmd;
+    jsd_elmo_motion_command_prof_vel_t cmd;
     cmd.target_velocity = max_target_vel * target_factors[vel_idx];
     cmd.profile_accel   = profile_accel;
     cmd.profile_decel   = profile_decel;
@@ -229,7 +229,8 @@ int main(int argc, char* argv[]) {
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode = JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED;
+  config.epd.ctrl_gain_scheduling_mode =
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
 

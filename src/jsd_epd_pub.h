@@ -124,7 +124,7 @@ void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
  */
 void jsd_epd_set_motion_command_csp(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_csp_t motion_command);
+    jsd_elmo_motion_command_csp_t motion_command);
 
 /**
  * @brief Sends a Cyclic Synchronous Velocity (CSV) motion command to the EPD
@@ -138,7 +138,7 @@ void jsd_epd_set_motion_command_csp(
  */
 void jsd_epd_set_motion_command_csv(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_csv_t motion_command);
+    jsd_elmo_motion_command_csv_t motion_command);
 
 /**
  * @brief Sends a Cyclic Synchronous Torque (CST) motion command to the EPD
@@ -152,7 +152,7 @@ void jsd_epd_set_motion_command_csv(
  */
 void jsd_epd_set_motion_command_cst(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_cst_t motion_command);
+    jsd_elmo_motion_command_cst_t motion_command);
 
 /**
  * @brief Sends a Profiled Position motion command to the EPD device.
@@ -165,7 +165,7 @@ void jsd_epd_set_motion_command_cst(
  */
 void jsd_epd_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_prof_pos_t motion_command);
+    jsd_elmo_motion_command_prof_pos_t motion_command);
 
 /**
  * @brief Sends a Profiled Velocity motion command to the EPD device.
@@ -178,7 +178,7 @@ void jsd_epd_set_motion_command_prof_pos(
  */
 void jsd_epd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_prof_vel_t motion_command);
+    jsd_elmo_motion_command_prof_vel_t motion_command);
 
 /**
  * @brief Sends a Profiled Torque motion command to the EPD device.
@@ -191,7 +191,7 @@ void jsd_epd_set_motion_command_prof_vel(
  */
 void jsd_epd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
-    jsd_epd_motion_command_prof_torque_t motion_command);
+    jsd_elmo_motion_command_prof_torque_t motion_command);
 
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,
@@ -263,16 +263,8 @@ void jsd_epd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
  * @param app_id Application-provided ID for response tracking
  */
 void jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode(
-    jsd_t* self, uint16_t slave_id, jsd_epd_gain_scheduling_mode_t mode,
+    jsd_t* self, uint16_t slave_id, jsd_elmo_gain_scheduling_mode_t mode,
     uint16_t app_id);
-
-/**
- * @brief Converts jsd_epd_mode_of_operation label to string
- *
- * @return string representation of enumeration label
- */
-const char* jsd_epd_state_machine_state_to_string(
-    jsd_epd_state_machine_state_t state);
 
 /**
  * @brief Converts jsd_epd_fault_code_t label to string

@@ -11,7 +11,7 @@ extern FILE*                      file;
 uint8_t                           slave_id;
 uint8_t                           first_command = 1;
 double                            command_time;
-jsd_egd_motion_command_prof_pos_t prof_pos_cmd;
+jsd_elmo_motion_command_prof_pos_t prof_pos_cmd;
 uint16_t                          sdo_app_id = 0;
 jsd_egd_fault_code_t              last_fault_code = 0;
 
@@ -126,7 +126,7 @@ void command(void* self) {
   }
 
   if (state->actual_state_machine_state ==
-      JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED) {
+      JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED) {
     if (jsd_timer_get_time_sec() - command_time > 2) {
       MSG("sending prof_pos command now");
       jsd_egd_set_motion_command_prof_pos(sds->jsd, slave_id, prof_pos_cmd);
@@ -208,7 +208,7 @@ int main(int argc, char* argv[]) {
   my_config.egd.crc                           = INT32_MIN;
   my_config.egd.drive_max_current_limit       = -FLT_MAX;
   my_config.egd.ctrl_gain_scheduling_mode =
-      JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED;
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

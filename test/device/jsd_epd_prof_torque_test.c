@@ -145,7 +145,7 @@ void command(void* self) {
     ++torque_idx;
     torque_idx %= NUM_FACTORS;
 
-    jsd_epd_motion_command_prof_torque_t cmd;
+    jsd_elmo_motion_command_prof_torque_t cmd;
     cmd.target_torque_amps = max_target_torque * target_factors[torque_idx];
 
     jsd_epd_set_motion_command_prof_torque(sds->jsd, slave_id, cmd);
@@ -213,7 +213,8 @@ int main(int argc, char* argv[]) {
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode = JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED;
+  config.epd.ctrl_gain_scheduling_mode =
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
 

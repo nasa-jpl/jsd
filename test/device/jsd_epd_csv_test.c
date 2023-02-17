@@ -140,7 +140,7 @@ void command(void* self) {
     vel_idx %= 2;
   }
 
-  jsd_epd_motion_command_csv_t csv;
+  jsd_elmo_motion_command_csv_t csv;
   csv.target_velocity    = target_velocities[vel_idx];
   csv.velocity_offset    = 0;
   csv.torque_offset_amps = 0.0;
@@ -215,7 +215,8 @@ int main(int argc, char* argv[]) {
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode = JSD_EPD_GAIN_SCHEDULING_MODE_PRELOADED;
+  config.epd.ctrl_gain_scheduling_mode =
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
 
