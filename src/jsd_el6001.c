@@ -73,6 +73,20 @@ static uint16_t jsd_el6001_toggle_controlword_bit(const jsd_t* self, uint16_t sl
   return self->slave_states[slave_id].el6001.controlword_user ^ (1 << bit);
 }
 
+static void jsd_el6001_write_controlword(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;
+  jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;      
+
+  jsd_el6001_print_controlword("Writing controlword to EtherCAT register of: ", state->controlword_user, slave_id);
+
+  state->controlword_terminal_last = state->controlword_terminal;
+  rxpdo->controlword = state->controlword_user;
+
+}
+
 // Statuswords
 static bool jsd_el6001_statusword_bit_is_set(const jsd_t* self, uint16_t slave_id, int bit) {
   assert(self);
@@ -402,6 +416,8 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           if (state->autoincrement_byte >= 0)
           {
             jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->transmit_bytes[state->autoincrement_byte] + 1);
+            // write into RxPDO
+            jsd_el6001_write_PDO_data(self, slave_id);
           }
         }
       }
@@ -471,6 +487,44 @@ void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->received_bytes[21] = txpdo->data_in_21;
 }
 
+void jsd_el6001_write_PDO_data(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_EL6001_PRODUCT_CODE);
+
+  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
+
+  jsd_el6001_rxpdo_t* rxpdo =
+      (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;      
+
+  state->controlword_terminal_last = state->controlword_terminal;
+  rxpdo->controlword = state->controlword_user;
+  
+  // TODO: check whether we can receive packed data as array
+  rxpdo->data_out_0 = state->transmit_bytes[0];
+  rxpdo->data_out_1 = state->transmit_bytes[1];
+  rxpdo->data_out_2 = state->transmit_bytes[2];
+  rxpdo->data_out_3 = state->transmit_bytes[3];
+  rxpdo->data_out_4 = state->transmit_bytes[4];
+  rxpdo->data_out_5 = state->transmit_bytes[5];
+  rxpdo->data_out_6 = state->transmit_bytes[6];
+  rxpdo->data_out_7 = state->transmit_bytes[7];
+  rxpdo->data_out_8 = state->transmit_bytes[8];
+  rxpdo->data_out_9 = state->transmit_bytes[9];
+  rxpdo->data_out_10 = state->transmit_bytes[10];
+  rxpdo->data_out_11 = state->transmit_bytes[11];
+  rxpdo->data_out_12 = state->transmit_bytes[12];
+  rxpdo->data_out_13 = state->transmit_bytes[13];
+  rxpdo->data_out_14 = state->transmit_bytes[14];
+  rxpdo->data_out_15 = state->transmit_bytes[15];
+  rxpdo->data_out_16 = state->transmit_bytes[16];
+  rxpdo->data_out_17 = state->transmit_bytes[17];
+  rxpdo->data_out_18 = state->transmit_bytes[18];
+  rxpdo->data_out_19 = state->transmit_bytes[19];
+  rxpdo->data_out_20 = state->transmit_bytes[20];
+  rxpdo->data_out_21 = state->transmit_bytes[21];
+}
+
 void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
@@ -478,7 +532,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
 
   jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
   
-  jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
+  // jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
   // read PDOs, updates status_word
   jsd_el6001_read_PDO_data(self, slave_id);
@@ -523,7 +577,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       {
         if (state->transmit_bytes[byte_ndx] != state->transmit_bytes_prev[byte_ndx])
         {
-          rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
+          // rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
           // Write to RxPDO
           // EC_WRITE_U8(
           //   self->domain_pd_output + self->offsets_output[id][ECAT_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
@@ -542,6 +596,13 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       break;
   }
   
+  // If the controlword has changed, write it and update the "last" (most recent) value.
+  if (state->controlword_user != state->controlword_user_last)
+  {
+    jsd_el6001_write_controlword(self, slave_id);
+    state->controlword_user_last = state->controlword_user;
+  }
+
 }
 
 bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
