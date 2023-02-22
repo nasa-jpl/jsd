@@ -346,7 +346,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
         // Tell terminal that data is available to transmit and then transition
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
 
-        jsd_el6001_transition_state(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+        jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
 
         state->timer_start_sec = jsd_time_get_mono_time_sec();
 
@@ -360,58 +360,48 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           // Tell terminal that data is available to transmit and then transition
           jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
 
-          jsd_el6001_transition_state(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
 
           state->timer_start_sec = jsd_time_get_mono_time_sec();
         }
         else
         {
-          double time_since_last_transmit = ecat_timer_get_time_sec() - self->data[id].timer_start_sec;
-          if (
-            self->data[id].timeout_active
-            && (time_since_last_transmit > self->data[id].timeout_sec))
+          double time_since_last_transmit = jsd_time_get_mono_time_sec() - state->timer_start_sec;
+          if (state->timeout_active && (time_since_last_transmit > state->timeout_sec))
           {
-            MSG_ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for persistent data.", id, time_since_last_transmit);
-            MSG_ERROR("EL6001 id %d: Clearing persistent data buffer in order to transmit fresh data in the next cycle.", id);
-            self->data[id].num_persistent_bytes_received = 0;
-            self->data[id].received_all_persistent_bytes = 1;
-            self->data[id].received_first_byte_of_msg = false;
+            ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for persistent data.", slave_id, time_since_last_transmit);
+            ERROR("EL6001 id %d: Clearing persistent data buffer in order to transmit fresh data in the next cycle.", slave_id);
+            state->num_persistent_bytes_received = 0;
+            state->received_all_persistent_bytes = 1;
+            state->received_first_byte_of_msg = false;
           }
         }
       }
       break;
 
-    case ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_CONFIRMATION:
+    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:
       {
-        double time_since_last_transmit = ecat_timer_get_time_sec() - self->data[id].timer_start_sec;
-        if (self->data[id].timeout_active && (time_since_last_transmit > self->data[id].timeout_sec))
+        double time_since_last_transmit = jsd_time_get_mono_time_sec() - state->timer_start_sec;
+        if (state->timeout_active && (time_since_last_transmit > state->timeout_sec))
         {
-          MSG_ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for transmit confirmation.", id, time_since_last_transmit);
-          ecat_el6001_transition_state(
-            ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER,
-            &self->data[id].transmit_state);
+          ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for transmit confirmation.", slave_id, time_since_last_transmit);
+          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
         }
-        else if (ecat_el6001_status_word_bit_was_toggled(self, id, ECAT_EL6001_STATUS_WORD_TRANSMIT_ACCEPTED))
+        else if (jsd_el6001_statusword_bit_was_toggled(self, slave_id, JSD_EL6001_STATUSWORD_TRANSMIT_ACCEPTED))
         {
           // Beckhoff terminal transmitted data.
-          MSG_SILENT("Transmit accepted");
+          MSG_DEBUG("Transmit accepted");
 
           // Go back to waiting for another transmit request
-          ecat_el6001_transition_state(
-            ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER,
-            &self->data[id].transmit_state);
+          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
 
           // Start timeout timer
-          self->data[id].timer_start_sec = ecat_timer_get_time_sec();
+          state->timer_start_sec = jsd_time_get_mono_time_sec();
 
           //Increment the successful transmit counter
-          if (self->data[id].autoincrement_byte >= 0)
+          if (state->autoincrement_byte >= 0)
           {
-            ecat_el6001_set_transmit_data_8bits(
-              self,
-              id,
-              self->data[id].autoincrement_byte,
-              self->data[id].transmit_bytes[self->data[id].autoincrement_byte] + 1);
+            jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->transmit_bytes[state->autoincrement_byte] + 1);
           }
         }
       }
@@ -487,6 +477,8 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
          JSD_EL6001_PRODUCT_CODE);
 
   jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
+  
+  jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
   // read PDOs, updates status_word
   jsd_el6001_read_PDO_data(self, slave_id);
@@ -531,6 +523,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       {
         if (state->transmit_bytes[byte_ndx] != state->transmit_bytes_prev[byte_ndx])
         {
+          rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
           // Write to RxPDO
           // EC_WRITE_U8(
           //   self->domain_pd_output + self->offsets_output[id][ECAT_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
@@ -540,7 +533,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       }
 
       // transmit user serial data
-      // ecat_el6001_transmit_data(self, id);
+      jsd_el6001_transmit_data(self, slave_id);
     }
     break;
 
@@ -553,10 +546,20 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
 
 bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL6001_PRODUCT_CODE);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
   return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
+}
+
+int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+  assert(byte < JSD_EL6001_DATA_OUT_BYTE_21);
+  assert(byte >= 0);
+
+  self->slave_states[slave_id].el6001.transmit_bytes[byte] = value;
+
+  return 0;
 }
 
 /****************************************************

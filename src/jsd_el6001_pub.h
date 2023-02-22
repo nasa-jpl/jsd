@@ -35,7 +35,6 @@ const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
 
-bool jsd_el6001_all_persistent_data_was_received(jsd_t* self, uint16_t slave_id);
 
 
 #ifdef __cplusplus

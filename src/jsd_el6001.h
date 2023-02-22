@@ -24,6 +24,10 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id);
 
+bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id);
+
+int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value);
+
 #ifdef __cplusplus
 }
 #endif

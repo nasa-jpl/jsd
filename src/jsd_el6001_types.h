@@ -19,6 +19,35 @@ extern "C" {
 
 typedef enum
 {
+  JSD_EL6001_CONTROLWORD = 0,
+  JSD_EL6001_DATA_OUT_BYTE_00,
+  JSD_EL6001_DATA_OUT_BYTE_01,
+  JSD_EL6001_DATA_OUT_BYTE_02,
+  JSD_EL6001_DATA_OUT_BYTE_03,
+  JSD_EL6001_DATA_OUT_BYTE_04,
+  JSD_EL6001_DATA_OUT_BYTE_05,
+  JSD_EL6001_DATA_OUT_BYTE_06,
+  JSD_EL6001_DATA_OUT_BYTE_07,
+  JSD_EL6001_DATA_OUT_BYTE_08,
+  JSD_EL6001_DATA_OUT_BYTE_09,
+  JSD_EL6001_DATA_OUT_BYTE_10,
+  JSD_EL6001_DATA_OUT_BYTE_11,
+  JSD_EL6001_DATA_OUT_BYTE_12,
+  JSD_EL6001_DATA_OUT_BYTE_13,
+  JSD_EL6001_DATA_OUT_BYTE_14,
+  JSD_EL6001_DATA_OUT_BYTE_15,
+  JSD_EL6001_DATA_OUT_BYTE_16,
+  JSD_EL6001_DATA_OUT_BYTE_17,
+  JSD_EL6001_DATA_OUT_BYTE_18,
+  JSD_EL6001_DATA_OUT_BYTE_19,
+  JSD_EL6001_DATA_OUT_BYTE_20,
+  JSD_EL6001_DATA_OUT_BYTE_21,
+  JSD_EL6001_NUM_PDO_ENTRIES_OUTPUT,
+
+} jsd_el6001_rxpdo_entries_t;
+
+typedef enum
+{
   JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST = 0, ///< Toggle to notify terminal that DataOut bytes contain number of bytes indicated via
                                                  ///< OL bits. Terminal acknowledges receipt of data via toggle of SW0
   JSD_EL6001_CONTROLWORD_RECEIVE_ACCEPTED,     ///< Controller acknowledges receipt of data via toggle of this bit
@@ -101,6 +130,28 @@ typedef struct {
 typedef struct __attribute__((__packed__)) {
   // jsd_el6001_rxpdo_channel_t channel[JSD_EL6001_NUM_CHANNELS];
   uint16_t    controlword;
+  uint8_t   data_out_0; 
+  uint8_t   data_out_1; 
+  uint8_t   data_out_2; 
+  uint8_t   data_out_3; 
+  uint8_t   data_out_4; 
+  uint8_t   data_out_5; 
+  uint8_t   data_out_6; 
+  uint8_t   data_out_7; 
+  uint8_t   data_out_8; 
+  uint8_t   data_out_9; 
+  uint8_t   data_out_10; 
+  uint8_t   data_out_11; 
+  uint8_t   data_out_12; 
+  uint8_t   data_out_13; 
+  uint8_t   data_out_14; 
+  uint8_t   data_out_15; 
+  uint8_t   data_out_16; 
+  uint8_t   data_out_17; 
+  uint8_t   data_out_18; 
+  uint8_t   data_out_19; 
+  uint8_t   data_out_20; 
+  uint8_t   data_out_21;
 } jsd_el6001_rxpdo_t;
 
 /**
