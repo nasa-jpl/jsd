@@ -162,12 +162,13 @@ static int8_t jsd_el6001_compute_checksum(uint8_t data[], int num_bytes) {
 
 //---------------------------------------------------------------------------//
 // RECEIVE
+//---------------------------------------------------------------------------//
 
 static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;
+  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;
 
   int i;
   int num_bytes_received = 0;
@@ -190,7 +191,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
     // assert number of bytes received is not above terminal capacity
     if(num_bytes_received > JSD_EL6001_NUM_DATA_BYTES)
     {
-      ERROR("Received more data than can handle");
+      ERROR("Terminal received more data than can handle");
       assert(0);
     }
 
@@ -213,6 +214,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
 
       state->num_persistent_bytes_received = 0;
       state->received_first_byte_of_msg = false;
+      ++state->read_errors;
     }
 
     // Store the received data bytes
@@ -278,8 +280,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
       {
         ERROR("EL6001 id %d: Checksum invalid. Expected: %d, Computed: %d", slave_id, expected_checksum, checksum);
         state->checksum_failed = true;
-        ++state->read_errors;
-        //ok = false;
+        ++state->read_errors;        
       }
 
       // No Partial Packet
@@ -325,6 +326,103 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
   state->num_bytes_received = num_bytes_received;
 
   return ok ? 0 : -1;
+}
+
+//---------------------------------------------------------------------------//
+// TRANSMIT
+//---------------------------------------------------------------------------//
+
+static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;
+
+  switch (state->transmit_state)
+  {
+    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER:
+      if (state->user_requests_to_transmit_data)
+      {
+        // Tell terminal that data is available to transmit and then transition
+        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
+
+        jsd_el6001_transition_state(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+
+        state->timer_start_sec = jsd_time_get_mono_time_sec();
+
+        // Reset user transmit variable
+        state->user_requests_to_transmit_data = false;
+      }
+      else if (state->user_requests_to_transmit_data_persistently)
+      {
+        if (jsd_el6001_all_persistent_data_was_received(self, slave_id))
+        {
+          // Tell terminal that data is available to transmit and then transition
+          jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
+
+          jsd_el6001_transition_state(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+
+          state->timer_start_sec = jsd_time_get_mono_time_sec();
+        }
+        else
+        {
+          double time_since_last_transmit = ecat_timer_get_time_sec() - self->data[id].timer_start_sec;
+          if (
+            self->data[id].timeout_active
+            && (time_since_last_transmit > self->data[id].timeout_sec))
+          {
+            MSG_ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for persistent data.", id, time_since_last_transmit);
+            MSG_ERROR("EL6001 id %d: Clearing persistent data buffer in order to transmit fresh data in the next cycle.", id);
+            self->data[id].num_persistent_bytes_received = 0;
+            self->data[id].received_all_persistent_bytes = 1;
+            self->data[id].received_first_byte_of_msg = false;
+          }
+        }
+      }
+      break;
+
+    case ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_CONFIRMATION:
+      {
+        double time_since_last_transmit = ecat_timer_get_time_sec() - self->data[id].timer_start_sec;
+        if (self->data[id].timeout_active && (time_since_last_transmit > self->data[id].timeout_sec))
+        {
+          MSG_ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for transmit confirmation.", id, time_since_last_transmit);
+          ecat_el6001_transition_state(
+            ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER,
+            &self->data[id].transmit_state);
+        }
+        else if (ecat_el6001_status_word_bit_was_toggled(self, id, ECAT_EL6001_STATUS_WORD_TRANSMIT_ACCEPTED))
+        {
+          // Beckhoff terminal transmitted data.
+          MSG_SILENT("Transmit accepted");
+
+          // Go back to waiting for another transmit request
+          ecat_el6001_transition_state(
+            ECAT_EL6001_HSM_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER,
+            &self->data[id].transmit_state);
+
+          // Start timeout timer
+          self->data[id].timer_start_sec = ecat_timer_get_time_sec();
+
+          //Increment the successful transmit counter
+          if (self->data[id].autoincrement_byte >= 0)
+          {
+            ecat_el6001_set_transmit_data_8bits(
+              self,
+              id,
+              self->data[id].autoincrement_byte,
+              self->data[id].transmit_bytes[self->data[id].autoincrement_byte] + 1);
+          }
+        }
+      }
+      break;
+
+    default:
+      assert(0);
+      break;
+  }
+
+  return 0;
 }
 
 /****************************************************
@@ -423,23 +521,25 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       // receive serial data
       if (jsd_el6001_receive_data(self, slave_id) != 0)
       {
+        assert(0);
         return;
       }
 
-      // // If any of the bytes to transmit have changed, write them to the bus
-      // size_t byte_ndx;
-      // for (byte_ndx = 0; byte_ndx < ECAT_EL6001_NUM_DATA_BYTES; byte_ndx++)
-      // {
-      //   if (data->transmit_bytes[byte_ndx] != data->transmit_bytes_prev[byte_ndx])
-      //   {
-      //     EC_WRITE_U8(
-      //       self->domain_pd_output + self->offsets_output[id][ECAT_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
-      //       state->transmit_bytes[byte_ndx]);
-      //   }
-      //   data->transmit_bytes_prev[byte_ndx] = data->transmit_bytes[byte_ndx];
-      // }
+      // If any of the bytes to transmit have changed, write them to the bus
+      size_t byte_ndx;
+      for (byte_ndx = 0; byte_ndx < JSD_EL6001_NUM_DATA_BYTES; byte_ndx++)
+      {
+        if (state->transmit_bytes[byte_ndx] != state->transmit_bytes_prev[byte_ndx])
+        {
+          // Write to RxPDO
+          // EC_WRITE_U8(
+          //   self->domain_pd_output + self->offsets_output[id][ECAT_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
+          //   state->transmit_bytes[byte_ndx]);
+        }
+        state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
+      }
 
-      // // transmit user serial data
+      // transmit user serial data
       // ecat_el6001_transmit_data(self, id);
     }
     break;
@@ -451,19 +551,13 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
   
 }
 
-// void jsd_el6001_write_single_channel(jsd_t* self, uint16_t slave_id,
-//                                      uint8_t channel, double output) {
-//   assert(self);
-//   assert(self->ecx_context.slavelist[slave_id].eep_id ==
-//          JSD_EL6001_PRODUCT_CODE);
-// }
+bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id ==
+         JSD_EL6001_PRODUCT_CODE);
 
-// void jsd_el6001_write_all_channels(jsd_t* self, uint16_t slave_id,
-//                                    double output[JSD_EL6001_NUM_CHANNELS]) {
-//   // for (int ch = 0; ch < JSD_EL6001_NUM_CHANNELS; ++ch) {
-//   //   jsd_el6001_write_single_channel(self, slave_id, ch, output[ch]);
-//   // }
-// }
+  return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
+}
 
 /****************************************************
  * Private functions

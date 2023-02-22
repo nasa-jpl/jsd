@@ -182,14 +182,14 @@ typedef struct
 
   // Persistent receiving of bytes
   int expected_num_bytes_to_receive;
-  uint8_t persistent_received_bytes[JSD_EL6001_NUM_DATA_BYTES];
+  uint8_t persistent_received_bytes[JSD_EL6001_MAX_NUM_DATA_BYTES];
   int num_persistent_bytes_received;
   bool received_all_persistent_bytes;
   bool received_first_byte_of_msg;
   bool user_requests_to_transmit_data_persistently;
 
   jsd_el6001_sms_t sms;
-  // ecat_el6001_hsm_state_t transmit_state;
+  jsd_el6001_sms_t transmit_state;
 
 } jsd_el6001_state_t;
 

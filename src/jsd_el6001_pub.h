@@ -35,26 +35,8 @@ const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
 
-/**
- * @brief Sets the voltage (V) command for the given channel
- *
- * @param self Pointer to JSD context
- * @param slave_id Slave ID of EL6001 device
- * @param channel Device channel to command
- * @param output Commanded voltage. Provided value is clamped within [0-10].
- */
-void jsd_el4102_write_single_channel(jsd_t* self, uint16_t slave_id,
-                                     uint8_t channel, double output);
+bool jsd_el6001_all_persistent_data_was_received(jsd_t* self, uint16_t slave_id);
 
-/**
- * @brief Sets the voltage (V) command for each channel
- *
- * @param self Pointer to JSD context
- * @param slave_id Slave ID of EL6001 device
- * @param output Commanded voltages. Provided values are clamped within [0-10].
- */
-void jsd_el4102_write_all_channels(jsd_t* self, uint16_t slave_id,
-                                   double output[JSD_EL6001_NUM_CHANNELS]);
 
 #ifdef __cplusplus
 }
