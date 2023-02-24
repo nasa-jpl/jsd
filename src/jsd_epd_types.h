@@ -43,7 +43,9 @@ typedef enum {
  * See Platinum Administrator Guide, chapter 7
  */
 typedef enum {
-  JSD_EPD_FAULT_OKAY = 0,
+  // Make integers different from jsd_egd_fault_code_t so that fault codes are
+  // easier to process in Fastcat
+  JSD_EPD_FAULT_OKAY = 100,
   JSD_EPD_FAULT_SHORT_PROTECTION,
   JSD_EPD_FAULT_UNDER_VOLTAGE,
   JSD_EPD_FAULT_LOSS_OF_PHASE,
