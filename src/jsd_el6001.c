@@ -665,13 +665,12 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_man ==
          JSD_BECKHOFF_VENDOR_ID);
 
-  jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;     
+  ec_slavet* slaves = self->ecx_context.slavelist;
+  ec_slavet* slave  = &slaves[slave_id];  
 
-  // TODO No PO2SO callback for 6001 devices, so set the success flag now
-  config->PO2SO_success = true;
-
-  state->sms = JSD_EL6001_SMS_INITING; // TODO: This used to be done in configure_sdos
+  slave->PO2SOconfigx = jsd_el6001_PO2SO_config;
+  
+  self->slave_states[slave_id].el6001.sms = JSD_EL6001_SMS_INITING; // TODO: This used to be done in configure_sdos
 
   return true;
 }
