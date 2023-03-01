@@ -670,7 +670,17 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id) {
 
   slave->PO2SOconfigx = jsd_el6001_PO2SO_config;
   
+  // Initialize main state machine
   self->slave_states[slave_id].el6001.sms = JSD_EL6001_SMS_INITING; // TODO: This used to be done in configure_sdos
+
+  // Initialize transmit state machine
+  self->slave_states[slave_id].el6001.transmit_state = JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER;
+
+  // Initialize timeout timer
+  self->slave_states[slave_id].el6001.timer_start_sec = jsd_time_get_mono_time_sec();
+
+  // Initialize the autoincrement byte to -1 (none, or unknown)
+  self->slave_states[slave_id].el6001.autoincrement_byte = -1;
 
   return true;
 }
@@ -713,5 +723,14 @@ int jsd_el6001_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   config->PO2SO_success = true;
   return 1;
+}
+
+void jsd_el6001_set_autoincrement_byte(jsd_t* self, uint16_t slave_id, int byte) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+  assert(byte >= 0);
+  assert(byte <= JSD_EL6001_MAX_NUM_DATA_BYTES);
+
+  self->slave_states[slave_id].el6001.autoincrement_byte = byte;
 }
 
