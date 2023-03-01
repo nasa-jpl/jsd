@@ -8,6 +8,18 @@
 
 #define HEX_FORMAT "0x%02X"
 
+const char* jsd_el6001_baud_rate_strings[] = {
+    [JSD_EL6001_BAUD_RATE_2400]     = "2400 bps",
+    [JSD_EL6001_BAUD_RATE_4800]     = "4800 bps",
+    [JSD_EL6001_BAUD_RATE_9600]     = "9600 bps",
+    [JSD_EL6001_BAUD_RATE_12000]    = "12000 bps",
+    [JSD_EL6001_BAUD_RATE_14400]    = "14400 bps",
+    [JSD_EL6001_BAUD_RATE_19200]    = "19200 bps",
+    [JSD_EL6001_BAUD_RATE_38400]    = "38400 bps",
+    [JSD_EL6001_BAUD_RATE_57600]    = "57600 bps",
+    [JSD_EL6001_BAUD_RATE_115200]   = "115200 bps",    
+};
+
 // Print functions
 static void jsd_el6001_print_controlword(const char* prefix, uint16_t controlword, uint16_t slave_id) {
   uint8_t output_length = controlword >> JSD_EL6001_CONTROLWORD_OUTPUT_LENGTH_0;
@@ -220,7 +232,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
       ERROR("EL6001[%d]: Number of received bytes larger than persistence window. "
         "num_persistent_bytes_received = %d. "
         "num_bytes_received = %d. "
-        "ECAT_EL6001_MAX_NUM_DATA_BYTES = %d. ",
+        "JSD_EL6001_MAX_NUM_DATA_BYTES = %d. ",
         slave_id,
         state->num_persistent_bytes_received,
         num_bytes_received,
@@ -534,7 +546,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
   
   // jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
-  // read PDOs, updates status_word
+  // read PDOs, updates statusword
   jsd_el6001_read_PDO_data(self, slave_id);
 
   // check for faults in statuswords
@@ -546,7 +558,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
     {
       // Request Beckhoff terminal to initialize
       jsd_el6001_set_controlword(self, slave_id, jsd_el6001_set_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_INIT_REQUEST));
-      jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TERMINAL_TO_INIT, &self->slave_states[slave_id].el6001.sms);
+      jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TERMINAL_TO_INIT, &state->sms);
     }
     break;
 
@@ -556,7 +568,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
       {
         // Clear init request in order to make terminal ready for serial communication
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_INIT_REQUEST));
-        jsd_el6001_transition_sms(JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION, &self->slave_states[slave_id].el6001.sms);
+        jsd_el6001_transition_sms(JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION, &state->sms);
       }
     }
     break;
@@ -580,7 +592,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
           // rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
           // Write to RxPDO
           // EC_WRITE_U8(
-          //   self->domain_pd_output + self->offsets_output[id][ECAT_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
+          //   self->domain_pd_output + self->offsets_output[id][JSD_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
           //   state->transmit_bytes[byte_ndx]);
         }
         state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
@@ -623,6 +635,25 @@ int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte,
   return 0;
 }
 
+int jsd_el6001_set_baud_rate(jsd_t* self, uint16_t slave_id, jsd_el6001_baud_rate_t baud_rate) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+  assert(
+    (baud_rate == JSD_EL6001_BAUD_RATE_2400)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_4800)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_9600)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_19200)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_38400)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_57600)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_115200)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_12000)
+    || (baud_rate == JSD_EL6001_BAUD_RATE_14400));
+
+  self->slave_states[slave_id].el6001.baud_rate = baud_rate;
+
+  return 0;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
@@ -637,10 +668,51 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;     
 
-  // TODO No PO2SO callback for 4102 devices, so set the success flag now
+  // TODO No PO2SO callback for 6001 devices, so set the success flag now
   config->PO2SO_success = true;
 
   state->sms = JSD_EL6001_SMS_INITING; // TODO: This used to be done in configure_sdos
 
   return true;
 }
+
+int jsd_el6001_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+  assert(ecx_context);
+  assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  // Since this function prototype is forced by SOEM, we have embedded a
+  // reference to jsd.slave_configs within th ecx_context and extract it here
+  jsd_slave_config_t* slave_configs =
+      (jsd_slave_config_t*)ecx_context->userdata;
+
+  jsd_slave_config_t* config = &slave_configs[slave_id];
+
+  // Reset to factory default
+  uint32_t reset_word = JSD_BECKHOFF_RESET_WORD;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, JSD_BECKHOFF_RESET_SDO,
+                                  JSD_BECKHOFF_RESET_SUBIND, JSD_SDO_DATA_U32,
+                                  &reset_word)) {
+    return 0;
+  }
+
+  MSG("Configuring slave no: %u,  SII inferred name: %s", slave_id,
+      ecx_context->slavelist[slave_id].name);
+  MSG("\t Configured name: %s", config->name);
+
+  MSG("\t baud rate: %s", jsd_el6001_baud_rate_strings[config->el6001.baud_rate]);
+
+  uint32_t sdo_channel_index = 0x8000;
+
+  // Set Baud Rate
+  assert(config->el6001.baud_rate >= JSD_EL6001_BAUD_RATE_2400 && 
+        config->el6001.baud_rate <= JSD_EL6001_BAUD_RATE_14400);
+  uint8_t baud_rate = config->el6001.baud_rate;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                  0x11, JSD_SDO_DATA_U8, &baud_rate)) {
+    return 0;
+  } 
+
+  config->PO2SO_success = true;
+  return 1;
+}
+

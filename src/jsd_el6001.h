@@ -17,6 +17,21 @@ extern "C" {
 bool jsd_el6001_init(jsd_t* self, uint16_t slave_id);
 
 /**
+ * @brief Configuration function called by SOEM upon a PreOp to SafeOp state
+ * transition that (re)configures EL6001 device settings
+ *
+ * @param ecx_context SOEM context pointer
+ * @param slave_id index of device on EtherCAT bus
+ * @return 1 on success, 0 on failure
+ */
+int jsd_el6001_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
+
+/**
+ * @brief Setting Baud Rate on the terminal
+ */
+int jsd_el6001_set_baud_rate(jsd_t *self, uint16_t slave_id, jsd_el6001_baud_rate_t baud_rate);
+
+/**
  * @brief Read PDO data with SOEM IOmap
  *
  * @param self pointer JSD context

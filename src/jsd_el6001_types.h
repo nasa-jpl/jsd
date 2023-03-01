@@ -120,6 +120,7 @@ typedef enum
  * @brief Configuration struct for EL6001 device initialization
  */
 typedef struct {
+  jsd_el6001_baud_rate_t baud_rate;
 } jsd_el6001_config_t;
 
 /**
@@ -127,11 +128,10 @@ typedef struct {
  *
  * Note: struct order matters and must be packed.
  */
-typedef struct __attribute__((__packed__)) {
-  // jsd_el6001_rxpdo_channel_t channel[JSD_EL6001_NUM_CHANNELS];
-  uint16_t    controlword;
-  uint8_t   data_out_0; 
-  uint8_t   data_out_1; 
+typedef struct __attribute__((__packed__)) {  
+  uint16_t  controlword; //0x3003:0x01: 2byte
+  uint8_t   data_out_0; //0x3003:0x02: 1byte
+  uint8_t   data_out_1; //0x3003:0x03
   uint8_t   data_out_2; 
   uint8_t   data_out_3; 
   uint8_t   data_out_4; 
@@ -151,7 +151,7 @@ typedef struct __attribute__((__packed__)) {
   uint8_t   data_out_18; 
   uint8_t   data_out_19; 
   uint8_t   data_out_20; 
-  uint8_t   data_out_21;
+  uint8_t   data_out_21; //0x3003:0x17
 } jsd_el6001_rxpdo_t;
 
 /**
@@ -160,8 +160,8 @@ typedef struct __attribute__((__packed__)) {
  * Note: struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {  
-  uint16_t  statusword; //0x6000:01 - 10  
-  uint8_t   data_in_0; 
+  uint16_t  statusword; //0x3103:01   
+  uint8_t   data_in_0;  //0x3103:02
   uint8_t   data_in_1; 
   uint8_t   data_in_2; 
   uint8_t   data_in_3; 
@@ -182,7 +182,7 @@ typedef struct __attribute__((__packed__)) {
   uint8_t   data_in_18; 
   uint8_t   data_in_19; 
   uint8_t   data_in_20; 
-  uint8_t   data_in_21; 
+  uint8_t   data_in_21; //0x3103:17
 } jsd_el6001_txpdo_data_t;
 
 /**
