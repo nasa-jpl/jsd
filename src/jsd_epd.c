@@ -375,6 +375,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   slave->blockLRW = 1;
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  state->requested_mode_of_operation      = JSD_EPD_MODE_OF_OPERATION_DISABLED;
+  state->last_requested_mode_of_operation = state->requested_mode_of_operation;
   state->last_reset_time         = 0;
 
   MSG_DEBUG("TxPDO size: %zu Bytes", sizeof(jsd_epd_txpdo_data_t));
@@ -389,6 +391,10 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 
   state->pub.fault_code      = JSD_EPD_FAULT_OKAY;
   state->pub.emcy_error_code = 0;
+
+  state->setpoint_ack                  = 0;
+  state->last_setpoint_ack             = 0;
+  state->prof_pos_waiting_setpoint_ack = false;
 
   return true;
 }
@@ -783,6 +789,9 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
+  state->last_state_machine_state = state->pub.actual_state_machine_state;
+  state->last_setpoint_ack        = state->setpoint_ack;
+
   state->pub.actual_position = state->txpdo.actual_position;
   state->pub.actual_velocity = state->txpdo.velocity_actual_value;
   state->pub.actual_current  = (double)state->txpdo.current_actual_value *
@@ -819,6 +828,8 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
 
+    state->prof_pos_waiting_setpoint_ack = false;
+
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
       // TODO(dloret): Check if setting state->new_reset to false like in EGD
@@ -829,10 +840,12 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
       jsd_sdo_signal_emcy_check(self);
     }
   }
-  state->last_state_machine_state = state->pub.actual_state_machine_state;
 
   state->pub.warning        = state->txpdo.statusword >> 7 & 0x01;
   state->pub.target_reached = state->txpdo.statusword >> 10 & 0x01;
+  state->setpoint_ack       = state->txpdo.statusword >> 12 & 0x01;
+  state->pub.setpoint_ack_rise =
+      (state->last_setpoint_ack == 0 && state->setpoint_ack == 1);
 
   // Handle Status Register
   state->pub.servo_enabled = state->txpdo.status_register_1 >> 4 & 0x01;
@@ -1005,6 +1018,11 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
 
   // TODO(dloret): EGD code prints mode of operation change and warns about
   // changing mode of operation during motion.
+  if (state->last_requested_mode_of_operation !=
+      state->requested_mode_of_operation) {
+    state->prof_pos_waiting_setpoint_ack = false;
+  }
+  state->last_requested_mode_of_operation = state->requested_mode_of_operation;
 
   switch (state->requested_mode_of_operation) {
     case JSD_EPD_MODE_OF_OPERATION_DISABLED:
@@ -1114,10 +1132,22 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.profile_accel    = cmd.prof_pos.profile_accel;
   state->rxpdo.profile_decel    = cmd.prof_pos.profile_decel;
 
+  // Having the new set-point bit on until the drive acknowledges reception of
+  // the command is necessary so that the drive does not miss the bit when
+  // changing between modes of operation.
   if (state->new_motion_command) {
+    state->prof_pos_waiting_setpoint_ack = true;
+  }
+  if (state->prof_pos_waiting_setpoint_ack) {
     // Signal new set-point
     state->rxpdo.controlword |= (0x01 << 4);
   }
+  if (state->pub.setpoint_ack_rise) {
+    // After the rise of set-point acknowledge bit in statusword, new set-point
+    // bit in controlword can be turned off.
+    state->prof_pos_waiting_setpoint_ack = false;
+  }
+
   // Request immediate change of set-point
   state->rxpdo.controlword |= (0x01 << 5);
   // Indicate whether motion is relative

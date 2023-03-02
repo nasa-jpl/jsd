@@ -47,6 +47,7 @@ void telemetry_header() {
   fprintf(file, "servo_enabled, ");
   fprintf(file, "warning, ");
   fprintf(file, "target_reached, ");
+  fprintf(file, "setpoint_ack_rise, ");
   fprintf(file, "bus_voltage, ");
   fprintf(file, "analog_input_voltage, ");
   // Omitted digital inputs and digital output commands.
@@ -102,6 +103,7 @@ void telemetry_data(void* self) {
   fprintf(file, "%u, ", state->servo_enabled);
   fprintf(file, "%u, ", state->warning);
   fprintf(file, "%u, ", state->target_reached);
+  fprintf(file, "%u, ", state->setpoint_ack_rise);
   fprintf(file, "%lf, ", state->bus_voltage);
   fprintf(file, "%lf, ", state->analog_input_voltage);
   // Omitted digital inputs and digital output commands.
@@ -130,8 +132,9 @@ void extract_data(void* self) {
 
 void command(void* self) {
   static bool    abs_cmd_sent       = false;
+  static bool    abs_cmd_accepted        = false;
+  static bool    ready_for_displacements = false;
   static int32_t iter               = 0;
-  static int32_t abs_cmd_iter_stamp = 0;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -165,16 +168,23 @@ void command(void* self) {
     jsd_epd_set_motion_command_prof_pos(sds->jsd, slave_id, cmd);
 
     abs_cmd_sent       = true;
-    abs_cmd_iter_stamp = iter;
   }
 
-  // Wait a few cycles after the absolute profiled position command is sent
-  // before checking whether the target has been reached. This is necessary
-  // because target_reached is 1 when entering the drive's Enabled state until
-  // a new command is issued.
+  // Wait for the absolute profiled position command to be received by the
+  // drive before checking whether the target has been reached. Otherwise, a
+  // target_reached equal to 1 might still be the result of the previous
+  // command.
+  if (state->setpoint_ack_rise) {
+    abs_cmd_accepted = true;
+  }
+
+  if (abs_cmd_accepted && (state->target_reached == 1) &&
+      !ready_for_displacements) {
+    ready_for_displacements = true;
+    iter                    = 0;
+  }
   // Afterwards, command a displacement every 10 seconds.
-  if (((iter - abs_cmd_iter_stamp) > 10) &&
-      (iter % (sds->loop_rate_hz * 10) == 0) && (state->target_reached == 1)) {
+  if (ready_for_displacements && (iter % (sds->loop_rate_hz * 10) == 0)) {
     jsd_elmo_motion_command_prof_pos_t cmd;
     displ_from_initial_target *= -1;
     cmd.target_position  = displ_from_initial_target;

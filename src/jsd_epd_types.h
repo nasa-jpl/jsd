@@ -186,6 +186,11 @@ typedef struct {
                           ///< time to engage brake elapses.
   uint8_t warning;        ///< From statusword, bit 7
   uint8_t target_reached;  ///< From statusword, bit 10, mode dependent.
+  bool setpoint_ack_rise;  ///< True on rising edge of bit 12 of statusword. In
+                           ///< Profiled Position mode, target_reached
+                           ///< corresponds to the most recent command only
+                           ///< after the first rising edge of the set-point
+                           ///< acknowledge bit after sending such command.
   jsd_epd_fault_code_t fault_code;  ///< Fault based on Emergency error code.
   uint16_t emcy_error_code;  ///< Emergency error codes.
 
@@ -269,6 +274,7 @@ typedef struct {
   bool                        new_motion_command;
   jsd_epd_motion_command_t    motion_command;  ///< Last command from user
   jsd_epd_mode_of_operation_t requested_mode_of_operation;
+  jsd_epd_mode_of_operation_t last_requested_mode_of_operation;
   double                      last_reset_time;
 
   uint8_t interlock;  ///< 1 when one or both of STO inputs are disabled.
@@ -287,6 +293,17 @@ typedef struct {
   double fault_mono_time;  /// Timestamp from monotonic clock of the last
                            /// transition into fault. This is used to measure a
                            /// timeout to receive the EMCY error code.
+
+  uint8_t setpoint_ack;  ///< Setpoint ackowledge (Profiled Position mode),
+                         ///< statustword, bit 12
+  uint8_t last_setpoint_ack;
+  bool prof_pos_waiting_setpoint_ack;  ///< When in Profiled Position mode, it
+                                       ///< indicates whether the driver is
+                                       ///< waiting for the drive to acknowledge
+                                       ///< reception of a new profiled position
+                                       ///< set-point so that the driver can
+                                       ///< turn off the new set-point bit in
+                                       ///< the controlword.
 } jsd_epd_private_state_t;
 
 #ifdef __cplusplus
