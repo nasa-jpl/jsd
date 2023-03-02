@@ -11,6 +11,7 @@ extern "C" {
 
 #include "ethercat.h"
 #include "jsd/jsd_print.h"
+#include "jsd/jsd_time.h"
 #include "jsd/jsd_types.h"
 
 /**
