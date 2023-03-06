@@ -35,6 +35,7 @@ const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
 
+void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id);
 
 
 #ifdef __cplusplus
