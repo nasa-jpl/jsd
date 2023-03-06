@@ -112,6 +112,11 @@ if(BUILD_JSD_TESTS)
             jsd_test_utils.c)
     target_link_libraries(jsd_el6001_test ${jsd_test_libs})
 
+    add_executable(jsd_el6001_comm_test
+            device/jsd_el6001_comm_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_el6001_comm_test ${jsd_test_libs})
+
     add_executable(jsd_ild1900_test
             device/jsd_ild1900_test.c
             jsd_test_utils.c)

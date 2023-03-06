@@ -37,6 +37,9 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
 
 void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id);
 
+int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value);
+
+int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit);
 
 #ifdef __cplusplus
 }

@@ -654,6 +654,21 @@ int jsd_el6001_set_baud_rate(jsd_t* self, uint16_t slave_id, jsd_el6001_baud_rat
   return 0;
 }
 
+int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  // Set number of output bytes by setting bits 8-15 of the control word to that number
+  // Write the control word so the terminal know number of bytes to send
+  jsd_el6001_set_controlword(self, slave_id,
+    self->slave_states[slave_id].el6001.controlword_user | (num_bytes_to_transmit << JSD_EL6001_CONTROLWORD_OUTPUT_LENGTH_0));
+
+  // Set bool to advance transmit state machine
+  self->slave_states[slave_id].el6001.user_requests_to_transmit_data = true;
+
+  return 0;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
