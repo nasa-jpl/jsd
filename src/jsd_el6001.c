@@ -54,7 +54,7 @@ static void jsd_el6001_set_controlword(jsd_t* self, uint16_t slave_id, uint16_t 
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_print_controlword("Setting control word of: ", control_word, slave_id);
+  jsd_el6001_print_controlword("Setting controlword of: ", control_word, slave_id);
   self->slave_states[slave_id].el6001.controlword_user = control_word;
 }
 
@@ -624,7 +624,7 @@ bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t sla
   return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
 }
 
-int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {
+int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {  
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
   assert(byte < JSD_EL6001_DATA_OUT_BYTE_21);
