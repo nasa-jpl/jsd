@@ -369,6 +369,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
     case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER:
       if (state->user_requests_to_transmit_data)
       {
+        MSG("Confirmed user request to transmit data, setting controlword to transmit request");
         // Tell terminal that data is available to transmit and then transition
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
 
@@ -416,9 +417,10 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
         else if (jsd_el6001_statusword_bit_was_toggled(self, slave_id, JSD_EL6001_STATUSWORD_TRANSMIT_ACCEPTED))
         {
           // Beckhoff terminal transmitted data.
-          MSG_DEBUG("Transmit accepted");
+          MSG_DEBUG("Transmit accepted, data has been transmitted");
 
           // Go back to waiting for another transmit request
+          jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
           jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
 
           // Start timeout timer

@@ -160,6 +160,8 @@ int main(int argc, char* argv[]) {
   jsd_read(sds.jsd, EC_TIMEOUTRET);
 
   int8_t counter = 0;
+  bool quit = false;
+  const jsd_el6001_state_t* state = jsd_el6001_get_state(sds.jsd, slave_id);
 
   // initiate first transmit and for next time all data is received to prevent idle loop
   // transmit data does not get deleted automatically
@@ -168,11 +170,19 @@ int main(int argc, char* argv[]) {
   jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 1/*byte_number*/, ++counter/*value*/);
   jsd_el6001_request_transmit_data(sds.jsd, slave_id, 2/*num_bytes*/);
 
-  jsd_el6001_process(sds.jsd, slave_id);
+  while(!quit){
+    jsd_read(sds.jsd, EC_TIMEOUTRET);  
+    
+    jsd_el6001_process(sds.jsd, slave_id);
 
-  const jsd_el6001_state_t* state = jsd_el6001_get_state(sds.jsd, slave_id);
-  MSG("Controlword_user: %u ", state->controlword_user);
-  MSG("Statusword: %u ", state->statusword);
+    jsd_write(sds.jsd);
+
+    MSG("Controlword_user: %u ", state->controlword_user);
+    MSG("Statusword: %u ", state->statusword);
+
+    sleep(1);
+    //jsd_timer_process(sds.jsd_timer);
+  }
   
   // ecat_el6001_set_expected_num_bytes_to_receive(ecat->el6001, ID, TOTAL_NUM_BYTES);
   // ecat_el6001_set_persistent_transmit_data(ecat->el6001, ID, 2/*num_bytes*/, true);
