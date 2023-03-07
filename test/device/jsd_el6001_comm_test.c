@@ -175,13 +175,12 @@ int main(int argc, char* argv[]) {
     
     jsd_el6001_process(sds.jsd, slave_id);
 
-    jsd_write(sds.jsd);
-
     MSG("Controlword_user: %u ", state->controlword_user);
     MSG("Statusword: %u ", state->statusword);
 
-    sleep(1);
-    //jsd_timer_process(sds.jsd_timer);
+    jsd_write(sds.jsd);
+
+    jsd_timer_process(sds.jsd_timer);
   }
   
   // ecat_el6001_set_expected_num_bytes_to_receive(ecat->el6001, ID, TOTAL_NUM_BYTES);

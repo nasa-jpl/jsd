@@ -429,9 +429,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           //Increment the successful transmit counter
           if (state->autoincrement_byte >= 0)
           {
-            jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->transmit_bytes[state->autoincrement_byte] + 1);
-            // write into RxPDO
-            jsd_el6001_write_PDO_data(self, slave_id);
+            jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->transmit_bytes[state->autoincrement_byte] + 1);            
           }
         }
       }
