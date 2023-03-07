@@ -159,6 +159,8 @@ int main(int argc, char* argv[]) {
   jsd_el6001_set_transmit_data_8bits(sds.jsd, ID, 0/*byte_number*/, OP_CODE_SEND_DATA/*value*/);
   jsd_el6001_set_transmit_data_8bits(sds.jsd, ID, 1/*byte_number*/, ++counter/*value*/);
   jsd_el6001_request_transmit_data(sds.jsd, ID, 2/*num_bytes*/);
+
+  jsd_el6001_process(sds.jsd, slave_id);
   // ecat_el6001_set_expected_num_bytes_to_receive(ecat->el6001, ID, TOTAL_NUM_BYTES);
   // ecat_el6001_set_persistent_transmit_data(ecat->el6001, ID, 2/*num_bytes*/, true);
   // ecat_el6001_set_timeout_sec(ecat->el6001, ID, 1.0, true);
