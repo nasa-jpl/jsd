@@ -35,7 +35,13 @@ const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
 
-void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id);
+/**
+ * @brief Get PDO data and update state data 
+ *
+ * @param self pointer JSD context
+ * @param slave_id index of device on EtherCAT bus
+ */
+void jsd_el6001_read(jsd_t* self, uint16_t slave_id);
 
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value);
 

@@ -185,6 +185,14 @@ static int8_t jsd_el6001_compute_checksum(uint8_t data[], int num_bytes) {
   return checksum;
 }
 
+// data control
+static bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
+}
+
 
 //---------------------------------------------------------------------------//
 // RECEIVE
@@ -455,21 +463,14 @@ const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id) {
   return &self->slave_states[slave_id].el6001;
 }
 
-void jsd_el6001_read_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_el6001_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL6001_PRODUCT_CODE);
-
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);  
+  
   jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
 
   jsd_el6001_txpdo_data_t* txpdo =
       (jsd_el6001_txpdo_data_t*)self->ecx_context.slavelist[slave_id].inputs;
-
-  // jsd_el3602_rxpdo_t* rxpdo =
-  //     (jsd_el3602_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;      
-
-  // state->control_word_terminal_last = state->control_word_terminal;
-  // state->control_word = rxpdo->control_word;
 
   state->statusword_last = state->statusword;
   state->statusword = txpdo->statusword;
@@ -547,7 +548,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
   // jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
 
   // read PDOs, updates statusword
-  jsd_el6001_read_PDO_data(self, slave_id);
+  jsd_el6001_read(self, slave_id);
 
   // check for faults in statuswords
   jsd_el6001_check_for_faults(self, slave_id);
@@ -615,13 +616,6 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
     state->controlword_user_last = state->controlword_user;
   }
 
-}
-
-bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
-  assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
-
-  return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
 }
 
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {  

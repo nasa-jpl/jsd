@@ -94,7 +94,7 @@ void print_info(void* self) {
 
 void extract_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
-  jsd_el6001_read_PDO_data(sds->jsd, slave_id);
+  jsd_el6001_read(sds->jsd, slave_id);
 }
 
 void command(void* self) { (void)self; };
