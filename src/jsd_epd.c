@@ -434,8 +434,6 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
   MSG_DEBUG("Attempting to map custom EPD PDOs...");
 
   //////////////// RxPDO Mapping //////////////////////////
-  // TODO(dloret): Not sure if 0x1600-0x1603 are RW in ECAT. EGD used 0x1607 and
-  // 0x1608.
   uint16_t map_output_pdos_1602[] = {
       0x0008,          // Number of mapped parameters
       0x0020, 0x607A,  // target_position
@@ -469,8 +467,6 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
     return 0;
   }
 
-  // TODO(dloret): not sure if index 0 should be set first to 0, then indexes
-  // 1-8, and then index 0 to the number of mapped objects.
   // TODO(dloret): Didn't we disable Complete Access somewhere else?
   uint16_t map_output_RxPDO[] = {0x0002, 0x1602, 0x1603};
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
@@ -480,8 +476,6 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
   }
 
   //////////////// TxPDO Mapping //////////////////////////
-  // TODO(dloret): Not sure if 0x1A00-0x1A03 are RW in ECAT. EGD used 0x1A07 and
-  // 0x1A08.
   uint16_t map_input_pdos_1a02[] = {
       0x0008,          // Number of mapped parameters
       0x0020, 0x6064,  // actual_position
@@ -618,9 +612,6 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
                              jsd_slave_config_t* config) {
   // TODO(dloret): Verify the types of the corresponding data objects
-  // TODO(dloret): double check that attempting to set 0x0000 (i.e. command not
-  // found) will result in an error. If that is not the case, then the result of
-  // jsd_epd_lc_to_do must be checked before attempting to send the SDO.
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("AC"),
                                   1, JSD_SDO_DATA_DOUBLE,
                                   &config->epd.max_profile_accel)) {

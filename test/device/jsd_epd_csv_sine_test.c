@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <math.h>
 #include <string.h>
 
 #include "jsd/jsd_epd_pub.h"
@@ -9,7 +10,8 @@ extern bool  quit;
 extern FILE* file;
 uint8_t      slave_id;
 double       server_startup_s;
-int32_t      target_velocities[2] = {0, 0};
+double       amplitude;
+double       sine_freq;
 
 int16_t BRAKE_TIME_MSEC = 100;
 
@@ -47,6 +49,7 @@ void telemetry_header() {
   fprintf(file, "analog_input_voltage, ");
   // Omitted digital inputs and digital output commands.
   fprintf(file, "drive_temperature, ");
+  fprintf(file, "emcy_error_code, ");
 
   fprintf(file, "\n");
 }
@@ -96,6 +99,7 @@ void telemetry_data(void* self) {
   fprintf(file, "%lf, ", state->analog_input_voltage);
   // Omitted digital inputs and digital output commands.
   fprintf(file, "%f, ", state->drive_temperature);
+  fprintf(file, "%u, ", state->emcy_error_code);
 
   fprintf(file, "\n");
   fflush(file);
@@ -111,8 +115,8 @@ void extract_data(void* self) {
 }
 
 void command(void* self) {
-  static int32_t iter    = 0;
-  static size_t  vel_idx = 0;
+  static double motion_startup_s = 0.0;
+  static bool   first_motion_cmd = true;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -130,54 +134,53 @@ void command(void* self) {
   if (!state->servo_enabled) {
     MSG("Sending reset.");
     jsd_epd_reset(sds->jsd, slave_id);
-    iter = 0;
+    motion_startup_s = now_s;
     return;
   }
 
-  // Change target velocity every 5 seconds.
-  if (iter % (sds->loop_rate_hz * 5) == 0) {
-    ++vel_idx;
-    vel_idx %= 2;
+  if (first_motion_cmd) {
+    motion_startup_s = now_s;
+    first_motion_cmd = false;
   }
 
   jsd_elmo_motion_command_csv_t csv;
-  csv.target_velocity    = target_velocities[vel_idx];
-  csv.velocity_offset    = 0;
-  csv.torque_offset_amps = 0.0;
+  double                        t = now_s - motion_startup_s;
+  double                        w = 2.0 * M_PI * sine_freq;
+  csv.target_velocity             = amplitude * sin(w * t);
+  csv.velocity_offset             = 0;
+  csv.torque_offset_amps          = 0.0;
 
   jsd_epd_set_motion_command_csv(sds->jsd, slave_id, csv);
-  ++iter;
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 9) {
-    ERROR("Expecting exactly 8 arguments");
+  if (argc != 10) {
+    ERROR("Expecting exactly 9 arguments");
     MSG("Usage: jsd_epd_csv_test <ifname> <epd_slave_index> <loop_freq_hz> "
-        "<target_velocity> <over_speed_threshold> <peak_current_amps> "
+        "<amplitude> <sine_freq> <over_speed_threshold> <peak_current_amps> "
         "<continuous_current_amps> <max_motor_speed> ");
     MSG("Example: $ jsd_epd_csv_test eth0 2 100 25000 35000 1.0 0.45 50000");
     return 0;
   }
 
-  char* ifname                 = strdup(argv[1]);
-  slave_id                     = atoi(argv[2]);
-  int32_t loop_freq_hz         = atoi(argv[3]);
-  int32_t target_velocity      = atoi(argv[4]);
-  double  over_speed_threshold = atof(argv[5]);
-  float   peak_current         = atof(argv[6]);
-  float   continuous_current   = atof(argv[7]);
-  double  max_motor_speed      = atof(argv[8]);
+  char* ifname                = strdup(argv[1]);
+  slave_id                    = atoi(argv[2]);
+  int32_t loop_freq_hz        = atoi(argv[3]);
+  amplitude                   = atof(argv[4]);
+  sine_freq                   = atof(argv[5]);
+  double over_speed_threshold = atof(argv[6]);
+  float  peak_current         = atof(argv[7]);
+  float  continuous_current   = atof(argv[8]);
+  double max_motor_speed      = atof(argv[9]);
 
   MSG("Configuring device %s, using slave %d", ifname, slave_id);
   MSG("Using loop frequency of %i hz", loop_freq_hz);
-  MSG("Using target velocity of %i cnts/sec", target_velocity);
+  MSG("Using amplitude of %lf cnts/sec", amplitude);
+  MSG("Using sine frequency of %lf hz", sine_freq);
   MSG("Using over speed threshold of %lf cnts/sec", over_speed_threshold);
   MSG("Using peak current of %f A", peak_current);
   MSG("Using continuous current of %f A", continuous_current);
   MSG("Using max_motor_speed of %lf cnts/sec", max_motor_speed);
-
-  target_velocities[0] = target_velocity;
-  target_velocities[1] = target_velocity / 2;
 
   single_device_server_t sds;
 
@@ -224,7 +227,7 @@ int main(int argc, char* argv[]) {
 
   server_startup_s = jsd_time_get_mono_time_sec();
 
-  sds_run(&sds, ifname, "/tmp/jsd_epd_csv_test.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_epd_csv_sine_test.csv");
 
   return 0;
 }

@@ -52,6 +52,7 @@ void telemetry_header() {
   fprintf(file, "analog_input_voltage, ");
   // Omitted digital inputs and digital output commands.
   fprintf(file, "drive_temperature, ");
+  fprintf(file, "emc_error_code, ");
 
   // TODO(dloret): Delete these debugging fields.
   fprintf(file, "controlword, ");
@@ -108,6 +109,7 @@ void telemetry_data(void* self) {
   fprintf(file, "%lf, ", state->analog_input_voltage);
   // Omitted digital inputs and digital output commands.
   fprintf(file, "%f, ", state->drive_temperature);
+  fprintf(file, "%u, ", state->emcy_error_code);
 
   // TODO(dloret): Delete these debugging fields.
   jsd_epd_private_state_t* private_state =
