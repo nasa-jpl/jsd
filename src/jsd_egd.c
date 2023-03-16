@@ -1232,15 +1232,10 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         break;
       }
 
-      set_controlword(self, slave_id,
-                      JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
-
       jsd_egd_process_mode_of_operation(self, slave_id);
 
       break;
-    case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
-      set_controlword(self, slave_id,
-                      JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
+    case JSD_EGD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE:
       set_controlword(self, slave_id,

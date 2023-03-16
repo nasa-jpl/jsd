@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "jsd/jsd_egd_pub.h"
+#include "jsd/jsd_time.h"
 
 #define JSD_EGD_STATE_MACHINE_STATE_BITMASK (uint16_t)0x6F
 
