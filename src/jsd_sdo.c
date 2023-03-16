@@ -115,6 +115,11 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
           data.as_float);
       break;
 
+    case JSD_SDO_DATA_DOUBLE:
+      MSG("Slave[%d] %s 0x%X:%d (F64) = %lf", slave_id, verb, index, subindex,
+          data.as_double);
+      break;
+
     case JSD_SDO_DATA_U8:
       MSG("Slave[%d] %s 0x%X:%d (U8)  = %u", slave_id, verb, index, subindex,
           data.as_u8);
@@ -274,6 +279,7 @@ int jsd_sdo_data_type_size(jsd_sdo_data_type_t type) {
       break;
 
     case JSD_SDO_DATA_I64:  // fallthrough intended
+    case JSD_SDO_DATA_DOUBLE:
     case JSD_SDO_DATA_U64:
       size = 8;
       break;

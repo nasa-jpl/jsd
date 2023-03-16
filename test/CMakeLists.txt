@@ -22,6 +22,10 @@ if(BUILD_JSD_TESTS)
     target_link_libraries(jsd_error_cirq_test ${jsd_test_libs})
     add_test(NAME jsd_error_cirq_test COMMAND jsd_error_cirq_test)
 
+    add_executable(jsd_epd_lc_to_do_test unit/jsd_epd_lc_to_do_test.c)
+    target_link_libraries(jsd_epd_lc_to_do_test ${jsd_test_libs})
+    add_test(NAME jsd_epd_lc_to_do_test COMMAND jsd_epd_lc_to_do_test)
+
     ######### Device Tests #########
     add_executable(jsd_minimal_example_el3602 device/jsd_minimal_example_el3602.c)
     target_link_libraries(jsd_minimal_example_el3602 ${jsd_test_libs})
@@ -111,6 +115,36 @@ if(BUILD_JSD_TESTS)
             device/jsd_ild1900_test.c
             jsd_test_utils.c)
     target_link_libraries(jsd_ild1900_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_csp_sine_test
+            device/jsd_epd_csp_sine_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_csp_sine_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_csv_sine_test
+            device/jsd_epd_csv_sine_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_csv_sine_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_cst_test
+            device/jsd_epd_cst_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_cst_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_prof_pos_test
+            device/jsd_epd_prof_pos_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_prof_pos_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_prof_vel_test
+            device/jsd_epd_prof_vel_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_prof_vel_test ${jsd_test_libs})
+
+    add_executable(jsd_epd_prof_torque_test
+            device/jsd_epd_prof_torque_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_prof_torque_test ${jsd_test_libs})
 
     find_program(VALGRIND_EXECUTABLE NAMES valgrind)
     if(VALGRIND_EXECUTABLE)
