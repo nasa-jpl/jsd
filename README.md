@@ -57,6 +57,7 @@ most useful devices. The following table represents the latest state of the JSD 
 | EL3208                    | 1    | 1.0.0                        |
 | EL3602                    | 1    | 1.0.0                        |
 | Elmo Gold Drives          | 1    | 1.0.0                        |
+| Elmo Platinum Drives      | 1    | TBD                          |
 | EL3356                    | 2    | 1.1.0                        |
 | JED (JPL EtherCat Device) | 2    | 1.2.0                        |
 | ATI Force-Torque Sensor   | 2    | 1.4.0                        |
