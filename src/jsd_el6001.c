@@ -380,7 +380,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
         MSG("Confirmed user request to transmit data, setting controlword to transmit request");
         // Tell terminal that data is available to transmit and then transition
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
-
+        jsd_el6001_write_PDO_data(self, slave_id); // populate RxPDO to be exchanged in next process loop
         jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
 
         state->timer_start_sec = jsd_time_get_mono_time_sec();
@@ -595,13 +595,13 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
           // EC_WRITE_U8(
           //   self->domain_pd_output + self->offsets_output[id][JSD_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
           //   state->transmit_bytes[byte_ndx]);
-          jsd_el6001_write_PDO_data(self, slave_id);
         }
         state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
       }
 
       // transmit user serial data
       jsd_el6001_transmit_data(self, slave_id);
+      // jsd_el6001_write_PDO_data(self, slave_id);
     }
     break;
 
