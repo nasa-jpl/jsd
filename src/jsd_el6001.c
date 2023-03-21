@@ -595,6 +595,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
           // EC_WRITE_U8(
           //   self->domain_pd_output + self->offsets_output[id][JSD_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
           //   state->transmit_bytes[byte_ndx]);
+          jsd_el6001_write_PDO_data(self, slave_id);
         }
         state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
       }

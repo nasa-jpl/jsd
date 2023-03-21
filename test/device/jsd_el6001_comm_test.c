@@ -159,16 +159,17 @@ int main(int argc, char* argv[]) {
 
   jsd_read(sds.jsd, EC_TIMEOUTRET);
 
-  int8_t counter = 0;
-  bool quit = false;
+  int8_t counter = 2;
+  // bool quit = false;
   const jsd_el6001_state_t* state = jsd_el6001_get_state(sds.jsd, slave_id);
 
   // initiate first transmit and for next time all data is received to prevent idle loop
   // transmit data does not get deleted automatically
   MSG("Transmitting opcode %d and counter %d", OP_CODE_SEND_DATA, counter);
-  jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 0/*byte_number*/, OP_CODE_SEND_DATA/*value*/);
-  jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 1/*byte_number*/, ++counter/*value*/);
-  jsd_el6001_request_transmit_data(sds.jsd, slave_id, 2/*num_bytes*/);
+  jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 0/*byte_number*/, 1);
+  jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 1/*byte_number*/, 0);
+  jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 2/*byte_number*/, 2);
+  jsd_el6001_request_transmit_data(sds.jsd, slave_id, 3/*num_bytes*/);
 
   while(!quit){
     jsd_read(sds.jsd, EC_TIMEOUTRET);  
@@ -180,6 +181,7 @@ int main(int argc, char* argv[]) {
 
     jsd_write(sds.jsd);
 
+    // sleep(1.0);
     jsd_timer_process(sds.jsd_timer);
   }
   
