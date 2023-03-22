@@ -379,8 +379,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
       {
         MSG("Confirmed user request to transmit data, setting controlword to transmit request");
         // Tell terminal that data is available to transmit and then transition
-        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
-        jsd_el6001_write_PDO_data(self, slave_id); // populate RxPDO to be exchanged in next process loop
+        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));        
         jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
 
         state->timer_start_sec = jsd_time_get_mono_time_sec();
@@ -416,19 +415,22 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
 
     case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:
       {
+        // Clear out transmit request
+        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
         double time_since_last_transmit = jsd_time_get_mono_time_sec() - state->timer_start_sec;
         if (state->timeout_active && (time_since_last_transmit > state->timeout_sec))
         {
-          ERROR("EL6001 id %d: Transmit timed out after %f seconds while waiting for transmit confirmation.", slave_id, time_since_last_transmit);
+          ERROR("EL6001 id %d: Transmit request timed out after %f seconds while waiting for transmit confirmation.", slave_id, time_since_last_transmit);
+          // jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
           jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
         }
         else if (jsd_el6001_statusword_bit_was_toggled(self, slave_id, JSD_EL6001_STATUSWORD_TRANSMIT_ACCEPTED))
         {
           // Beckhoff terminal transmitted data.
-          MSG_DEBUG("Transmit accepted, data has been transmitted");
+          MSG_DEBUG("Transmit request accepted, data has been transmitted");
 
           // Go back to waiting for another transmit request
-          jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
+          // jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
           jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
 
           // Start timeout timer
@@ -544,11 +546,6 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
          JSD_EL6001_PRODUCT_CODE);
 
   jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
-  
-  // jsd_el6001_rxpdo_t* rxpdo = (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
-
-  // read PDOs, updates statusword
-  jsd_el6001_read(self, slave_id);
 
   // check for faults in statuswords
   jsd_el6001_check_for_faults(self, slave_id);
@@ -584,24 +581,23 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
         return;
       }
 
-      // If any of the bytes to transmit have changed, write them to the bus
-      size_t byte_ndx;
-      for (byte_ndx = 0; byte_ndx < JSD_EL6001_NUM_DATA_BYTES; byte_ndx++)
-      {
-        if (state->transmit_bytes[byte_ndx] != state->transmit_bytes_prev[byte_ndx])
-        {
-          // rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
-          // Write to RxPDO
-          // EC_WRITE_U8(
-          //   self->domain_pd_output + self->offsets_output[id][JSD_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
-          //   state->transmit_bytes[byte_ndx]);
-        }
-        state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
-      }
+      // // If any of the bytes to transmit have changed, write them to the bus
+      // size_t byte_ndx;
+      // for (byte_ndx = 0; byte_ndx < JSD_EL6001_NUM_DATA_BYTES; byte_ndx++)
+      // {
+      //   if (state->transmit_bytes[byte_ndx] != state->transmit_bytes_prev[byte_ndx])
+      //   {
+      //     // rxpdo->data_out_0 = state->transmit_bytes[byte_ndx];
+      //     // Write to RxPDO
+      //     // EC_WRITE_U8(
+      //     //   self->domain_pd_output + self->offsets_output[id][JSD_EL6001_DATA_OUT_BYTE_00 + byte_ndx],
+      //     //   state->transmit_bytes[byte_ndx]);
+      //   }
+      //   state->transmit_bytes_prev[byte_ndx] = state->transmit_bytes[byte_ndx];
+      // }
 
       // transmit user serial data
-      jsd_el6001_transmit_data(self, slave_id);
-      // jsd_el6001_write_PDO_data(self, slave_id);
+      jsd_el6001_transmit_data(self, slave_id);      
     }
     break;
 
@@ -617,6 +613,8 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
     state->controlword_user_last = state->controlword_user;
   }
 
+  // Write slave state into RxPDO
+  jsd_el6001_write_PDO_data(self, slave_id);
 }
 
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {  

@@ -172,12 +172,15 @@ int main(int argc, char* argv[]) {
   jsd_el6001_request_transmit_data(sds.jsd, slave_id, 3/*num_bytes*/);
 
   while(!quit){
-    jsd_read(sds.jsd, EC_TIMEOUTRET);  
-    
-    jsd_el6001_process(sds.jsd, slave_id);
+    jsd_read(sds.jsd, EC_TIMEOUTRET);
+
+    // read PDOs, updates statusword
+    jsd_el6001_read(sds.jsd, slave_id);  
 
     MSG("Controlword_user: %u ", state->controlword_user);
     MSG("Statusword: %u ", state->statusword);
+
+    jsd_el6001_process(sds.jsd, slave_id);
 
     jsd_write(sds.jsd);
 
