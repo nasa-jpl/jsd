@@ -216,11 +216,12 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
   // newly received data, read the data bytes
   if (jsd_el6001_statusword_bit_was_toggled(self, slave_id, JSD_EL6001_STATUSWORD_RECEIVE_REQUEST))
   {
+    MSG("EL6001[%d]: New data arrived at the terminal", slave_id);
     state->received_all_persistent_bytes = false;
 
     // Get number of data bytes received from the status word
     num_bytes_received = (state->statusword & JSD_EL6001_STATUSWORD_INPUT_LENGTH_BIT_MASK) >> JSD_EL6001_STATUSWORD_INPUT_LENGTH_0;
-    MSG_DEBUG("EL6001[%d]: num bytes received: %d", slave_id, num_bytes_received);
+    MSG_DEBUG("EL6001[%d]: Terminal received %d bytes, waiting to accept reception from controller", slave_id, num_bytes_received);
 
     // assert number of bytes received is not above terminal capacity
     if(num_bytes_received > JSD_EL6001_NUM_DATA_BYTES)
@@ -229,7 +230,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
       assert(0);
     }
 
-    if (!state->received_first_byte_of_msg)
+    if (!state->received_first_byte_of_packet)
     {
       state->num_persistent_bytes_received = 0;
     }
@@ -247,13 +248,14 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
         JSD_EL6001_MAX_NUM_DATA_BYTES);
 
       state->num_persistent_bytes_received = 0;
-      state->received_first_byte_of_msg = false;
+      state->received_first_byte_of_packet = false;
       ++state->read_errors;
     }
 
     // Store the received data bytes
     for (i = 0; i < num_bytes_received; ++i)
     {
+      //state->received_bytes[] : Data is already populated while read PDO
       state->persistent_received_bytes[state->num_persistent_bytes_received + i] = state->received_bytes[i];
     }
 
@@ -262,16 +264,22 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
 
     // if first byte of persistent receipt wasn't received yet, set number of
     // bytes to receive from the first byte of the message
-    if (!state->received_first_byte_of_msg)
+    if (!state->received_first_byte_of_packet)
     {
-      /// Always set number of expected bytes based on the first byte of the packet
+      MSG_DEBUG("EL6001[%d]: Received the first byte of a data packet", slave_id);
+      if(state->use_first_byte_as_packet_length){
+        /// Always set number of expected bytes based on the first byte of the packet
+        state->expected_num_bytes_to_receive = (
+          1 /*num_bytes byte*/
+          + state->received_bytes[0]
+          + 1 /*checksum byte*/);
+      }
+      else{
+        state->expected_num_bytes_to_receive = num_bytes_received;
+      }
 
-      state->expected_num_bytes_to_receive = (
-        1 /*num_bytes byte*/
-        + state->received_bytes[0]
-        + 1 /*checksum byte*/);
-
-      state->received_first_byte_of_msg = true;
+      MSG_DEBUG("EL6001[%d]: Expecting %d byte of data packet", slave_id, state->expected_num_bytes_to_receive);
+      state->received_first_byte_of_packet = true;
     }
 
     // If there's a more than one whole expected packet, drop the earlier ones. Increment the error counter.
@@ -304,17 +312,19 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
     // If we received one whole packet, parse it. Checksum is last byte
     if (state->num_persistent_bytes_received >= state->expected_num_bytes_to_receive)
     {
-      MSG_DEBUG("EL6001 id %d: Received all expected %d bytes", slave_id, state->expected_num_bytes_to_receive);
+      MSG_DEBUG("EL6001 id %d: Received all expected %d bytes of data packet", slave_id, state->expected_num_bytes_to_receive);
 
-      expected_checksum = state->persistent_received_bytes[state->expected_num_bytes_to_receive - 1];
-      checksum = jsd_el6001_compute_checksum(
-        state->persistent_received_bytes,
-        state->expected_num_bytes_to_receive - 1/*checksum*/);
-      if (expected_checksum != checksum)
-      {
-        ERROR("EL6001 id %d: Checksum invalid. Expected: %d, Computed: %d", slave_id, expected_checksum, checksum);
-        state->checksum_failed = true;
-        ++state->read_errors;        
+      if(state->use_last_byte_as_checksum){
+        expected_checksum = state->persistent_received_bytes[state->expected_num_bytes_to_receive - 1];
+        checksum = jsd_el6001_compute_checksum(
+          state->persistent_received_bytes,
+          state->expected_num_bytes_to_receive - 1/*checksum*/);
+        if (expected_checksum != checksum)
+        {
+          ERROR("EL6001 id %d: Checksum invalid. Expected: %d, Computed: %d", slave_id, expected_checksum, checksum);
+          state->checksum_failed = true;
+          ++state->read_errors;        
+        }
       }
 
       // No Partial Packet
@@ -325,7 +335,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
         state->received_all_persistent_bytes = true;
 
         // reset first byte check
-        state->received_first_byte_of_msg = false;
+        state->received_first_byte_of_packet = false;
       }
       else
       {
@@ -353,7 +363,12 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
     // Tell terminal that data was received, so that new data can be received from the terminal
     jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_RECEIVE_ACCEPTED));
 
-    MSG_DEBUG("EL6001 id %d: num bytes received = %d", slave_id, num_bytes_received);
+    MSG_DEBUG("EL6001[%d]: Data transferred with num bytes %d", slave_id, num_bytes_received);
+
+    // Printout received data
+    for(int i=0; i < num_bytes_received; i++){
+      MSG_DEBUG("EL6001[%d]: Received data_in[%d]: %d", slave_id, i, state->received_bytes[i]);
+    }
   }
 
   // Set for user to know number of bytes received
@@ -409,7 +424,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
             ERROR("EL6001 id %d: Clearing persistent data buffer in order to transmit fresh data in the next cycle.", slave_id);
             state->num_persistent_bytes_received = 0;
             state->received_all_persistent_bytes = 1;
-            state->received_first_byte_of_msg = false;
+            state->received_first_byte_of_packet = false;
           }
         }
       }
@@ -698,6 +713,10 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id) {
 
   // Initialize timeout timer
   self->slave_states[slave_id].el6001.timer_start_sec = jsd_time_get_mono_time_sec();
+
+  // Initialize packet config TODO: Link with fastcat config
+  self->slave_states[slave_id].el6001.use_first_byte_as_packet_length = false;
+  self->slave_states[slave_id].el6001.use_last_byte_as_checksum = false;
 
   // Initialize the autoincrement byte to -1 (none, or unknown)
   self->slave_states[slave_id].el6001.autoincrement_byte = -1;

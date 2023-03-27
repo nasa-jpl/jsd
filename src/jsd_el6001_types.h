@@ -121,6 +121,7 @@ typedef enum
  */
 typedef struct {
   jsd_el6001_baud_rate_t baud_rate;
+  bool use_first_byte_as_packet_length;
 } jsd_el6001_config_t;
 
 /**
@@ -236,7 +237,9 @@ typedef struct
   uint8_t persistent_received_bytes[JSD_EL6001_MAX_NUM_DATA_BYTES];
   int num_persistent_bytes_received;
   bool received_all_persistent_bytes;
-  bool received_first_byte_of_msg;
+  bool use_first_byte_as_packet_length;
+  bool received_first_byte_of_packet;
+  bool use_last_byte_as_checksum;
   bool user_requests_to_transmit_data_persistently;
 
   jsd_el6001_sms_t sms;
