@@ -65,14 +65,14 @@ void jsd_egd_fault(jsd_t* self, uint16_t slave_id) {
   
   if (self->slave_configs[slave_id].egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
     assert(sizeof(jsd_egd_rxpdo_data_cs_mode_t) == self->ecx_context.slavelist[slave_id].Obytes);
-    self->slave_states[slave_id].egd.rxpdo_cs.target_position = 0;
+    self->slave_states[slave_id].egd.rxpdo_cs.target_position = self->slave_states[slave_id].egd.pub.actual_position;
     self->slave_states[slave_id].egd.rxpdo_cs.target_velocity = 0;
     self->slave_states[slave_id].egd.rxpdo_cs.velocity_offset = 0;
     self->slave_states[slave_id].egd.rxpdo_cs.target_torque = 0;
   }
   else if (self->slave_configs[slave_id].egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
     assert(sizeof(jsd_egd_rxpdo_data_profiled_mode_t) == self->ecx_context.slavelist[slave_id].Obytes);
-    self->slave_states[slave_id].egd.rxpdo_prof.target_position = 0;
+    self->slave_states[slave_id].egd.rxpdo_prof.target_position = self->slave_states[slave_id].egd.pub.actual_position;
     self->slave_states[slave_id].egd.rxpdo_prof.target_velocity = 0;    
     self->slave_states[slave_id].egd.rxpdo_prof.target_torque = 0;      
   }
