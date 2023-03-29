@@ -6,6 +6,7 @@ extern "C" {
 #endif
 
 #include "jsd/jsd_common_device_types.h"
+#include "jsd/jsd_elmo_common_types.h"
 
 #define JSD_EGD_PRODUCT_CODE (uint32_t)0x00030924
 
@@ -55,23 +56,6 @@ typedef enum {
   JSD_EGD_MODE_OF_OPERATION_CSV         = 9,   ///< cyclic syncronous velocity
   JSD_EGD_MODE_OF_OPERATION_CST         = 10,  ///< cyclic syncronous torque
 } jsd_egd_mode_of_operation_t;
-
-/**
- * @brief Elmo Gold Drive Statemachine State
- *
- * Determined by Bits 0-3, 5 and 6 from the statusword.
- * See MAN-G-DS402 Section 6.3
- */
-typedef enum {
-  JSD_EGD_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON = 0x00,
-  JSD_EGD_STATE_MACHINE_STATE_SWITCH_ON_DISABLED     = 0x40,
-  JSD_EGD_STATE_MACHINE_STATE_READY_TO_SWITCH_ON     = 0x21,
-  JSD_EGD_STATE_MACHINE_STATE_SWITCHED_ON            = 0x23,
-  JSD_EGD_STATE_MACHINE_STATE_OPERATION_ENABLED      = 0x27,
-  JSD_EGD_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE      = 0x07,
-  JSD_EGD_STATE_MACHINE_STATE_FAULT_REACTION_ACTIVE  = 0x0F,
-  JSD_EGD_STATE_MACHINE_STATE_FAULT                  = 0x08,
-} jsd_egd_state_machine_state_t;
 
 /**
  * @brief Elmo Gold Drive Fault Code
@@ -132,108 +116,16 @@ typedef enum {
 } jsd_egd_fault_code_t;
 
 /**
- * @brief Elmo Gold Drive's gain scheduling mode for the controller and filters.
- *
- * See MAN-G-CR, command GS[2, 16, 17, 18].
- *
- */
-typedef enum {
-  JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED =
-      -1,  ///< Scheduling mode saved in the drive's non-volatile memory
-  JSD_EGD_GAIN_SCHEDULING_MODE_DISABLED = 0,   ///< No gain scheduling
-  JSD_EGD_GAIN_SCHEDULING_MODE_SPEED    = 64,  ///< Scheduling by speed
-  JSD_EGD_GAIN_SCHEDULING_MODE_POSITION = 65,  ///< Scheduling by position
-  JSD_EGD_GAIN_SCHEDULING_MODE_SETTLING = 66,  ///< Scheduling by Best Settling
-  JSD_EGD_GAIN_SCHEDULING_MODE_MANUAL_LOW =
-      67,  ///< Manual selection via lower byte of 0x2E00 object
-  JSD_EGD_GAIN_SCHEDULING_MODE_MANUAL_HIGH =
-      68,  ///< Manual selection via upper byte of 0x2E00 object
-} jsd_egd_gain_scheduling_mode_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Profiled Position Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 12.1
- */
-typedef struct {
-  int32_t  target_position;   ///< 0x6074
-  uint32_t profile_velocity;  ///< 0x6081
-  uint32_t end_velocity;      ///< 0x6082
-  uint32_t profile_accel;     ///< 0x6083
-  uint32_t profile_decel;     ///< 0x6084
-  uint8_t  relative;          ///< target_position is relative to act pos
-} jsd_egd_motion_command_prof_pos_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Profiled Velocity Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 17
- */
-typedef struct {
-  int32_t  target_velocity;  ///< 0x60FF
-  uint32_t profile_accel;    ///< 0x6083
-  uint32_t profile_decel;    ///< 0x6084
-} jsd_egd_motion_command_prof_vel_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Profiled Torque Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 18
- */
-typedef struct {
-  double target_torque_amps;  ///< converted to 0x6071 using CL[1]
-} jsd_egd_motion_command_prof_torque_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Cyclic Synchronous Position Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 14
- */
-typedef struct {
-  int32_t target_position;     ///< 0x6074
-  int32_t position_offset;     ///< 0x60B0
-  int32_t velocity_offset;     ///< 0x60B1
-  double  torque_offset_amps;  ///< converted to 0x60B2 using CL[1]
-} jsd_egd_motion_command_csp_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Cyclic Synchronous Velocity Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 15
- */
-typedef struct {
-  int32_t target_velocity;     ///< 0x60FF
-  int32_t velocity_offset;     ///< 0x60B1
-  double  torque_offset_amps;  ///< converted to 0x60B2 using CL[1]
-} jsd_egd_motion_command_csv_t;
-
-/**
- * @brief Elmo Gold Drive Motion Command for Cyclic Synchronous Torque Mode of
- * Operation
- *
- * See MAN-G-DS402 Section 16
- */
-typedef struct {
-  double target_torque_amps;  ///< converted to 0x6071 using CL[1]
-  double torque_offset_amps;  ///< converted to 0x60B2 using CL[1]
-} jsd_egd_motion_command_cst_t;
-
-/**
  * @brief Union of all motion commands
  */
 typedef struct {
   union {
-    jsd_egd_motion_command_prof_pos_t    prof_pos;
-    jsd_egd_motion_command_prof_vel_t    prof_vel;
-    jsd_egd_motion_command_prof_torque_t prof_torque;
-    jsd_egd_motion_command_csp_t         csp;
-    jsd_egd_motion_command_csv_t         csv;
-    jsd_egd_motion_command_cst_t         cst;
+    jsd_elmo_motion_command_prof_pos_t    prof_pos;
+    jsd_elmo_motion_command_prof_vel_t    prof_vel;
+    jsd_elmo_motion_command_prof_torque_t prof_torque;
+    jsd_elmo_motion_command_csp_t         csp;
+    jsd_elmo_motion_command_csv_t         csv;
+    jsd_elmo_motion_command_cst_t         cst;
   };
 } jsd_egd_motion_command_t;
 
@@ -275,7 +167,7 @@ typedef struct {
 
   int32_t smooth_factor;  ///< SF[1] msec, [0, 63] 0 is default
 
-  jsd_egd_gain_scheduling_mode_t
+  jsd_elmo_gain_scheduling_mode_t
       ctrl_gain_scheduling_mode;  ///< GS[2]. Set to -1 to use mode saved in
                                   ///< drive's non-volatile memory.
 
@@ -298,7 +190,7 @@ typedef struct {
   int32_t cmd_ff_velocity;  ///< cmd feed-forward velocity, counts/sec
   double  cmd_ff_current;   ///< cmd feed-forwared current converted to amps
 
-  jsd_egd_state_machine_state_t actual_state_machine_state;
+  jsd_elmo_state_machine_state_t actual_state_machine_state;
   jsd_egd_mode_of_operation_t   actual_mode_of_operation;
 
   uint8_t sto_engaged;     ///< Safe Torque Off (Estop) status
@@ -417,7 +309,7 @@ typedef struct {
   double async_sdo_in_prog_start_time;
 
   // State tracking for smart printing
-  jsd_egd_state_machine_state_t last_state_machine_state;
+  jsd_elmo_state_machine_state_t last_state_machine_state;
   jsd_egd_mode_of_operation_t   last_actual_mode_of_operation;
   jsd_egd_mode_of_operation_t   last_requested_mode_of_operation;
   uint8_t                       last_sto_engaged;

@@ -124,7 +124,7 @@ void command(void* self) {
   jsd_egd_read(sds->jsd, slave_id);
   jsd_egd_process(sds->jsd, slave_id);
 
-  jsd_egd_motion_command_csp_t csp;
+  jsd_elmo_motion_command_csp_t csp;
   csp.position_offset    = 0;
   csp.torque_offset_amps = 0;
 
@@ -238,7 +238,7 @@ int main(int argc, char* argv[]) {
   my_config.egd.crc                           = INT32_MIN;
   my_config.egd.drive_max_current_limit       = -FLT_MAX;
   my_config.egd.ctrl_gain_scheduling_mode =
-      JSD_EGD_GAIN_SCHEDULING_MODE_PRELOADED;
+      JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
   MSG("Configuring %i as loop_period_ms", my_config.egd.loop_period_ms);
 

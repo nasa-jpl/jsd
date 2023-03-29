@@ -31,6 +31,16 @@ const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id);
 void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id);
 
 /**
+ * @brief Fault the EGD, to purge any outcoming command
+ *
+ * Real-time safe.
+ *
+ * @param self pointer JSD context
+ * @param slave_id slave id of EGD device
+ */
+void jsd_egd_fault(jsd_t* self, uint16_t slave_id);
+
+/**
  * @brief Reset the EGD after a fault and clear errors
  *
  * Real-time safe.
@@ -126,7 +136,7 @@ void jsd_egd_set_peak_current(jsd_t* self, uint16_t slave_id,
  */
 void jsd_egd_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_pos_t motion_command);
+    jsd_elmo_motion_command_prof_pos_t motion_command);
 
 /**
  * @brief Send a Profiled Velocity motion command to Elmo Gold Drive
@@ -139,7 +149,7 @@ void jsd_egd_set_motion_command_prof_pos(
  */
 void jsd_egd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_vel_t motion_command);
+    jsd_elmo_motion_command_prof_vel_t motion_command);
 
 /**
  * @brief Send a Profiled Torque motion command to Elmo Gold Drive
@@ -152,7 +162,7 @@ void jsd_egd_set_motion_command_prof_vel(
  */
 void jsd_egd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_prof_torque_t motion_command);
+    jsd_elmo_motion_command_prof_torque_t motion_command);
 
 /**
  * @brief Send a Cyclic Synchronous Position motion command to Elmo Gold Drive
@@ -165,7 +175,7 @@ void jsd_egd_set_motion_command_prof_torque(
  */
 void jsd_egd_set_motion_command_csp(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csp_t motion_command);
+    jsd_elmo_motion_command_csp_t motion_command);
 
 /**
  * @brief Send a Cyclic Synchronous Velocity motion command to Elmo Gold Drive
@@ -178,7 +188,7 @@ void jsd_egd_set_motion_command_csp(
  */
 void jsd_egd_set_motion_command_csv(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_csv_t motion_command);
+    jsd_elmo_motion_command_csv_t motion_command);
 
 /**
  * @brief Send a Cyclic Synchronous Torque motion command to Elmo Gold Drive
@@ -191,7 +201,7 @@ void jsd_egd_set_motion_command_csv(
  */
 void jsd_egd_set_motion_command_cst(
     jsd_t* self, uint16_t slave_id,
-    jsd_egd_motion_command_cst_t motion_command);
+    jsd_elmo_motion_command_cst_t motion_command);
 
 /**
  * @brief Get PDO data and update state data
@@ -227,17 +237,6 @@ void jsd_egd_process(jsd_t* self, uint16_t slave_id);
  * return jsd_egd_mode_of_operation as a string
  */
 char* jsd_egd_mode_of_operation_to_string(jsd_egd_mode_of_operation_t mode);
-
-/**
- * @brief Converts jsd_egd_state_machine_state_to_string int to human-readable
- * string
- *
- * Real-time safe.
- *
- * return jsd_egd_state_machine_state as a string
- */
-char* jsd_egd_state_machine_state_to_string(
-    jsd_egd_state_machine_state_t state);
 
 /**
  * @brief Converts jsd_egd_fault_code int to human-readable string
@@ -323,7 +322,7 @@ void jsd_egd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
  * @return void
  */
 void jsd_egd_async_sdo_set_ctrl_gain_scheduling_mode(
-    jsd_t* self, uint16_t slave_id, jsd_egd_gain_scheduling_mode_t mode,
+    jsd_t* self, uint16_t slave_id, jsd_elmo_gain_scheduling_mode_t mode,
     uint16_t app_id);
 
 #ifdef __cplusplus
