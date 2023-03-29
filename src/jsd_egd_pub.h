@@ -31,6 +31,16 @@ const jsd_egd_state_t* jsd_egd_get_state(jsd_t* self, uint16_t slave_id);
 void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id);
 
 /**
+ * @brief Fault the EGD, to purge any outcoming command
+ *
+ * Real-time safe.
+ *
+ * @param self pointer JSD context
+ * @param slave_id slave id of EGD device
+ */
+void jsd_egd_fault(jsd_t* self, uint16_t slave_id);
+
+/**
  * @brief Reset the EGD after a fault and clear errors
  *
  * Real-time safe.

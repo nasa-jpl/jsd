@@ -60,6 +60,31 @@ void jsd_egd_clear_errors(jsd_t* self, uint16_t slave_id) {
 
 }
 
+void jsd_egd_fault(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
+  
+  if (self->slave_configs[slave_id].egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
+    assert(sizeof(jsd_egd_rxpdo_data_cs_mode_t) == self->ecx_context.slavelist[slave_id].Obytes);
+    self->slave_states[slave_id].egd.rxpdo_cs.target_position = self->slave_states[slave_id].egd.pub.actual_position;
+    self->slave_states[slave_id].egd.rxpdo_cs.position_offset = 0;
+    self->slave_states[slave_id].egd.rxpdo_cs.target_velocity = 0;
+    self->slave_states[slave_id].egd.rxpdo_cs.velocity_offset = 0;
+    self->slave_states[slave_id].egd.rxpdo_cs.target_torque = 0;
+  }
+  else if (self->slave_configs[slave_id].egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
+    assert(sizeof(jsd_egd_rxpdo_data_profiled_mode_t) == self->ecx_context.slavelist[slave_id].Obytes);
+    self->slave_states[slave_id].egd.rxpdo_prof.target_position = self->slave_states[slave_id].egd.pub.actual_position;
+    self->slave_states[slave_id].egd.rxpdo_prof.target_velocity = 0;    
+    self->slave_states[slave_id].egd.rxpdo_prof.target_torque = 0;      
+  }
+  else {
+    ERROR("bad drive command mode: %d",
+          self->slave_configs[slave_id].egd.drive_cmd_mode);
+  }  
+
+}
+
 void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
