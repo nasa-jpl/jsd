@@ -41,9 +41,17 @@ static char* jsd_el6001_sms_to_string(jsd_el6001_sms_t sms) {
   {
     case JSD_EL6001_SMS_INITING:                                return "INITING_SERIAL_COMMUNICATION";
     case JSD_EL6001_SMS_WAITING_FOR_TERMINAL_TO_INIT:           return "WAITING_FOR_INIT_TO_COMPLETE";
-    case JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION:         return "READY_FOR_SERIAL_COMMUNICATION";
-    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER: return "WAITING_FOR_TRANSMIT_REQUEST_FROM_USER";
-    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:      return "WAITING_FOR_TRANSMIT_CONFIRMATION_FROM_TERMINAL";
+    case JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION:         return "READY_FOR_SERIAL_COMMUNICATION";    
+
+    default: assert(0); break;
+  }
+}
+
+static char* jsd_el6001_transmit_sms_to_string(jsd_el6001_transmit_sms_t sms) {
+  switch (sms)
+  {
+    case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER: return "WAITING_FOR_TRANSMIT_REQUEST_FROM_USER";
+    case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:      return "WAITING_FOR_TRANSMIT_CONFIRMATION_FROM_TERMINAL";
 
     default: assert(0); break;
   }
@@ -168,6 +176,15 @@ static int jsd_el6001_transition_sms(jsd_el6001_sms_t sms, jsd_el6001_sms_t* sms
 
   *sms_ptr = sms;
   MSG_DEBUG("Transitioning to %s state", jsd_el6001_sms_to_string(sms));
+
+  return 0;
+}
+
+static int jsd_el6001_transition_transmit_sms(jsd_el6001_transmit_sms_t sms, jsd_el6001_transmit_sms_t* sms_ptr) {
+  assert(sms_ptr != NULL);
+
+  *sms_ptr = sms;
+  MSG_DEBUG("Transitioning to %s state", jsd_el6001_transmit_sms_to_string(sms));
 
   return 0;
 }
@@ -389,13 +406,13 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
 
   switch (state->transmit_state)
   {
-    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER:
+    case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER:
       if (state->user_requests_to_transmit_data)
       {
         MSG("Confirmed user request to transmit data, setting controlword to transmit request");
         // Tell terminal that data is available to transmit and then transition
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));        
-        jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+        jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
         // Write into RxPDO
         // jsd_el6001_write_PDO_data(self, slave_id);
 
@@ -411,7 +428,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           // Tell terminal that data is available to transmit and then transition
           jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
 
-          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+          jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
 
           state->timer_start_sec = jsd_time_get_mono_time_sec();
         }
@@ -430,13 +447,13 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
       }
       break;
 
-    case JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:
+    case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:
       {
         double time_since_last_transmit = jsd_time_get_mono_time_sec() - state->timer_start_sec;
         if (state->timeout_active && (time_since_last_transmit > state->timeout_sec))
         {
           ERROR("EL6001 id %d: Transmit request timed out after %f seconds while waiting for transmit confirmation.", slave_id, time_since_last_transmit);          
-          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
+          jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
         }
         else if (jsd_el6001_statusword_bit_was_toggled(self, slave_id, JSD_EL6001_STATUSWORD_TRANSMIT_ACCEPTED))
         {
@@ -446,7 +463,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           // Go back to waiting for another transmit request                              
           jsd_el6001_set_controlword(self, slave_id, self->slave_states[slave_id].el6001.controlword_user & 0x00FF); //clear data_out_length
           jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
-          jsd_el6001_transition_sms(JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
+          jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER, &state->transmit_state);
 
           // Start timeout timer
           state->timer_start_sec = jsd_time_get_mono_time_sec();
@@ -709,7 +726,7 @@ bool jsd_el6001_init(jsd_t* self, uint16_t slave_id) {
   self->slave_states[slave_id].el6001.sms = JSD_EL6001_SMS_INITING; // TODO: This used to be done in configure_sdos
 
   // Initialize transmit state machine
-  self->slave_states[slave_id].el6001.transmit_state = JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER;
+  self->slave_states[slave_id].el6001.transmit_state = JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER;
 
   // Initialize timeout timer
   self->slave_states[slave_id].el6001.timer_start_sec = jsd_time_get_mono_time_sec();

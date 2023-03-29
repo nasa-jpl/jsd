@@ -122,6 +122,7 @@ typedef enum
 typedef struct {
   jsd_el6001_baud_rate_t baud_rate;
   bool use_first_byte_as_packet_length;
+  bool use_last_byte_as_checksum;
 } jsd_el6001_config_t;
 
 /**
@@ -193,12 +194,21 @@ typedef enum
 {
   JSD_EL6001_SMS_INITING = 0,
   JSD_EL6001_SMS_WAITING_FOR_TERMINAL_TO_INIT,
-  JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION,
-  JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER,
-  JSD_EL6001_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION,
+  JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION,  
   JSD_EL6001_SMS_NUM_STATES
 
 } jsd_el6001_sms_t;
+
+/**
+ * @brief Transmit State Machine States needed for communication via serial RS232 interface 
+ */
+typedef enum
+{  
+  JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER = 0,
+  JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION,
+  JSD_EL6001_TRANSMIT_SMS_NUM_STATES
+
+} jsd_el6001_transmit_sms_t;
 
 /**
  * @brief EL6001 state data
@@ -243,7 +253,7 @@ typedef struct
   bool user_requests_to_transmit_data_persistently;
 
   jsd_el6001_sms_t sms;
-  jsd_el6001_sms_t transmit_state;
+  jsd_el6001_transmit_sms_t transmit_state;
 
 } jsd_el6001_state_t;
 
