@@ -9,6 +9,7 @@
 #include "jsd/jsd_sdo.h"
 
 #define JSD_EPD_MAX_ERROR_POPS_PER_CYCLE (5)
+#define JSD_EPD_MAX_BYTES_PDO_CHANNEL (128)
 
 // Pair of Elmo letter command and corresponding object dictionary index
 typedef struct {
@@ -357,6 +358,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
+  assert(sizeof(jsd_epd_txpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+  assert(sizeof(jsd_epd_rxpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
 
   ec_slavet* slave = &self->ecx_context.slavelist[slave_id];
 

@@ -114,9 +114,12 @@ typedef struct {
   // Parameters set via Two-Letter-Command (TLC)
   // IMPORTANT: Elmo alias objects are different between Gold and Platinum
   // lines.
-  // TODO(dloret): Verify data types are correct for P_AC, P_DC, P_ER, P_HL, and
-  // P_LL. There are discrepancies between the description from the command
-  // reference and the DS-402 description, or the type used in the Gold line.
+  // TODO(dloret): Consider removing max_profile_accel and max_profile_decel
+  // in both Gold and Platinum drivers. AC[1] and DC[1] are only relevant at
+  // power-up when their values are assigned to objects 0x6083 and 0x6084,
+  // respectively. So setting AC[1] and DC[1] at initialization of the driver
+  // does not have an effect. Additionally, 0x6083 and 0x6084 are mapped to the
+  // RxPDO.
   double max_profile_accel;         ///< P_AC[1]. Ignored by CS mode.
   double max_profile_decel;         ///< P_DC[1]. Ignored by CS mode.
   double velocity_tracking_error;   ///< P_ER[2] cnts/s
@@ -203,7 +206,6 @@ typedef struct {
   float   drive_temperature;  ///< deg C
 } jsd_epd_state_t;
 
-// TODO(dloret): Find out the byte limit for Platinum's rPDO and tPDO.
 /**
  * @brief TxPDO struct used to read device data in SOEM IOmap
  *
