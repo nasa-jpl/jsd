@@ -9,6 +9,8 @@
 #include "jsd/jsd_elmo_common.h"
 #include "jsd/jsd_sdo.h"
 
+#define JSD_EGD_MAX_BYTES_PDO_CHANNEL (32)
+
 static void set_controlword(jsd_t* self, uint16_t slave_id,
                             uint16_t controlword) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
@@ -556,6 +558,7 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
+  assert(sizeof(jsd_egd_txpdo_data_t) <= JSD_EGD_MAX_BYTES_PDO_CHANNEL);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
   ec_slavet* slave  = &slaves[slave_id];
@@ -573,8 +576,12 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   state->last_reset_time         = 0;
 
   if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_CS) {
+    assert(sizeof(jsd_egd_rxpdo_data_cs_mode_t) <=
+           JSD_EGD_MAX_BYTES_PDO_CHANNEL);
     MSG_DEBUG("rxpdo_cs size: %zu Bytes", sizeof(jsd_egd_rxpdo_data_cs_mode_t));
   } else if (config->egd.drive_cmd_mode == JSD_EGD_DRIVE_CMD_MODE_PROFILED) {
+    assert(sizeof(jsd_egd_rxpdo_data_profiled_mode_t) <=
+           JSD_EGD_MAX_BYTES_PDO_CHANNEL);
     MSG_DEBUG("rxpdo_prof size: %zu Bytes",
               sizeof(jsd_egd_rxpdo_data_profiled_mode_t));
   } else {
