@@ -415,6 +415,8 @@ bool jsd_init_all_devices(jsd_t* self) {
     // EGDs don't have the name field populated
     if (slave->eep_id == JSD_EGD_PRODUCT_CODE) {
       SUCCESS("\tslave[%u] Elmo Gold Drive - Configured", slave_idx);
+    } else if (slave->eep_id == JSD_EPD_PRODUCT_CODE) {
+      SUCCESS("\tslave[%u] Elmo Platinum Drive - Configured", slave_idx);
     } else {
       SUCCESS("\tslave[%u] %s - Configured", slave_idx, slave->name);
     }
