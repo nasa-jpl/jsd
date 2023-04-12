@@ -380,7 +380,7 @@ bool jsd_sdo_set_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOwrite(ecx_context, slave_id, index, subindex, false,
                          param_size, param_in, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG_DEBUG("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
 
@@ -400,7 +400,7 @@ bool jsd_sdo_get_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOread(ecx_context, slave_id, index, subindex, false,
                         &param_size, param_out, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG_DEBUG("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
 
@@ -433,7 +433,7 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOread(ecx_context, slave_id, index, subindex, true,
                         param_size_in_out, param_out, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG_DEBUG("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
   MSG_DEBUG("Slave[%d] Read 0x%X:%d register by Complete Access", slave_id, index,
