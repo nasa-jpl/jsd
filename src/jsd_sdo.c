@@ -91,52 +91,52 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
 
   switch (data_type) {
     case JSD_SDO_DATA_I8:
-      MSG("Slave[%d] %s 0x%X:%d (I8)  = %d", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I8)  = %d", slave_id, verb, index, subindex,
           data.as_i8);
       break;
 
     case JSD_SDO_DATA_I16:
-      MSG("Slave[%d] %s 0x%X:%d (I16) = %d", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I16) = %d", slave_id, verb, index, subindex,
           data.as_i16);
       break;
 
     case JSD_SDO_DATA_I32:
-      MSG("Slave[%d] %s 0x%X:%d (I32) = %d", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I32) = %d", slave_id, verb, index, subindex,
           data.as_i32);
       break;
 
     case JSD_SDO_DATA_I64:
-      MSG("Slave[%d] %s 0x%X:%d (I64) = %ld", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I64) = %ld", slave_id, verb, index, subindex,
           data.as_i64);
       break;
 
     case JSD_SDO_DATA_FLOAT:
-      MSG("Slave[%d] %s 0x%X:%d (F32) = %f", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (F32) = %f", slave_id, verb, index, subindex,
           data.as_float);
       break;
 
     case JSD_SDO_DATA_DOUBLE:
-      MSG("Slave[%d] %s 0x%X:%d (F64) = %lf", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (F64) = %lf", slave_id, verb, index, subindex,
           data.as_double);
       break;
 
     case JSD_SDO_DATA_U8:
-      MSG("Slave[%d] %s 0x%X:%d (U8)  = %u", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U8)  = %u", slave_id, verb, index, subindex,
           data.as_u8);
       break;
 
     case JSD_SDO_DATA_U16:
-      MSG("Slave[%d] %s 0x%X:%d (U16) = %u", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U16) = %u", slave_id, verb, index, subindex,
           data.as_u16);
       break;
 
     case JSD_SDO_DATA_U32:
-      MSG("Slave[%d] %s 0x%X:%d (U32) = %u", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U32) = %u", slave_id, verb, index, subindex,
           data.as_u32);
       break;
 
     case JSD_SDO_DATA_U64:
-      MSG("Slave[%d] %s 0x%X:%d (U64) = %lu", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U64) = %lu", slave_id, verb, index, subindex,
           data.as_u64);
       break;
 
@@ -380,7 +380,7 @@ bool jsd_sdo_set_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOwrite(ecx_context, slave_id, index, subindex, false,
                          param_size, param_in, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
 
@@ -400,7 +400,7 @@ bool jsd_sdo_get_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOread(ecx_context, slave_id, index, subindex, false,
                         &param_size, param_out, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
 
@@ -417,10 +417,10 @@ bool jsd_sdo_set_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOwrite(ecx_context, slave_id, index, subindex, true,
                          param_size, param_in, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
+    MSG_DEBUG("Slave[%d] Failed to write SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
-  MSG("Slave[%d] Wrote 0x%X:%d register by Complete Access", slave_id, index,
+  MSG_DEBUG("Slave[%d] Wrote 0x%X:%d register by Complete Access", slave_id, index,
       subindex);
   return true;
 }
@@ -433,10 +433,10 @@ bool jsd_sdo_get_ca_param_blocking(ecx_contextt* ecx_context, uint16_t slave_id,
   int wkc = ecx_SDOread(ecx_context, slave_id, index, subindex, true,
                         param_size_in_out, param_out, JSD_SDO_TIMEOUT);
   if (wkc == 0) {
-    MSG("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
+    WARNING("Slave[%d] Failed to read SDO: 0x%X:%d", slave_id, index, subindex);
     return false;
   }
-  MSG("Slave[%d] Read 0x%X:%d register by Complete Access", slave_id, index,
+  MSG_DEBUG("Slave[%d] Read 0x%X:%d register by Complete Access", slave_id, index,
       subindex);
   return true;
 }
