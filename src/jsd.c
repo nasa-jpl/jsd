@@ -110,7 +110,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   }
 
   // configure IOMap
-  int iomap_size = ecx_config_map_group(&self->ecx_context, &self->IOmap, 0);
+  int iomap_size =
+      ecx_config_overlap_map_group(&self->ecx_context, &self->IOmap, 0);
   if (iomap_size > (int)sizeof(self->IOmap)) {
     ERROR("IO Map is not large enough for this application");
     return false;
@@ -173,7 +174,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   int attempt = 0;
   while (true) {
-    int sent = ecx_send_processdata(&self->ecx_context);
+    int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
     attempt++;
@@ -274,14 +275,14 @@ void jsd_write(jsd_t* self) {
   assert(self);
 
   // Write EtherCat frame to slaves, with logic for smart prints
-  int transmitted = ecx_send_processdata(&self->ecx_context);
+  int transmitted = ecx_send_overlap_processdata(&self->ecx_context);
 
   static int last_transmitted = 1;
   if (transmitted <= 0 && last_transmitted != transmitted) {
-    WARNING("ecx_send_processdata is not transmitting");
+    WARNING("ecx_send_overlap_processdata is not transmitting");
   }
   if (last_transmitted <= 0 && transmitted > 0) {
-    MSG("ecx_send_processdata has resumed transmission");
+    MSG("ecx_send_overlap_processdata has resumed transmission");
   }
   last_transmitted = transmitted;
 }
