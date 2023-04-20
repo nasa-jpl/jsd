@@ -374,9 +374,6 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 
   slave->PO2SOconfigx = jsd_epd_PO2SO_config;
 
-  // Platinum's EtherCAT Slave Controller requires to block LRW.
-  //  slave->blockLRW = 1;
-
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   state->requested_mode_of_operation      = JSD_EPD_MODE_OF_OPERATION_DISABLED;
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;

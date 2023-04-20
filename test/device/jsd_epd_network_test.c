@@ -151,11 +151,12 @@ void print_info(void* self) {
   const jsd_el2124_state_t* el2124_state =
       jsd_el2124_get_state(sds->jsd, el2124_slave_id);
   MSG("EPD_cmd_pos: %i, EPD_actual_pos: %i, EPD_actual_vel: %i, "
-      "EPD_state_machine: %04x, EL3602_Ch0: %f V, EL3602_Ch1: %f V, "
-      "EL2124_Ch0: %u, EL2124_Ch1: %u, EL2124_Ch2: %u, EL2124_Ch3: %u",
+      "EPD_state_machine: %04x",
       epd_state->cmd_position, epd_state->actual_position,
-      epd_state->actual_velocity, epd_state->actual_state_machine_state,
-      el3602_state->voltage[0], el3602_state->voltage[1],
+      epd_state->actual_velocity, epd_state->actual_state_machine_state);
+  MSG("EL3602_Ch0: %f V, EL3602_Ch1: %f V", el3602_state->voltage[0],
+      el3602_state->voltage[1]);
+  MSG("EL2124_Ch0: %u, EL2124_Ch1: %u, EL2124_Ch2: %u, EL2124_Ch3: %u",
       el2124_state->output[0], el2124_state->output[1], el2124_state->output[2],
       el2124_state->output[3]);
 };

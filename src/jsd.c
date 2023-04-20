@@ -157,40 +157,42 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   MSG_DEBUG("Attempting to put the bus in Operational state");
 
-  // if (!jsd_set_device_state(self, 0, EC_STATE_INIT, EC_TIMEOUTSTATE)) {
-  //  ERROR("Could not reach INIT");
-  //  return false;
-  //}
-  // if (!jsd_set_device_state(self, 0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE)) {
-  //  ERROR("Could not reach PRE_OP");
-  //  return false;
-  //}
-  // if (!jsd_set_device_state(self, 0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE)) {
-  //  ERROR("Could not reach SAFE_OP");
-  //  return false;
-  //}
-
   MSG_DEBUG("Performing first PDO exchange, required before transition to OP");
+
+  self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
+
+  ecx_send_overlap_processdata(&self->ecx_context);
+  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+
+  ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    ec_state actual_state = ecx_statecheck(
+        &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
     attempt++;
 
-    if (!jsd_set_device_state(self, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE)) {
+    MSG_DEBUG("sent: %d", sent);
+    MSG_DEBUG("Actual WKC: %d, Expected WKC: %d", wkc, self->expected_wkc);
+
+    if (actual_state != EC_STATE_OPERATIONAL) {
+      WARNING("Did not reach %s, actual state is %s",
+              jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
+              jsd_ec_state_to_string(actual_state));
       if (sent <= 0) {
-        WARNING("Processdata could not be transmitted properly");
+        WARNING("Process data could not be transmitted properly.");
       }
       if (wkc != self->expected_wkc) {
-        WARNING("Processdata was not received properly");
+        WARNING("Process data was not received properly.");
       }
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
-      if (attempt > JSD_PO2OP_MAX_ATTEMPTS) {
-        ERROR("Max number of attempts to transition to OPERATIONAL exceeded");
+      if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
+        ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
         return false;
       }
     } else {  // good to go
@@ -217,28 +219,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   self->init_complete = true;
 
   SUCCESS("JSD is Operational");
-
-  return true;
-}
-
-// request state for all slaves is achieved by setting state on index 0
-bool jsd_set_device_state(jsd_t* self, uint16_t slave_id, ec_state state,
-                          int timeout_us) {
-  assert(self);
-
-  self->ecx_context.slavelist[slave_id].state = state;
-  ecx_writestate(&self->ecx_context, slave_id);
-
-  // wait for all slaves to reach desired state
-  ec_state act_state =
-      ecx_statecheck(&self->ecx_context, slave_id, state, timeout_us);
-  ecx_statecheck(&self->ecx_context, slave_id, state, timeout_us);
-
-  if (act_state != state) {
-    WARNING("State Check failed. Requested = %s, Actual = %s",
-            jsd_ec_state_to_string(state), jsd_ec_state_to_string(act_state));
-    return false;
-  }
 
   return true;
 }
