@@ -132,28 +132,29 @@ typedef struct {
  */
 typedef struct __attribute__((__packed__)) {  
   uint16_t  controlword; //0x3003:0x01: 2byte
-  uint8_t   data_out_0; //0x3003:0x02: 1byte
-  uint8_t   data_out_1; //0x3003:0x03
-  uint8_t   data_out_2; 
-  uint8_t   data_out_3; 
-  uint8_t   data_out_4; 
-  uint8_t   data_out_5; 
-  uint8_t   data_out_6; 
-  uint8_t   data_out_7; 
-  uint8_t   data_out_8; 
-  uint8_t   data_out_9; 
-  uint8_t   data_out_10; 
-  uint8_t   data_out_11; 
-  uint8_t   data_out_12; 
-  uint8_t   data_out_13; 
-  uint8_t   data_out_14; 
-  uint8_t   data_out_15; 
-  uint8_t   data_out_16; 
-  uint8_t   data_out_17; 
-  uint8_t   data_out_18; 
-  uint8_t   data_out_19; 
-  uint8_t   data_out_20; 
-  uint8_t   data_out_21; //0x3003:0x17
+  uint8_t   data_out[JSD_EL6001_NUM_DATA_BYTES];
+  // uint8_t   data_out_0; //0x3003:0x02: 1byte
+  // uint8_t   data_out_1; //0x3003:0x03
+  // uint8_t   data_out_2; 
+  // uint8_t   data_out_3; 
+  // uint8_t   data_out_4; 
+  // uint8_t   data_out_5; 
+  // uint8_t   data_out_6; 
+  // uint8_t   data_out_7; 
+  // uint8_t   data_out_8; 
+  // uint8_t   data_out_9; 
+  // uint8_t   data_out_10; 
+  // uint8_t   data_out_11; 
+  // uint8_t   data_out_12; 
+  // uint8_t   data_out_13; 
+  // uint8_t   data_out_14; 
+  // uint8_t   data_out_15; 
+  // uint8_t   data_out_16; 
+  // uint8_t   data_out_17; 
+  // uint8_t   data_out_18; 
+  // uint8_t   data_out_19; 
+  // uint8_t   data_out_20; 
+  // uint8_t   data_out_21; //0x3003:0x17
 } jsd_el6001_rxpdo_t;
 
 /**
@@ -162,29 +163,30 @@ typedef struct __attribute__((__packed__)) {
  * Note: struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {  
-  uint16_t  statusword; //0x3103:01   
-  uint8_t   data_in_0;  //0x3103:02
-  uint8_t   data_in_1; 
-  uint8_t   data_in_2; 
-  uint8_t   data_in_3; 
-  uint8_t   data_in_4; 
-  uint8_t   data_in_5; 
-  uint8_t   data_in_6; 
-  uint8_t   data_in_7; 
-  uint8_t   data_in_8; 
-  uint8_t   data_in_9; 
-  uint8_t   data_in_10; 
-  uint8_t   data_in_11; 
-  uint8_t   data_in_12; 
-  uint8_t   data_in_13; 
-  uint8_t   data_in_14; 
-  uint8_t   data_in_15; 
-  uint8_t   data_in_16; 
-  uint8_t   data_in_17; 
-  uint8_t   data_in_18; 
-  uint8_t   data_in_19; 
-  uint8_t   data_in_20; 
-  uint8_t   data_in_21; //0x3103:17
+  uint16_t  statusword; //0x3103:01
+  uint8_t   data_in[JSD_EL6001_NUM_DATA_BYTES];   
+  // uint8_t   data_in_0;  //0x3103:02
+  // uint8_t   data_in_1; 
+  // uint8_t   data_in_2; 
+  // uint8_t   data_in_3; 
+  // uint8_t   data_in_4; 
+  // uint8_t   data_in_5; 
+  // uint8_t   data_in_6; 
+  // uint8_t   data_in_7; 
+  // uint8_t   data_in_8; 
+  // uint8_t   data_in_9; 
+  // uint8_t   data_in_10; 
+  // uint8_t   data_in_11; 
+  // uint8_t   data_in_12; 
+  // uint8_t   data_in_13; 
+  // uint8_t   data_in_14; 
+  // uint8_t   data_in_15; 
+  // uint8_t   data_in_16; 
+  // uint8_t   data_in_17; 
+  // uint8_t   data_in_18; 
+  // uint8_t   data_in_19; 
+  // uint8_t   data_in_20; 
+  // uint8_t   data_in_21; //0x3103:17
 } jsd_el6001_txpdo_data_t;
 
 /**
