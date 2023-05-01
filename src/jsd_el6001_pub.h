@@ -47,7 +47,7 @@ int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte,
 
 int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit);
 
-int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit, bool state);
+int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit, bool flag);
  
 #ifdef __cplusplus
 }
