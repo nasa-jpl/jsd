@@ -18,8 +18,6 @@ jobs:
                   version: latest
                   platform: x64
             - uses: solareenlo/42valgrind-action@v1.0.3
-              with:
-                  flags: 'make valgrind'
             - run: |
                 mkdir -p build
                 cd build
