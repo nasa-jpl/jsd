@@ -353,7 +353,7 @@ int si_map_sdo(int slave) {
 }
 
 int si_siiPDO(uint16 slave, uint8 t, int mapoffset, int bitoffset) {
-  uint16         a, w, c, e, er;
+  uint16         a, w, c, e, er, Size;
   uint8          eectl;
   uint16         obj_idx;
   uint8          obj_subidx;
