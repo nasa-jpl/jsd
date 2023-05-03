@@ -19,7 +19,7 @@ jobs:
                   platform: x64
             - uses: solareenlo/42valgrind-action@v1.0.3
               with:
-                  flags: 'sh test_valgrind.sh'
+                  flags: 'make valgrind'
             - run: |
                 mkdir -p build
                 cd build
