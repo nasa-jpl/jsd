@@ -13,10 +13,12 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: egor-tensin/setup-clang@v1
-            - uses: solareenlo/42valgrind-action@v1.0.3
               with:
                   version: latest
                   platform: x64
+            - uses: solareenlo/42valgrind-action@v1.0.3
+              with:
+                  flags: 'sh test_valgrind.sh'
             - run: |
                 mkdir -p build
                 cd build
