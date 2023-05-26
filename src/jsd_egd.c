@@ -134,9 +134,9 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
 
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   if (output_level > 0) {
-    state->rxpdo_cs.digital_outputs |= (0x01 << (16 + digital_output_index));
+    state->rxpdo_cs.digital_outputs |= (0x01 << (15 + digital_output_index));
   } else {
-    state->rxpdo_cs.digital_outputs &= ~(0x01 << (16 + digital_output_index));
+    state->rxpdo_cs.digital_outputs &= ~(0x01 << (15 + digital_output_index));
   }
 }
 
