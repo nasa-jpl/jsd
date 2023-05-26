@@ -156,7 +156,7 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
   assert(index > 0);
-  assert(index =< JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  assert(index <= JSD_EPD_NUM_DIGITAL_OUTPUTS);
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   if (output > 0) {
