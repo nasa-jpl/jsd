@@ -450,6 +450,10 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       return jsd_ati_fts_init(self, slave_id);
       break;
     }
+    case JSD_EL3004_PRODUCT_CODE: {
+      return jsd_el3004_init(self, slave_id);
+      break;
+    }
     case JSD_EL3104_PRODUCT_CODE: {
       return jsd_el3104_init(self, slave_id);
       break;
