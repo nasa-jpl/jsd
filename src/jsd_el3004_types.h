@@ -7,7 +7,7 @@ extern "C" {
 
 #include "jsd/jsd_common_device_types.h"
 
-#define JSD_EL3004_PRODUCT_CODE (uint32_t)0x0BC03052
+#define JSD_EL3004_PRODUCT_CODE (uint32_t)0x0BBC3052
 #define JSD_EL3004_NUM_CHANNELS 4
 
 /**
