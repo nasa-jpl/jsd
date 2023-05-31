@@ -21,7 +21,7 @@ typedef struct {
  */
 typedef struct {
   double  voltage[JSD_EL3004_NUM_CHANNELS];    ///< Analog input data, converted
-  int16_t adc_value[JSD_EL3004_NUM_CHANNELS];  ///< Analog input data, raw
+  int32_t adc_value[JSD_EL3004_NUM_CHANNELS];  ///< Analog input data, raw
   uint8_t underrange[JSD_EL3004_NUM_CHANNELS];  ///< True if value below
                                                 ///< measuring range
   uint8_t
