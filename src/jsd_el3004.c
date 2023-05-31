@@ -91,11 +91,12 @@ int jsd_el3004_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   for (int ch = 0; ch < JSD_EL3004_NUM_CHANNELS; ++ch) {
     // Index for settings is 0x80n0, where n is channel number (e.g. ch2 =
     // 0x8010).
+    /*
     uint32_t sdo_channel_index = 0x8000 + (0x10 * ch);
 
     // Don't need to set presentation as 2's compliment is the default,
     // and we factor reset.
-
+    
     // Enable digital filter on read inputs (synchronized with timer inside
     // terminal).
     uint8_t enable_filter = 1;
@@ -111,6 +112,7 @@ int jsd_el3004_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
                                     0x15, JSD_SDO_DATA_U16, &filter_opt)) {
       return 0;
     }
+    */
   }
 
   config->PO2SO_success = true;
