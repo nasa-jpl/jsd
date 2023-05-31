@@ -12,6 +12,7 @@ extern "C" {
 #include "jsd/jsd_ati_fts_types.h"
 #include "jsd/jsd_egd_types.h"
 #include "jsd/jsd_el2124_types.h"
+#include "jsd/jsd_el3004_types.h"
 #include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
@@ -40,6 +41,7 @@ typedef struct {
     jsd_jed0101_config_t jed0101;
     jsd_jed0200_config_t jed0200;
     jsd_ati_fts_config_t ati_fts;
+    jsd_el3004_config_t  el3004;
     jsd_el3104_config_t  el3104;
     jsd_el3202_config_t  el3202;
     jsd_el3318_config_t  el3318;
@@ -62,6 +64,7 @@ typedef struct {
     jsd_jed0101_state_t     jed0101;
     jsd_jed0200_state_t     jed0200;
     jsd_ati_fts_state_t     ati_fts;
+    jsd_el3004_state_t      el3004;
     jsd_el3104_state_t      el3104;
     jsd_el3202_state_t      el3202;
     jsd_el3318_state_t      el3318;
