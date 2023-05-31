@@ -34,9 +34,9 @@ void jsd_el3004_read(jsd_t* self, uint16_t slave_id) {
     // EL3004 has a +/-10V range. Assuming it's configured to use 2's compliment, adc value will
     // be a signed value between 32767 and -32768
     if (state->adc_value[ch] > 0) {
-      state->adc_value[ch] = (double)state->adc_value[ch]/32767.0 * 10.0;
+      state->voltage[ch] = (double)state->adc_value[ch]/32767.0 * 10.0;
     } else {
-      state->adc_value[ch] = (double)state->adc_value[ch]/32768.0 * 10.0;
+      state->voltage[ch] = (double)state->adc_value[ch]/32768.0 * 10.0;
     }
 
     // EL3004 status data is 1-byte long.
