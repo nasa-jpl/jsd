@@ -37,6 +37,8 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"MC", 0x31BC},
     {"PL", 0x3231},
     {"PX", 0x323D},
+    {"QS", 0x325C},
+    {"SD", 0x3295},
     {"SF", 0x3297},
     {"UM", 0x32E6},
 };
