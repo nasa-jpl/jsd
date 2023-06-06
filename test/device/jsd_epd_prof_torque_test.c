@@ -197,6 +197,8 @@ int main(int argc, char* argv[]) {
   config.epd.torque_slope             = 1e7;
   config.epd.max_profile_accel        = 1e6;
   config.epd.max_profile_decel        = 1e7;
+  config.epd.quick_stop_decel         = 1e7;
+  config.epd.stop_decel               = 1e7;
   config.epd.velocity_tracking_error  = 1e8;
   config.epd.position_tracking_error  = 1e9;
   config.epd.peak_current_limit       = peak_current;
