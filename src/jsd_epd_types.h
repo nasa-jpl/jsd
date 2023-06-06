@@ -122,6 +122,8 @@ typedef struct {
   // RxPDO.
   double max_profile_accel;         ///< P_AC[1]. Ignored by CS mode.
   double max_profile_decel;         ///< P_DC[1]. Ignored by CS mode.
+  double quick_stop_decel;          /// used when quick stop command sent
+  double stop_decel;                /// used for emergency stops and limit switches
   double velocity_tracking_error;   ///< P_ER[2] cnts/s
   double position_tracking_error;   ///< P_ER[3] cnts
   float  peak_current_limit;        ///< P_PL[1] A
@@ -138,6 +140,7 @@ typedef struct {
                                ///< out of position limits protection.
   int16_t brake_engage_msec;   ///< BP[1] ms, [0, 1000]
   int16_t brake_disengage_msec;  ///< BP[2] ms, [0, 1000]
+
 
   // Verification parameters
   uint32_t crc;  ///< CZ[1], changes whenever drive parameters change

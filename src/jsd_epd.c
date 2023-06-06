@@ -626,6 +626,19 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("QS"),
+                                  1, JSD_SDO_DATA_DOUBLE,
+                                  &config->epd.quick_stop_decel)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("SD"),
+                                  1, JSD_SDO_DATA_DOUBLE,
+                                  &config->epd.stop_decel)) {
+    return 0;
+  }
+
+
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
                                   2, JSD_SDO_DATA_DOUBLE,
                                   &config->epd.velocity_tracking_error)) {
