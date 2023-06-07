@@ -8,7 +8,8 @@ extern "C" {
 #include "jsd/jsd_common_device_types.h"
 #include "jsd/jsd_elmo_common_types.h"
 
-#define JSD_EPD_PRODUCT_CODE (uint32_t)0x01100002
+#define JSD_EPD_PRODUCT_CODE_0 (uint32_t)0x01100002
+#define JSD_EPD_PRODUCT_CODE_1 (uint32_t)0x00000000
 
 // TODO(dloret): Consider making the types related to DS-402 common between the
 // EGD and EPD drivers:

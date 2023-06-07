@@ -98,6 +98,14 @@ void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id);
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
 
+/**
+ * @brief Utility function to check whether a product code matches one of the
+ * codes from supported models of the Platinum drive.
+ * @param product_code The product code to be checked
+ * @return True if the product code is supported, false otherwise.
+ */
+bool jsd_epd_product_code_matches_epd_codes(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif
