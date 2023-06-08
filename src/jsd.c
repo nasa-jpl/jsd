@@ -479,8 +479,8 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       return jsd_ild1900_init(self, slave_id);
       break;
     }
-    case JSD_EPD_PRODUCT_CODE_0:
-    case JSD_EPD_PRODUCT_CODE_1: {
+    case JSD_EPD_PRODUCT_CODE_STD_FW:
+    case JSD_EPD_PRODUCT_CODE_SAFETY_FW: {
       return jsd_epd_init(self, slave_id);
       break;
     }
