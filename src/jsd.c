@@ -397,7 +397,7 @@ bool jsd_init_all_devices(jsd_t* self) {
     // EGDs nor EPDs have the name field populated.
     if (slave->eep_id == JSD_EGD_PRODUCT_CODE) {
       SUCCESS("\tslave[%u] Elmo Gold Drive - Configured", slave_idx);
-    } else if (jsd_epd_product_code_matches_epd_codes(slave->eep_id)) {
+    } else if (jsd_epd_product_code_is_compatible(slave->eep_id)) {
       SUCCESS("\tslave[%u] Elmo Platinum Drive - Configured", slave_idx);
     } else {
       SUCCESS("\tslave[%u] %s - Configured", slave_idx, slave->name);
@@ -409,8 +409,8 @@ bool jsd_init_all_devices(jsd_t* self) {
 
 bool jsd_product_codes_match(uint32_t user_product_code,
                              uint32_t device_product_code) {
-  if (jsd_epd_product_code_matches_epd_codes(user_product_code)) {
-    return jsd_epd_product_code_matches_epd_codes(device_product_code);
+  if (jsd_epd_product_code_is_compatible(user_product_code)) {
+    return jsd_epd_product_code_is_compatible(device_product_code);
   } else {
     return user_product_code == device_product_code;
   }
