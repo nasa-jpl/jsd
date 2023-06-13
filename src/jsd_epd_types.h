@@ -10,8 +10,8 @@ extern "C" {
 
 // Currently JSD does not support the Functional Safety capability offered by
 // some Platinum drive models. Such drives can still be run with this driver,
-// but they will behave as the standard non-Safety drives. Product code of
-// Platinum drives that use the standard non-Safety firmware
+// but they will behave as the standard non-Safety drives.
+// Product code of Platinum drives that use the standard non-Safety firmware
 #define JSD_EPD_PRODUCT_CODE_STD_FW (uint32_t)0x00100002
 // Product code of Platinum drives that use the Safety firmware (FSOE, Safe I/O)
 #define JSD_EPD_PRODUCT_CODE_SAFETY_FW (uint32_t)0x01100002
