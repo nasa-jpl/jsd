@@ -22,7 +22,10 @@ jobs:
             - run: |
                 mkdir -p build
                 cd build
-                cmake -DBUILD_JSD_TESTS=ON ..
+                cmake -DBUILD_JSD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
                 make
                 make test
+                echo "Current ulimit is: $(ulimit -n)"
+                ulimit -n 1024
+                echo "Now ulimit set to: $(ulimit -n)"
                 make -d memcheck
