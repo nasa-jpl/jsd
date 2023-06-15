@@ -25,4 +25,4 @@ jobs:
                 cmake -DBUILD_JSD_TESTS=ON ..
                 make
                 make test
-                make memcheck
+                make memcheck --rerun-failed --output-on-failure
