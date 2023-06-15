@@ -25,7 +25,4 @@ jobs:
                 cmake -DBUILD_JSD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
                 make
                 make test
-                echo "Current ulimit is: $(ulimit -n)"
-                ulimit -n 1024
-                echo "Now ulimit set to: $(ulimit -n)"
-                make -d memcheck
+                env CTEST_OUTPUT_ON_FAILURE=1 make -d memcheck
