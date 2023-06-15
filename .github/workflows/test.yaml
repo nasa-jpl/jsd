@@ -6,6 +6,7 @@ on:
             - "src/**"
             - "test/**"
             - "tools/**"
+    workflow_dispatch:
 
 jobs:
     test:
