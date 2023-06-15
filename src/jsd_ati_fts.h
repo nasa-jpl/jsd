@@ -99,6 +99,14 @@ const char* jsd_ati_fts_force_unit_to_string(uint8_t force_units);
  */
 const char* jsd_ati_fts_torque_unit_to_string(uint8_t torque_units);
 
+/**
+ * @brief Checks whether a product code is compatible with ATI FTS.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_ati_fts_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

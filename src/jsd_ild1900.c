@@ -19,8 +19,8 @@ const double JSD_ILD1900_MR_MAP[JSD_ILD1900_MODEL_NUM_LABELS] = {
 const jsd_ild1900_state_t* jsd_ild1900_get_state(jsd_t*   self,
                                                  uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ILD1900_PRODUCT_CODE);
+  assert(jsd_ild1900_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   const jsd_ild1900_state_t* state = &self->slave_states[slave_id].ild1900;
   return state;
@@ -28,8 +28,8 @@ const jsd_ild1900_state_t* jsd_ild1900_get_state(jsd_t*   self,
 
 void jsd_ild1900_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ILD1900_PRODUCT_CODE);
+  assert(jsd_ild1900_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_ild1900_state_t* state = &self->slave_states[slave_id].ild1900;
 
@@ -93,8 +93,8 @@ bool is_power2(uint32_t n) {
 
 bool jsd_ild1900_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ILD1900_PRODUCT_CODE);
+  assert(jsd_ild1900_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man ==
          JSD_MICROEPSILON_VENDOR_ID);
 
@@ -108,7 +108,8 @@ bool jsd_ild1900_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_ild1900_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(ecx_context->slavelist[slave_id].eep_id == JSD_ILD1900_PRODUCT_CODE);
+  assert(jsd_ild1900_product_code_is_compatible(
+      ecx_context->slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within the ecx_context and extract it here.
@@ -322,4 +323,8 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
   }
 
   return true;
+}
+
+bool jsd_ild1900_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_ILD1900_PRODUCT_CODE;
 }

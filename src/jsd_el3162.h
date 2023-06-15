@@ -45,6 +45,14 @@ bool jsd_el3162_init(jsd_t* self, uint16_t slave_id);
  */
 int jsd_el3162_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
 
+/**
+ * @brief Checks whether a product code is compatible with EL3162.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_el3162_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

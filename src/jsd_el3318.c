@@ -30,16 +30,16 @@ const char* jsd_el3318_presentation_strings[] = {
  ****************************************************/
 const jsd_el3318_state_t* jsd_el3318_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL3318_PRODUCT_CODE);
+  assert(jsd_el3318_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   return &self->slave_states[slave_id].el3318;
 }
 
 void jsd_el3318_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL3318_PRODUCT_CODE);
+  assert(jsd_el3318_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_el3318_state_t*  state  = &self->slave_states[slave_id].el3318;
   jsd_el3318_config_t* config = &self->slave_configs[slave_id].el3318;
@@ -67,8 +67,8 @@ void jsd_el3318_read(jsd_t* self, uint16_t slave_id) {
 
 bool jsd_el3318_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL3318_PRODUCT_CODE);
+  assert(jsd_el3318_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man ==
          JSD_BECKHOFF_VENDOR_ID);
 
@@ -82,7 +82,8 @@ bool jsd_el3318_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_el3318_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL3318_PRODUCT_CODE);
+  assert(jsd_el3318_product_code_is_compatible(
+      ecx_context->slavelist[slave_id].eep_id));
 
   // cast the void* to slave_config
   jsd_slave_config_t* slave_configs =
@@ -159,4 +160,8 @@ double jsd_el3318_output_from_config(int16_t              adc_value,
   }
 
   return (double)adc_value * temp_scale_factor;
+}
+
+bool jsd_el3318_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_EL3318_PRODUCT_CODE;
 }
