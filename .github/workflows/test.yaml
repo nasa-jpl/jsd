@@ -1,7 +1,6 @@
 name: test
 
 on:
-    workflow_dispatch:
     push:
         paths:
             - "src/**"
@@ -14,10 +13,11 @@ jobs:
         steps:
             - uses: actions/checkout@v2
             - uses: egor-tensin/setup-clang@v1
+            - uses: ConorMacBride/install-package@v1
               with:
+                  apt: valgrind
                   version: latest
                   platform: x64
-            - uses: solareenlo/42valgrind-action@v1.0.3
             - run: |
                 mkdir -p build
                 cd build
