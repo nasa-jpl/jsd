@@ -97,7 +97,7 @@ int main(int argc, char const* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "nahual");
   my_config.configuration_active = true;
-  my_config.product_code         = JSD_EL4102_PRODUCT_CODE;
+  my_config.device_type          = JSD_DEVICE_TYPE_EL4102;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

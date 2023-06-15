@@ -12,8 +12,8 @@
 const jsd_ati_fts_state_t* jsd_ati_fts_get_state(jsd_t*   self,
                                                  uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ATI_FTS_PRODUCT_CODE);
+  assert(jsd_ati_fts_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_ati_fts_state_t* state = &self->slave_states[slave_id].ati_fts;
   return state;
@@ -21,8 +21,8 @@ const jsd_ati_fts_state_t* jsd_ati_fts_get_state(jsd_t*   self,
 
 void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ATI_FTS_PRODUCT_CODE);
+  assert(jsd_ati_fts_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_slave_config_t*  config = &self->slave_configs[slave_id];
   jsd_ati_fts_state_t* state  = &self->slave_states[slave_id].ati_fts;
@@ -57,8 +57,8 @@ void jsd_ati_fts_read(jsd_t* self, uint16_t slave_id) {
 
 void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ATI_FTS_PRODUCT_CODE);
+  assert(jsd_ati_fts_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_slave_config_t*  config = &self->slave_configs[slave_id];
   jsd_ati_fts_rxpdo_t* rxpdo =
@@ -69,14 +69,15 @@ void jsd_ati_fts_process(jsd_t* self, uint16_t slave_id) {
 
   rxpdo->control2 = JSD_ATI_FTS_DEFAULT_WORD_CONTROL2;
 }
+
 /****************************************************
  * Private functions
  ****************************************************/
 
 bool jsd_ati_fts_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_ATI_FTS_PRODUCT_CODE);
+  assert(jsd_ati_fts_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ATI_VENDOR_ID);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -89,7 +90,8 @@ bool jsd_ati_fts_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(ecx_context->slavelist[slave_id].eep_id == JSD_ATI_FTS_PRODUCT_CODE);
+  assert(jsd_ati_fts_product_code_is_compatible(
+      ecx_context->slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within th ecx_context and extract it here
@@ -275,4 +277,8 @@ const char* jsd_ati_fts_torque_unit_to_string(uint8_t torque_units) {
       return "Unknown Torque Unit";
       break;
   }
+}
+
+bool jsd_ati_fts_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_ATI_FTS_PRODUCT_CODE;
 }

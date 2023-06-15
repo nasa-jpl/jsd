@@ -11,7 +11,8 @@
 
 const jsd_jed0101_state_t* jsd_jed0101_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
+  assert(jsd_jed0101_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   return state;
@@ -19,7 +20,8 @@ const jsd_jed0101_state_t* jsd_jed0101_get_state(jsd_t* self, uint16_t slave_id)
 
 void jsd_jed0101_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
+  assert(jsd_jed0101_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   state->cmd             = cmd;
@@ -27,7 +29,8 @@ void jsd_jed0101_set_cmd_value(jsd_t* self, uint16_t slave_id, uint16_t cmd) {
 
 void jsd_jed0101_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
+  assert(jsd_jed0101_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   jsd_jed0101_txpdo_t* txpdo =
@@ -46,7 +49,8 @@ void jsd_jed0101_read(jsd_t* self, uint16_t slave_id) {
 
 void jsd_jed0101_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
+  assert(jsd_jed0101_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;
   jsd_jed0101_rxpdo_t* rxpdo =
@@ -61,7 +65,8 @@ void jsd_jed0101_process(jsd_t* self, uint16_t slave_id) {
 
 bool jsd_jed0101_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_JED0101_PRODUCT_CODE);
+  assert(jsd_jed0101_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_JPL_VENDOR_ID);
 
   ec_slavet* slaves = self->ecx_context.slavelist;
@@ -102,4 +107,8 @@ int jsd_jed0101_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
             slave_id);
   }
   return 1;
+}
+
+bool jsd_jed0101_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_JED0101_PRODUCT_CODE;
 }

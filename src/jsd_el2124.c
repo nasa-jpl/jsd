@@ -17,16 +17,16 @@ typedef struct __attribute__((__packed__)) {
 
 const jsd_el2124_state_t* jsd_el2124_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL2124_PRODUCT_CODE);
+  assert(jsd_el2124_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   return &self->slave_states[slave_id].el2124;
 }
 
 void jsd_el2124_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL2124_PRODUCT_CODE);
+  assert(jsd_el2124_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_el2124_rxpdo_t* rxpdo =
       (jsd_el2124_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;
@@ -46,8 +46,8 @@ void jsd_el2124_process(jsd_t* self, uint16_t slave_id) {
 void jsd_el2124_write_single_channel(jsd_t* self, uint16_t slave_id,
                                      uint8_t channel, uint8_t output) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL2124_PRODUCT_CODE);
+  assert(jsd_el2124_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   self->slave_states[slave_id].el2124.output[channel] = output;
 }
@@ -66,8 +66,8 @@ void jsd_el2124_write_all_channels(jsd_t* self, uint16_t slave_id,
 
 bool jsd_el2124_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL2124_PRODUCT_CODE);
+  assert(jsd_el2124_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man ==
          JSD_BECKHOFF_VENDOR_ID);
 
@@ -77,4 +77,8 @@ bool jsd_el2124_init(jsd_t* self, uint16_t slave_id) {
   config->PO2SO_success = true;
 
   return true;
+}
+
+bool jsd_el2124_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_EL2124_PRODUCT_CODE;
 }

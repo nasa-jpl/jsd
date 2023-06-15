@@ -27,9 +27,27 @@ extern "C" {
 
 #include "jsd/jsd_error_cirq.h"
 
+typedef enum {
+  JSD_DEVICE_TYPE_EL3602 = 0,
+  JSD_DEVICE_TYPE_EL3208,
+  JSD_DEVICE_TYPE_EL2124,
+  JSD_DEVICE_TYPE_EGD,
+  JSD_DEVICE_TYPE_EL3356,
+  JSD_DEVICE_TYPE_JED0101,
+  JSD_DEVICE_TYPE_JED0200,
+  JSD_DEVICE_TYPE_ATI_FTS,
+  JSD_DEVICE_TYPE_EL3104,
+  JSD_DEVICE_TYPE_EL3202,
+  JSD_DEVICE_TYPE_EL3318,
+  JSD_DEVICE_TYPE_EL3162,
+  JSD_DEVICE_TYPE_EL4102,
+  JSD_DEVICE_TYPE_ILD1900,
+  JSD_DEVICE_TYPE_EPD,
+} jsd_device_type_t;
+
 typedef struct {
   bool     configuration_active;
-  uint32_t product_code;
+  jsd_device_type_t device_type;
   char     name[JSD_NAME_LEN];
   union {
     jsd_el3602_config_t  el3602;

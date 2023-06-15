@@ -117,6 +117,14 @@ void jsd_egd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
  */
 jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error);
 
+/**
+ * @brief Checks whether a product code is compatible with EGD.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_egd_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

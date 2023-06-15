@@ -95,7 +95,7 @@ int main(int argc, char const* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "bigfoot");
   my_config.configuration_active = true;
-  my_config.product_code         = JSD_EL2124_PRODUCT_CODE;
+  my_config.device_type          = JSD_DEVICE_TYPE_EL2124;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

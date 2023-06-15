@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "my_egd");
   my_config.configuration_active         = true;
-  my_config.product_code                 = JSD_EGD_PRODUCT_CODE;
+  my_config.device_type                       = JSD_DEVICE_TYPE_EGD;
   my_config.egd.drive_cmd_mode           = JSD_EGD_DRIVE_CMD_MODE_PROFILED;
   my_config.egd.max_motor_speed          = INT32_MAX;  // effectively disables
   my_config.egd.loop_period_ms           = 100;        // dummy

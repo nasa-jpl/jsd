@@ -194,7 +194,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(config.name, JSD_NAME_LEN, "kukulkan");
   config.configuration_active         = true;
-  config.product_code                 = JSD_EPD_PRODUCT_CODE_STD_FW;
+  config.device_type                  = JSD_DEVICE_TYPE_EPD;
   config.epd.max_motor_speed          = 1e9;
   config.epd.loop_period_ms           = 1000 / loop_freq_hz;
   config.epd.torque_slope             = 1e7;
