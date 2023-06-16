@@ -123,6 +123,15 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
   }
 }
 
+void jsd_epd_clear_errors(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  self->slave_states[slave_id].epd.pub.fault_code      = JSD_EPD_FAULT_OKAY;
+  self->slave_states[slave_id].epd.pub.emcy_error_code = 0;
+}
+
 void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
