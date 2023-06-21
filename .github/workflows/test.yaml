@@ -1,4 +1,4 @@
-name: build
+name: test
 
 on:
     push:
@@ -9,16 +9,20 @@ on:
     workflow_dispatch:
 
 jobs:
-    build:
+    test:
         runs-on: ubuntu-20.04
         steps:
             - uses: actions/checkout@v2
             - uses: egor-tensin/setup-clang@v1
+            - uses: ConorMacBride/install-package@v1
               with:
+                  apt: valgrind
                   version: latest
                   platform: x64
             - run: |
                 mkdir -p build
                 cd build
-                cmake  ..
+                cmake -DBUILD_JSD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug ..
                 make
+                make test
+                env CTEST_OUTPUT_ON_FAILURE=1 make -d memcheck
