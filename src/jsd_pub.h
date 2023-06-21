@@ -54,23 +54,6 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
 bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery);
 
 /**
- * @brief Sets the state of the master within given time constraint
- *
- * Requesting the state for all slaves is achieved by setting slave_id=0
- *
- * A recommended timeout_us values is EC_TIMEOUTSTATE = 2e6us
- *
- * @param self pointer JSD context
- * @param slave_id id of device to change state. Use 0 to set entire bus state.
- * @param state master will assume this state.
- * @param timeout_us time in microseconds for given state switch
- * @return true on success
- * @return false on failure
- */
-bool jsd_set_device_state(jsd_t* self, uint16_t slave_id, ec_state state,
-                          int timeout_us);
-
-/**
  * @brief Receive data from slave devices and store on local IOmap.
  *
  * @param self pointer JSD context

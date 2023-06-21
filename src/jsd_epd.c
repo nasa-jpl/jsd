@@ -155,13 +155,13 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
                                 uint8_t output) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
-  assert(index < JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  assert(index > 0 && index <= JSD_EPD_NUM_DIGITAL_OUTPUTS);
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   if (output > 0) {
-    state->rxpdo.digital_outputs |= (0x01 << (16 + index));
+    state->rxpdo.digital_outputs |= (0x01 << (15 + index));
   } else {
-    state->rxpdo.digital_outputs &= ~(0x01 << (16 + index));
+    state->rxpdo.digital_outputs &= ~(0x01 << (15 + index));
   }
 }
 
@@ -373,9 +373,6 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
   slave->PO2SOconfigx = jsd_epd_PO2SO_config;
-
-  // Platinum's EtherCAT Slave Controller requires to block LRW.
-  slave->blockLRW = 1;
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   state->requested_mode_of_operation      = JSD_EPD_MODE_OF_OPERATION_DISABLED;
