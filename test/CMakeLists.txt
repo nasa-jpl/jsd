@@ -160,7 +160,11 @@ if(BUILD_JSD_TESTS)
             memcheck
             ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck \${ARGS}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
+        )
+        if(CMAKE_TEST_COMMAND)
+            message(STATUS "CMAKE_TEST_COMMAND=${CMAKE_TEST_COMMAND}")
+        endif()
+        message(STATUS "VALGRIND_EXECUTABLE=${VALGRIND_EXECUTABLE}")
     else()
         message(WARNING "Memcheck target will not be built, valgrind was not found on this machine")
     endif()
