@@ -7,7 +7,7 @@ extern "C" {
 
 #include "jsd/jsd_common_device_types.h"
 
-#define JSD_EL1008_PRODUCT_CODE (uint32_t)03f03052
+#define JSD_EL1008_PRODUCT_CODE (uint32_t)0x03f03052
 #define JSD_EL1008_NUM_CHANNELS 8 // Each of the 8 values is 1 bit long.
 
 /**
