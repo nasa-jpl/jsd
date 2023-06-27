@@ -13,7 +13,7 @@ extern "C" {
  * Note: Struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  int8_t values
+  int8_t values;
 } jsd_el1008_txpdo_channel_t;
 
 /**

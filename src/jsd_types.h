@@ -56,6 +56,7 @@ typedef struct {
 
 typedef struct {
   union {
+    jsd_el1008_state_t      el1008;
     jsd_el3602_state_t      el3602;
     jsd_el3208_state_t      el3208;
     jsd_el2124_state_t      el2124;
