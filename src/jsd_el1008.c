@@ -63,14 +63,6 @@ int jsd_el1008_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  // Reset to factory default.
-  uint32_t reset_word = JSD_BECKHOFF_RESET_WORD;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, JSD_BECKHOFF_RESET_SDO,
-                                  JSD_BECKHOFF_RESET_SUBIND, JSD_SDO_DATA_U32,
-                                  &reset_word)) {
-    return 0;
-  }
-
   MSG("Configuring slave no: %u, SII inferred name: %s", slave_id,
       ecx_context->slavelist[slave_id].name);
   MSG("\t Configured name: %s", config->name);
