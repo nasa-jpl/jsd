@@ -29,7 +29,7 @@ void jsd_el1008_read(jsd_t* self, uint16_t slave_id) {
       (jsd_el1008_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
   for (int ch = 0; ch < JSD_EL1008_NUM_CHANNELS; ++ch) {
-    state->digital_value[ch] = (bool)((1 << ch) && txpdo->channel[0].values); // Bit shift the channel to get value
+    state->value2[ch] = (bool)((1 << ch) & txpdo->channel[0].values); // Bit shift the channel to get value
   }
 }
 
