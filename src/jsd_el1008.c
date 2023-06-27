@@ -28,6 +28,7 @@ void jsd_el1008_read(jsd_t* self, uint16_t slave_id) {
   const jsd_el1008_txpdo_t* txpdo =
       (jsd_el1008_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
+  state->bitwise_values = (uint8_t)(txpdo->channel[0].values);
   for (int ch = 0; ch < JSD_EL1008_NUM_CHANNELS; ++ch) {
     state->values[ch] = (bool)((1 << ch) & txpdo->channel[0].values); // Bit shift the channel to get value
   }
