@@ -61,7 +61,7 @@ most useful devices. The following table represents the latest state of the JSD 
 | EL3356                    | 2    | 1.1.0                        |
 | JED (JPL EtherCat Device) | 2    | 1.2.0                        |
 | ATI Force-Torque Sensor   | 2    | 1.4.0                        |
-| EL1008                    | 2    | TBD                          |
+| EL1008                    | 2    | 2.3.4                        |
 | EL3202-0010               | 2    | 1.5.0                        |
 | EL3255                    | 2    | TBD                          |
 | EL3318                    | 2    | 1.5.0                        |
