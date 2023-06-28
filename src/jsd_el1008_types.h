@@ -20,7 +20,6 @@ typedef struct {
  * @brief Read struct for el1008 module
  */
 typedef struct {
-  uint8_t bitwise_values;
   bool values[JSD_EL1008_NUM_CHANNELS]; 
 } jsd_el1008_state_t;
 
