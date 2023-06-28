@@ -18,28 +18,6 @@ int main(int argc, char* argv[]) {
   }
   SUCCESS("JSD is initialized");
 
-  // INIT
-  if (!jsd_set_device_state(jsd, 0, EC_STATE_INIT, EC_TIMEOUTSTATE)) {
-    return 0;
-  }
-  // PRE_OP
-  if (!jsd_set_device_state(jsd, 0, EC_STATE_PRE_OP, EC_TIMEOUTSTATE)) {
-    return 0;
-  }
-
-  // START SLAVE CONFIGURATION
-
-  // END SLAVE CONFIGURATION
-
-  // SAFE_OP
-  if (!jsd_set_device_state(jsd, 0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE)) {
-    return 0;
-  }
-  // OP
-  if (!jsd_set_device_state(jsd, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE)) {
-    return 0;
-  }
-
   SUCCESS("JSD is in Operational State");
 
   MSG("Closing SOEM and freeing memory...");

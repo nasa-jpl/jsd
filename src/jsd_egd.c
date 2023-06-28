@@ -123,7 +123,7 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
                                 uint8_t output_level) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
-  assert(digital_output_index < JSD_EGD_NUM_DIGITAL_OUTPUTS);
+  assert(digital_output_index > 0 && digital_output_index <= JSD_EGD_NUM_DIGITAL_OUTPUTS);
 
   if (self->slave_configs[slave_id].egd.drive_cmd_mode !=
       JSD_EGD_DRIVE_CMD_MODE_CS) {
@@ -134,9 +134,9 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
 
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   if (output_level > 0) {
-    state->rxpdo_cs.digital_outputs |= (0x01 << (16 + digital_output_index));
+    state->rxpdo_cs.digital_outputs |= (0x01 << (15 + digital_output_index));
   } else {
-    state->rxpdo_cs.digital_outputs &= ~(0x01 << (16 + digital_output_index));
+    state->rxpdo_cs.digital_outputs &= ~(0x01 << (15 + digital_output_index));
   }
 }
 

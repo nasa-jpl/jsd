@@ -156,6 +156,11 @@ if(BUILD_JSD_TESTS)
             jsd_test_utils.c)
     target_link_libraries(jsd_epd_prof_torque_test ${jsd_test_libs})
 
+    add_executable(jsd_epd_network_test
+            device/jsd_epd_network_test.c
+            jsd_test_utils.c)
+    target_link_libraries(jsd_epd_network_test ${jsd_test_libs})
+
     find_program(VALGRIND_EXECUTABLE NAMES valgrind)
     if(VALGRIND_EXECUTABLE)
         set(CTEST_MEMORYCHECK_COMMAND ${VALGRIND_EXECUTABLE})
@@ -165,7 +170,11 @@ if(BUILD_JSD_TESTS)
             memcheck
             ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck \${ARGS}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
+        )
+        if(CMAKE_TEST_COMMAND)
+            message(STATUS "CMAKE_TEST_COMMAND=${CMAKE_TEST_COMMAND}")
+        endif()
+        message(STATUS "VALGRIND_EXECUTABLE=${VALGRIND_EXECUTABLE}")
     else()
         message(WARNING "Memcheck target will not be built, valgrind was not found on this machine")
     endif()
