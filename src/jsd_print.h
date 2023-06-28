@@ -5,32 +5,51 @@
 extern "C" {
 #endif
 
-#include <jsd/jsd_time.h>
+#include "jsd/jsd_time.h"
+#include "cfw/cfw_log.h"
+
 #include <stdio.h>
 
-#ifdef DEBUG
-#define MSG_DEBUG(M, ...)                                                     \
-  fprintf(stderr, "[ DEBUG ] [%lf] (%s:%d) " M "\n", jsd_time_get_time_sec(), \
-          __FILE__, __LINE__, ##__VA_ARGS__)
+#if CFW_LOG_VERBOSITY >= 1
+#define ERROR(M, ...) \
+  cfw_log_print(CFW_ERROR, __FILE__, __LINE__, M, ##__VA_ARGS__)
 #else
-#define MSG_DEBUG(M, ...)
+#define ERROR(M, ...) \
+  do {                \
+  } while (0)
 #endif
 
-#define MSG(M, ...)                                                           \
-  fprintf(stderr, "[ INFO  ] [%lf] (%s:%d) " M "\n", jsd_time_get_time_sec(), \
-          __FILE__, __LINE__, ##__VA_ARGS__)
+#if CFW_LOG_VERBOSITY >= 2
+#define WARNING(M, ...) \
+  cfw_log_print(CFW_WARN, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#else
+#define WARNING(M, ...) \
+  do {                \
+  } while (0)
+#endif
 
-#define WARNING(M, ...)                                               \
-  fprintf(stderr, "\033[1;33m[ WARN  ] [%lf] (%s:%d) " M "\033[0m\n", \
-          jsd_time_get_time_sec(), __FILE__, __LINE__, ##__VA_ARGS__)
+#if CFW_LOG_VERBOSITY >=3
+#define MSG(M, ...) \
+  cfw_log_print(CFW_INFO, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#define SUCCESS(M, ...) \
+  cfw_log_print(CFW_INFO, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#else
+#define MSG(M, ...) \
+  do {              \
+  } while (0)
+#define SUCCESS(M, ...) \
+  do {              \
+  } while (0)
+#endif
 
-#define ERROR(M, ...)                                                 \
-  fprintf(stderr, "\033[1;31m[ ERROR ] [%lf] (%s:%d) " M "\033[0m\n", \
-          jsd_time_get_time_sec(), __FILE__, __LINE__, ##__VA_ARGS__)
-
-#define SUCCESS(M, ...)                                               \
-  fprintf(stderr, "\033[1;32m[SUCCESS] [%lf] (%s:%d) " M "\033[0m\n", \
-          jsd_time_get_time_sec(), __FILE__, __LINE__, ##__VA_ARGS__)
+#if CFW_LOG_VERBOSITY >= 4
+#define MSG_DEBUG(M, ...) \
+  cfw_log_print(CFW_DEBUG, __FILE__, __LINE__, M, ##__VA_ARGS__)
+#else
+#define MSG_DEBUG(M, ...) \
+  do {              \
+  } while (0)
+#endif
 
 #ifdef __cplusplus
 }

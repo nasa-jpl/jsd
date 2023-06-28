@@ -402,8 +402,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;
-
+  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;  
   switch (state->transmit_state)
   {
     case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_REQUEST_FROM_USER:
@@ -411,20 +410,19 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
       {
         MSG("Confirmed user request to transmit data, setting controlword to transmit request");
         // Tell terminal that data is available to transmit and then transition
-        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));                        
-
+        jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST)); 
         state->timer_start_sec = jsd_time_get_mono_time_sec();
 
         // Reset user transmit variable
         state->user_requests_to_transmit_data = false;
+        jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
       }
       else if (state->user_requests_to_transmit_data_persistently)
       {
         // Tell terminal that data is available to transmit and then transition
         jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));        
       }
-
-      jsd_el6001_transition_transmit_sms(JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION, &state->transmit_state);
+      
       break;
 
     case JSD_EL6001_TRANSMIT_SMS_WAITING_FOR_TRANSMIT_CONFIRMATION:
@@ -605,7 +603,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
 
     case JSD_EL6001_SMS_READY_FOR_SERIAL_COMMUNICATION:
     {
-      // Normal operation state machine state
+      // Normal operation state machine state      
       // receive serial data
       if (jsd_el6001_receive_data(self, slave_id) != 0)
       {
