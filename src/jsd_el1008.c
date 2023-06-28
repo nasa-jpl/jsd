@@ -67,8 +67,6 @@ int jsd_el1008_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
       ecx_context->slavelist[slave_id].name);
   MSG("\t Configured name: %s", config->name);
 
-  // Not much needed in terms of setting params
-
   config->PO2SO_success = true;
   return 1;
 }
