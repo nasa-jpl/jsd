@@ -40,7 +40,7 @@ void print_info(void* self) {
   assert(self);
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
-  const jsd_el3162_state_t* state = jsd_el3162_get_state(sds->jsd, slave_id);
+  const jsd_el1008_state_t* state = jsd_el1008_get_state(sds->jsd, slave_id);
   MSG("Ch0: %d V, Ch1: %d V, Ch2: %d V, Ch3: %d V, Ch4: %d V, Ch5: %d V, Ch6: %d V, Ch7: %d V, ", 
       state->values[0], state->values[1], state->values[2], state->values[3], 
       state->values[4], state->values[5], state->values[6], state->values[7]);
