@@ -950,8 +950,8 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // Set the controlword to a known value before potentially setting its
       // mode of operation bits for profiled position mode. It does not
       // represent a transition.
-      state->rxpdo.controlword =
-          JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION;
+//      state->rxpdo.controlword =
+//          JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION;
       jsd_epd_process_mode_of_operation(self, slave_id);
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
