@@ -188,15 +188,6 @@ static int8_t jsd_el6001_compute_checksum(uint8_t data[], int num_bytes) {
   return checksum;
 }
 
-// data control
-static bool jsd_el6001_all_persistent_data_was_received(const jsd_t* self, uint16_t slave_id) {
-  assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
-
-  return self->slave_states[slave_id].el6001.received_all_persistent_bytes;
-}
-
-
 //---------------------------------------------------------------------------//
 // RECEIVE
 //---------------------------------------------------------------------------//
