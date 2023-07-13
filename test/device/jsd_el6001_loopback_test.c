@@ -159,12 +159,13 @@ int main(int argc, char* argv[]) {
 
   jsd_read(sds.jsd, EC_TIMEOUTRET);
 
-  int8_t counter = 2;
-  // bool quit = false;
+  int8_t counter = 2;  
   const jsd_el6001_state_t* state = jsd_el6001_get_state(sds.jsd, slave_id);
 
   // initiate first transmit and for next time all data is received to prevent idle loop
   // transmit data does not get deleted automatically
+
+  jsd_el6001_set_persistent_transmit_data(sds.jsd, slave_id, 1);
   MSG("Transmitting opcode %d and counter %d", OP_CODE_SEND_DATA, counter);
   jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 0/*byte_number*/, 1);
   jsd_el6001_set_transmit_data_8bits(sds.jsd, slave_id, 1/*byte_number*/, 0);
@@ -180,6 +181,13 @@ int main(int argc, char* argv[]) {
     MSG("Controlword_user: %u ", state->controlword_user);
     MSG("Statusword: %u ", state->statusword);
 
+    if(state->num_bytes_received > 0){
+      MSG("Received data of size %d", state->num_bytes_received);
+      for(int i=0; i < state->num_bytes_received; i++){
+        MSG("Received data byte: %d value: %d", i, state->received_bytes[i]);
+      }
+    }
+
     jsd_el6001_process(sds.jsd, slave_id);
 
     jsd_write(sds.jsd);
@@ -187,6 +195,13 @@ int main(int argc, char* argv[]) {
     // sleep(1.0);
     jsd_timer_process(sds.jsd_timer);
   }
+  
+  // ecat_el6001_set_expected_num_bytes_to_receive(ecat->el6001, ID, TOTAL_NUM_BYTES);
+  // ecat_el6001_set_persistent_transmit_data(ecat->el6001, ID, 2/*num_bytes*/, true);
+  // ecat_el6001_set_timeout_sec(ecat->el6001, ID, 1.0, true);
+  // ecat_el6001_set_autoincrement_byte(ecat->el6001, ID, 1);
+  
+  // sds_run(&sds, ifname, "/tmp/jsd_el6001.csv"); 
 
   return 0;
 }

@@ -625,6 +625,17 @@ int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_byt
   return 0;
 }
 
+int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, bool is_persistent) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  // Set bool to advance transmit state machine
+  self->slave_states[slave_id].el6001.user_requests_to_transmit_data_persistently = is_persistent;
+  MSG("Setting transmit data as persistent: %s", is_persistent? "yes" : "no");
+
+  return 0;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/
