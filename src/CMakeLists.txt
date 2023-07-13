@@ -34,8 +34,8 @@ target_include_directories(
     )
 
 find_package(Threads REQUIRED)
-target_link_libraries(jsd-lib
-    PUBLIC soem
+target_link_libraries(jsd-lib    
+    PUBLIC soem m
     PRIVATE Threads::Threads
     PRIVATE rt
     )
