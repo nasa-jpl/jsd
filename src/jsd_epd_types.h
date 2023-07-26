@@ -305,13 +305,6 @@ typedef struct {
   uint8_t setpoint_ack;  ///< Setpoint ackowledge (Profiled Position mode),
                          ///< statustword, bit 12
   uint8_t last_setpoint_ack;
-  bool prof_pos_waiting_setpoint_ack;  ///< When in Profiled Position mode, it
-                                       ///< indicates whether the driver is
-                                       ///< waiting for the drive to acknowledge
-                                       ///< reception of a new profiled position
-                                       ///< set-point so that the driver can
-                                       ///< turn off the new set-point bit in
-                                       ///< the controlword.
 } jsd_epd_private_state_t;
 
 #ifdef __cplusplus
