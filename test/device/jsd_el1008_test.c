@@ -14,7 +14,7 @@ void telemetry_header() {
     return;
   }
   for (int i = 0; i < JSD_EL1008_NUM_CHANNELS; ++i) {
-    fprintf(file, "EL1008_ch%d_digital_value, ", i);
+    fprintf(file, "EL1008_ch%d_level, ", i);
   }
   fprintf(file, "\n");
 }
