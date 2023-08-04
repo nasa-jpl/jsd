@@ -13,7 +13,7 @@ extern "C" {
  * Note: Struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  uint8_t channels; // A little hack as each input is 1 bit.
+  uint8_t channels; // Each bit corresponds to a channel.
 } jsd_el1008_txpdo_t;
 
 /** @brief Initializes el1008 and registers the PO2SO function
