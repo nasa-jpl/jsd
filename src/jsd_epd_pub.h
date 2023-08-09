@@ -203,6 +203,16 @@ void jsd_epd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_torque_t motion_command);
 
+/**
+ * @brief Sets the value of SIL's integer input 1
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_integer_input_1(jsd_t* self, uint16_t slave_id,
+                                     int32_t input);
+
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,
 // jsd_*_fault_code_to_string).

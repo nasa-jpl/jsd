@@ -37,6 +37,7 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"MC", 0x31BC},
     {"PL", 0x3231},
     {"PX", 0x323D},
+    {"RZ", 0x3287},
     {"SF", 0x3297},
     {"UM", 0x32E6},
 };
@@ -270,6 +271,17 @@ void jsd_epd_set_motion_command_prof_torque(
   state->motion_command.prof_torque  = motion_command;
 }
 
+void jsd_epd_set_sil_integer_input_1(jsd_t* self, uint16_t slave_id,
+                                     int32_t input) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+
+  state->rxpdo.sil_integer_input_1 = input;
+}
+
 void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
                                           double position, uint16_t app_id) {
   jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("PX"), 1,
@@ -476,7 +488,7 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
   }
 
   uint16_t map_output_pdos_1603[] = {
-      0x0007,          // Number of mapped parameters
+      0x0008,          // Number of mapped parameters
       0x0120, 0x60FE,  // digital_outputs
       0x0010, 0x6040,  // controlword
       0x0020, 0x6081,  // profile_velocity
@@ -484,6 +496,7 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
       0x0020, 0x6083,  // profile_accel
       0x0020, 0x6084,  // profile_decel
       0x0010, 0x36E0,  // gain_scheduling_index
+      0x0220, 0x22F3,  // sil_integer_input_1
   };
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1603, 0x00,
                                      sizeof(map_output_pdos_1603),
@@ -518,11 +531,13 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
   }
 
   uint16_t map_input_pdos_1a03[] = {
-      0x0004,          // Number of mapped parameters
+      0x0005,          // Number of mapped parameters
       0x0210, 0x2205,  // analog_input_2
       0x0120, 0x3607,  // status_register_1
       0x0220, 0x3607,  // status_register_2
       0x0010, 0x6041,  // statusword
+                       //      0x0E20, 0x309E, // sil_error_code
+      0x0120, 0x22F3,  // sil_integer_output_1
   };
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1A03, 0x00,
                                      sizeof(map_input_pdos_1a03),
@@ -742,6 +757,22 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
+  if (config->epd.use_sil) {
+    uint16_t sil_activation = 69;
+    if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                    jsd_epd_lc_to_do("RZ"), 2, JSD_SDO_DATA_U16,
+                                    &sil_activation)) {
+      return 0;
+    }
+    MSG("EPD[%d] SIL Activation = %X", slave_id, sil_activation);
+    uint16_t sil_op_mode = 0xA5;  // Execute SIL immediately
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id,
+                                    jsd_epd_lc_to_do("RZ"), 1, JSD_SDO_DATA_U16,
+                                    &sil_op_mode)) {
+      return 0;
+    }
+  }
+
   // Verify startup parameters
 
   // Verify checksum from the drive matches checksum recorded in configuration
@@ -871,6 +902,9 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->pub.motor_on    = state->txpdo.status_register_1 >> 22 & 0x01;
   state->pub.in_motion   = state->txpdo.status_register_1 >> 23 & 0x01;
   state->pub.hall_state  = state->txpdo.status_register_2 >> 0 & 0x07;
+  state->pub.sil_initialized = state->txpdo.status_register_2 >> 17 & 0x01;
+  state->pub.sil_running     = state->txpdo.status_register_2 >> 18 & 0x01;
+  state->pub.sil_faulted     = state->txpdo.status_register_2 >> 19 & 0x01;
 
   // TODO(dloret): EGD code prints change in sto_engaged here.
 
@@ -892,6 +926,10 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
   // Drive's temperature
   state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
+
+  // Handle SIL's data
+  state->pub.sil_integer_output_1 = state->txpdo.sil_integer_output_1;
+  //  state->pub.sil_error_code = state->txpdo.sil_error_code;
 }
 
 void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {

@@ -156,6 +156,8 @@ typedef struct {
   jsd_elmo_gain_scheduling_mode_t
       ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
                                   ///< set in the drive.
+
+  bool use_sil;  ///< Whether to use custom SIL program.
 } jsd_epd_config_t;
 
 /**
@@ -210,6 +212,14 @@ typedef struct {
   uint8_t digital_inputs[JSD_EPD_NUM_DIGITAL_INPUTS];
   uint8_t digital_output_cmd[JSD_EPD_NUM_DIGITAL_OUTPUTS];
   float   drive_temperature;  ///< deg C
+
+  int32_t sil_integer_output_1;  ///< SIL output data 1
+
+  bool sil_initialized;  ///< Whether SIL is loaded and initialized.
+  bool sil_running;      ///< Whether SIL is running.
+  bool sil_faulted;      ///< Whether there is a SIL run time error.
+  // TODO(dloret): Change sil_error_code to enum
+  //  uint32_t sil_error_code; ///< SIL error code.
 } jsd_epd_state_t;
 
 /**
@@ -230,6 +240,9 @@ typedef struct __attribute__((__packed__)) {
   uint32_t status_register_1;        ///< 0x3607:01
   uint32_t status_register_2;        ///< 0x3607:02
   uint16_t statusword;               ///< 0x6041
+  // TODO(dloret): Rename SIL variables
+  //  uint32_t sil_error_code; ///< 0x309E:14
+  int32_t sil_integer_output_1;  ///< 0x22F3:01
 } jsd_epd_txpdo_data_t;
 
 /**
@@ -258,6 +271,8 @@ typedef struct __attribute__((__packed__)) {
   uint32_t profile_accel;     ///< 0x6083
   uint32_t profile_decel;     ///< 0x6084
   int16_t  gain_scheduling_index;  ///< 0x36E0
+  // TODO(dloret): Think whether a different RxPDO should be used in SIL mode.
+  int32_t sil_integer_input_1;  ///< 0x22F3:02
 } jsd_epd_rxpdo_data_t;
 
 /**
