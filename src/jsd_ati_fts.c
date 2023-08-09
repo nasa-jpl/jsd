@@ -148,6 +148,9 @@ int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   const char* torque_unit_str =
       jsd_ati_fts_torque_unit_to_string(cal_do.torque_units);
 
+  (void) force_unit_str;
+  (void) torque_unit_str;
+
   MSG("\t ATI Serial Number: %s", cal_do.serial_number);
   MSG("\t ATI Calibration Integer (%u) maps to: %s",
       config->ati_fts.calibration, cal_do.calibration_part_number);
@@ -179,6 +182,8 @@ int jsd_ati_fts_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
 bool jsd_ati_fts_parse_status_code(uint32_t status_code, uint16_t slave_id) {
   bool active_fault = false;
+
+  (void) slave_id;
 
   if ((status_code >> 0) % 0x01) {
     MSG("ATI FTS [%u] - Monitor Condition Tripped", slave_id);
