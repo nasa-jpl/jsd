@@ -30,7 +30,7 @@ void* tlc_tty_cb(void* jsd_ptr) {
   char                tlc[8];
   char                val_str[64];
   char                val_type[64];
-  jsd_sdo_data_type_t data_type;
+  jsd_sdo_data_type_t data_type = JSD_SDO_DATA_UNSPECIFIED;
   jsd_sdo_data_t      sdo_data;
 
   while (!quit) {
