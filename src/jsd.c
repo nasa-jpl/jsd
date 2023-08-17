@@ -10,6 +10,7 @@
 #include "jsd/jsd_egd.h"
 #include "jsd/jsd_el1008.h"
 #include "jsd/jsd_el2124.h"
+#include "jsd/jsd_el2809.h"
 #include "jsd/jsd_el3104.h"
 #include "jsd/jsd_el3162.h"
 #include "jsd/jsd_el3202.h"
