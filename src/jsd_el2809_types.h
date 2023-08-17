@@ -9,7 +9,7 @@ extern "C" {
 
 #define JSD_EL2809_PRODUCT_CODE (uint32_t)0x0af93052
 
-#define JSD_EL2809_NUM_CHANNELS 4
+#define JSD_EL2809_NUM_CHANNELS 16
 
 /**
  * @brief EL2809 State Data
