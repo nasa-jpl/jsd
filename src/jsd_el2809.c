@@ -36,10 +36,10 @@ void jsd_el2809_process(jsd_t* self, uint16_t slave_id) {
     uint8_t output = self->slave_states[slave_id].el2809.output[ch];
 
     if (output > 0) {
-      ERROR("Setting the flag to one!");
+      ERROR("Setting the flag for channel %d to one!", ch);
       rxpdo->flags |= 0x01 << ch;
     } else {
-      ERROR("SETTING THE FLAG TO ZERO!");
+      ERROR("SETTING THE FLAG FOR CHANNEL %d TO ZERO!", ch);
       rxpdo->flags &= ~(0x01 << ch);
     }
   }
