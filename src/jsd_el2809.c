@@ -12,7 +12,7 @@
  * @brief RxPDO struct used to set device command data in SOEM IOmap
  */
 typedef struct __attribute__((__packed__)) {
-  uint8_t flags;
+  uint16_t flags;
 } jsd_el2809_rxpdo_t;
 
 const jsd_el2809_state_t* jsd_el2809_get_state(jsd_t* self, uint16_t slave_id) {
