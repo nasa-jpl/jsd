@@ -1253,6 +1253,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
       // Handle halt
       if (state->new_halt_command){
+        ERROR("Handling the new halt command in JSD!!!!!");
         state->new_reset = false;
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
