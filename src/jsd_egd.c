@@ -1216,6 +1216,11 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   ec_errort error;
 
+  if (state->new_halt_command){
+    ERROR("We should be trying to perform the halt now...");
+    ERROR("Current state machine state is %d", state->pub.actual_state_machine_state)
+  }
+
   switch (state->pub.actual_state_machine_state) {
     case JSD_ELMO_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
       // no-op
