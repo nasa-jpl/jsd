@@ -1230,6 +1230,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
+      state->new_halt_command   = false;
       // to READY_TO_SWITCH_ON
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
@@ -1271,6 +1272,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->requested_mode_of_operation = JSD_EGD_MODE_OF_OPERATION_PROF_POS;
         set_mode_of_operation(self, slave_id,
                               state->requested_mode_of_operation);
+        state->new_halt_command   = false;
         break;
       }
 
@@ -1335,7 +1337,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   }
 
   state->new_motion_command = false;
-  state->new_halt_command   = false;
 }
 
 void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
