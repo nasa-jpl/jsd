@@ -909,6 +909,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       // Transition to READY TO SWITCH ON
       state->rxpdo.controlword = JSD_EPD_STATE_MACHINE_CONTROLWORD_SHUTDOWN;
+      state->new_halt_command = false;
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       // Transition to SWITCHED ON
@@ -924,6 +925,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
         state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
         state->new_reset                   = false;
+        state->new_halt_command            = false;
       }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
@@ -1017,7 +1019,6 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       assert(0);
   }
   state->new_motion_command = false;
-  state->new_halt_command   = false;
 }
 
 void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
