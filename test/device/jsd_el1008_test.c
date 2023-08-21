@@ -14,7 +14,7 @@ void telemetry_header() {
     return;
   }
   for (int i = 0; i < JSD_EL1008_NUM_CHANNELS; ++i) {
-    fprintf(file, "EL1008_ch%d_digital_value, ", i);
+    fprintf(file, "EL1008_ch%d_level, ", i);
   }
   fprintf(file, "\n");
 }
@@ -41,7 +41,7 @@ void print_info(void* self) {
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
   const jsd_el1008_state_t* state = jsd_el1008_get_state(sds->jsd, slave_id);
-  MSG("Ch0: %d V, Ch1: %d V, Ch2: %d V, Ch3: %d V, Ch4: %d V, Ch5: %d V, Ch6: %d V, Ch7: %d V, ", 
+  MSG("Ch0: %d, Ch1: %d, Ch2: %d, Ch3: %d, Ch4: %d, Ch5: %d, Ch6: %d, Ch7: %d, ", 
       state->values[0], state->values[1], state->values[2], state->values[3], 
       state->values[4], state->values[5], state->values[6], state->values[7]);
 }

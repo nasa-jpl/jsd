@@ -8,21 +8,12 @@ extern "C" {
 #include "jsd/jsd.h"
 
 /**
- * @brief Single channel of TxPDO data struct
- *
- * Note: Struct order matters and must be packed.
- */
-typedef struct __attribute__((__packed__)) {
-  int8_t values;
-} jsd_el1008_txpdo_channel_t;
-
-/**
  * @brief TxPDO struct used to read device data in SOEM IOmap
  *
  * Note: Struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  jsd_el1008_txpdo_channel_t channel[1]; // A little hack as each input is 1 bit.
+  uint8_t channels; // Each bit corresponds to a channel.
 } jsd_el1008_txpdo_t;
 
 /** @brief Initializes el1008 and registers the PO2SO function

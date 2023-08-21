@@ -765,6 +765,13 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   bool prof_csv_sup    = (supported_drive_modes & (0x01 << 8));
   bool prof_cst_sup    = (supported_drive_modes & (0x01 << 9));
 
+  (void) prof_pos_sup;
+  (void) prof_vel_sup;
+  (void) prof_torque_sup;
+  (void) prof_csp_sup;
+  (void) prof_csv_sup;
+  (void) prof_cst_sup;
+
   if(!prof_pos_sup) {
     ERROR("EGD[%d] does not support PROF_POS mode. A valid position controller must be tuned before use", 
         slave_id);
@@ -1230,7 +1237,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
-      state->new_halt_command   = false;
+      state->new_halt_command   = false; // Ensure that previous unhandled halts are ignored
       // to READY_TO_SWITCH_ON
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:

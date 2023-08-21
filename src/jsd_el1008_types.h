@@ -20,7 +20,7 @@ typedef struct {
  * @brief Read struct for el1008 module
  */
 typedef struct {
-  bool values[JSD_EL1008_NUM_CHANNELS]; 
+  uint8_t values[JSD_EL1008_NUM_CHANNELS]; 
 } jsd_el1008_state_t;
 
 #ifdef __cplusplus
