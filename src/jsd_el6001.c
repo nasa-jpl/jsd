@@ -625,6 +625,21 @@ int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, bool
   return 0;
 }
 
+int jsd_el6001_read_received_data(jsd_t* self, uint16_t slave_id, uint8_t* read_buffer){
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+
+  if(self->slave_states[slave_id].el6001.pub.num_bytes_received > 0){
+    memcpy(read_buffer, self->slave_states[slave_id].el6001.pub.received_bytes, self->slave_states[slave_id].el6001.pub.num_bytes_received);
+  }
+  else{
+    MSG("There is no data received at the terminal");
+    return 1;
+  }
+
+  return 0;
+}
+
 /****************************************************
  * Private functions
  ****************************************************/

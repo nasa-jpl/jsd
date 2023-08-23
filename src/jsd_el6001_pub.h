@@ -66,6 +66,15 @@ int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t
 int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit);
 
 int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, bool is_persistent);
+
+/**
+ * @brief Readout current data buffer
+ *
+ * @param self pointer JSD context
+ * @param slave_id index of device on EtherCAT bus
+ * @param read_buffer pointer of array of received data 
+ */
+int jsd_el6001_read_received_data(jsd_t* self, uint16_t slave_id, uint8_t* read_buffer);
  
 #ifdef __cplusplus
 }
