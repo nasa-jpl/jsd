@@ -45,6 +45,8 @@ void jsd_el6001_read(jsd_t* self, uint16_t slave_id);
 
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value);
 
+int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t* data_in, uint8_t data_len);
+
 int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit);
 
 int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, bool is_persistent);

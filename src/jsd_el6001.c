@@ -589,6 +589,19 @@ int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte,
   return 0;
 }
 
+int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t* data_in, uint8_t data_len) {
+  assert(self);
+  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
+  assert(data_len < JSD_EL6001_NUM_DATA_BYTES);  
+
+  uint8_t index;
+  for(index = 0; index < data_len; index++){
+    self->slave_states[slave_id].el6001.transmit_bytes[index] = *(data_in+index*sizeof(uint8_t));    
+  }  
+
+  return 0; 
+}
+
 int jsd_el6001_set_baud_rate(jsd_t* self, uint16_t slave_id, jsd_el6001_baud_rate_t baud_rate) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
