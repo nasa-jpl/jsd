@@ -37,6 +37,8 @@ static const jsd_epd_lc_pair_t jsd_epd_lc_lookup_table[] = {
     {"MC", 0x31BC},
     {"PL", 0x3231},
     {"PX", 0x323D},
+    {"QS", 0x325C},
+    {"SD", 0x3295},
     {"SF", 0x3297},
     {"UM", 0x32E6},
 };
@@ -653,6 +655,19 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
                                   &config->epd.max_profile_decel)) {
     return 0;
   }
+
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("QS"),
+                                  1, JSD_SDO_DATA_DOUBLE,
+                                  &config->epd.quick_stop_decel)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("SD"),
+                                  1, JSD_SDO_DATA_DOUBLE,
+                                  &config->epd.stop_decel)) {
+    return 0;
+  }
+
 
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
                                   2, JSD_SDO_DATA_DOUBLE,
