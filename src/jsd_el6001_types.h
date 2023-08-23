@@ -145,6 +145,20 @@ typedef enum
 typedef struct
 {
   int baud_rate;
+    
+  uint8_t received_bytes[JSD_EL6001_NUM_DATA_BYTES]; // Data payload buffer received   
+  uint8_t persistent_received_bytes[JSD_EL6001_MAX_NUM_DATA_BYTES];
+  int num_bytes_received;
+
+  uint8_t transmit_bytes[JSD_EL6001_NUM_DATA_BYTES];
+    
+  bool user_requests_to_transmit_data_persistently;  
+
+} jsd_el6001_state_t;
+
+typedef struct
+{
+  jsd_el6001_state_t pub;
   uint16_t statusword;
   uint16_t statusword_last;
   bool ready;  
@@ -154,12 +168,8 @@ typedef struct
   uint16_t controlword_user;
   uint16_t controlword_user_last;
 
-  int num_receive_bytes;
-  uint8_t received_bytes[JSD_EL6001_NUM_DATA_BYTES];
-  int read_errors;
-  int num_bytes_received;
-
-  uint8_t transmit_bytes[JSD_EL6001_NUM_DATA_BYTES];
+  int read_errors;  
+  
   uint8_t transmit_bytes_prev[JSD_EL6001_NUM_DATA_BYTES];
   bool transmit_data;
   bool user_requests_to_transmit_data;
@@ -172,19 +182,17 @@ typedef struct
   bool checksum_failed;
 
   // Persistent receiving of bytes
-  int expected_num_bytes_to_receive;
-  uint8_t persistent_received_bytes[JSD_EL6001_MAX_NUM_DATA_BYTES];
+  int expected_num_bytes_to_receive;  
   int num_persistent_bytes_received;
   bool received_all_persistent_bytes;
   bool use_first_byte_as_packet_length;
   bool received_first_byte_of_packet;
   bool use_last_byte_as_checksum;
-  bool user_requests_to_transmit_data_persistently;
-
+  
   jsd_el6001_sms_t sms;
   jsd_el6001_transmit_sms_t transmit_state;
 
-} jsd_el6001_state_t;
+} jsd_el6001_private_state_t;
 
 #ifdef __cplusplus
 }

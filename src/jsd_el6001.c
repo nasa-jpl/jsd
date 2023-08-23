@@ -129,7 +129,7 @@ static int jsd_el6001_check_for_faults(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;
+  jsd_el6001_private_state_t* state  = &self->slave_states[slave_id].el6001;
 
   if (state->statusword != state->statusword_last)
   {
@@ -197,7 +197,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;
+  jsd_el6001_private_state_t* state = &self->slave_states[slave_id].el6001;
 
   int i;
   int num_bytes_received = 0;
@@ -251,7 +251,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
     for (i = 0; i < num_bytes_received; ++i)
     {
       //state->received_bytes[] : Data is already populated while read PDO
-      state->persistent_received_bytes[state->num_persistent_bytes_received + i] = state->received_bytes[i];
+      state->pub.persistent_received_bytes[state->num_persistent_bytes_received + i] = state->pub.received_bytes[i];
     }
 
     // increment number of persistent bytes by number received on this iteration
@@ -266,7 +266,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
         /// Always set number of expected bytes based on the first byte of the packet
         state->expected_num_bytes_to_receive = (
           1 /*num_bytes byte*/
-          + state->received_bytes[0]
+          + state->pub.received_bytes[0]
           + 1 /*checksum byte*/);
       }
       else{
@@ -299,7 +299,7 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
       // Shift the persistent bytes over by bytes_to_drop
       for (i = 0; i < (state->num_persistent_bytes_received - bytes_to_drop); ++i)
       {
-        state->persistent_received_bytes[i] = state->persistent_received_bytes[i + bytes_to_drop];
+        state->pub.persistent_received_bytes[i] = state->pub.persistent_received_bytes[i + bytes_to_drop];
       }
       state->num_persistent_bytes_received -= bytes_to_drop;
     }
@@ -310,9 +310,9 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
       MSG_DEBUG("EL6001 id %d: Received all expected %d bytes of data packet", slave_id, state->expected_num_bytes_to_receive);
 
       if(state->use_last_byte_as_checksum){
-        expected_checksum = state->persistent_received_bytes[state->expected_num_bytes_to_receive - 1];
+        expected_checksum = state->pub.persistent_received_bytes[state->expected_num_bytes_to_receive - 1];
         checksum = jsd_el6001_compute_checksum(
-          state->persistent_received_bytes,
+          state->pub.persistent_received_bytes,
           state->expected_num_bytes_to_receive - 1/*checksum*/);
         if (expected_checksum != checksum)
         {
@@ -349,8 +349,8 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
         state->num_persistent_bytes_received -= state->expected_num_bytes_to_receive;
         for (i = 0; i < state->num_persistent_bytes_received; ++i)
         {
-          state->persistent_received_bytes[i] =
-            state->persistent_received_bytes[i + state->expected_num_bytes_to_receive];
+          state->pub.persistent_received_bytes[i] =
+            state->pub.persistent_received_bytes[i + state->expected_num_bytes_to_receive];
         }
       }
     }
@@ -362,12 +362,12 @@ static int jsd_el6001_receive_data(jsd_t* self, uint16_t slave_id) {
 
     // Printout received data
     for(int i=0; i < num_bytes_received; i++){
-      MSG_DEBUG("EL6001[%d]: Received data_in[%d]: %d", slave_id, i, state->received_bytes[i]);
+      MSG_DEBUG("EL6001[%d]: Received data_in[%d]: %d", slave_id, i, state->pub.received_bytes[i]);
     }
   }
 
   // Set for user to know number of bytes received
-  state->num_bytes_received = num_bytes_received;
+  state->pub.num_bytes_received = num_bytes_received;
 
   return ok ? 0 : -1;
 }
@@ -380,7 +380,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state = &self->slave_states[slave_id].el6001;
+  jsd_el6001_private_state_t* state = &self->slave_states[slave_id].el6001;
 
   switch (state->transmit_state)
   {
@@ -412,13 +412,13 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           // Beckhoff terminal transmitted data.
           MSG_DEBUG("Transmit request accepted, data transmit confirmed");
 
-          if (state->user_requests_to_transmit_data_persistently){
+          if (state->pub.user_requests_to_transmit_data_persistently){
             // Start timeout timer
             state->timer_start_sec = jsd_time_get_mono_time_sec();
             // Request another transmit by toggling transmit_request
             jsd_el6001_set_controlword(self, slave_id, jsd_el6001_toggle_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));        
           }
-          else if(!state->user_requests_to_transmit_data_persistently){
+          else if(!state->pub.user_requests_to_transmit_data_persistently){
             // Go back to waiting for another transmit request                              
             jsd_el6001_set_controlword(self, slave_id, self->slave_states[slave_id].el6001.controlword_user & 0x00FF); //clear data_out_length
             jsd_el6001_set_controlword(self, slave_id, jsd_el6001_clear_controlword_bit(self, slave_id, JSD_EL6001_CONTROLWORD_TRANSMIT_REQUEST));
@@ -428,7 +428,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
           //Increment the successful transmit counter
           if (state->autoincrement_byte >= 0)
           {
-            jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->transmit_bytes[state->autoincrement_byte] + 1);            
+            jsd_el6001_set_transmit_data_8bits(self, slave_id, state->autoincrement_byte, state->pub.transmit_bytes[state->autoincrement_byte] + 1);            
           }
         }
       }
@@ -446,7 +446,7 @@ static int jsd_el6001_transmit_data(jsd_t *self, uint16_t slave_id) {
  * Public functions
  ****************************************************/
 
-const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_el6001_private_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL6001_PRODUCT_CODE);
@@ -458,7 +458,7 @@ void jsd_el6001_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);  
   
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
+  jsd_el6001_private_state_t* state  = &self->slave_states[slave_id].el6001;         
 
   jsd_el6001_txpdo_data_t* txpdo =
       (jsd_el6001_txpdo_data_t*)self->ecx_context.slavelist[slave_id].inputs;
@@ -468,7 +468,7 @@ void jsd_el6001_read(jsd_t* self, uint16_t slave_id) {
   
   // TODO: check whether we can receive packed data as array
   for(int i = 0; i < JSD_EL6001_NUM_DATA_BYTES; i ++){
-    state->received_bytes[i] = txpdo->data_in[i];
+    state->pub.received_bytes[i] = txpdo->data_in[i];
   }
 }
 
@@ -477,7 +477,7 @@ void jsd_el6001_write_PDO_data(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
+  jsd_el6001_private_state_t* state  = &self->slave_states[slave_id].el6001;         
 
   jsd_el6001_rxpdo_t* rxpdo =
       (jsd_el6001_rxpdo_t*)self->ecx_context.slavelist[slave_id].outputs;      
@@ -495,7 +495,7 @@ void jsd_el6001_write_PDO_data(jsd_t* self, uint16_t slave_id) {
     MSG_DEBUG("User request to transmit, populating data_out stream");
     uint8_t output_length = rxpdo->controlword >> JSD_EL6001_CONTROLWORD_OUTPUT_LENGTH_0;    
     for(uint8_t i = 0; i < output_length; i++){      
-      rxpdo->data_out[i] = state->transmit_bytes[i];
+      rxpdo->data_out[i] = state->pub.transmit_bytes[i];
     }
   }  
 }
@@ -505,7 +505,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
   assert(self->ecx_context.slavelist[slave_id].eep_id ==
          JSD_EL6001_PRODUCT_CODE);
 
-  jsd_el6001_state_t* state  = &self->slave_states[slave_id].el6001;         
+  jsd_el6001_private_state_t* state  = &self->slave_states[slave_id].el6001;         
 
   // check for faults in statuswords
   jsd_el6001_check_for_faults(self, slave_id);
@@ -563,7 +563,7 @@ int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte,
   assert(byte < JSD_EL6001_NUM_DATA_BYTES);
   assert(byte >= 0);
 
-  self->slave_states[slave_id].el6001.transmit_bytes[byte] = value;
+  self->slave_states[slave_id].el6001.pub.transmit_bytes[byte] = value;
 
   return 0;
 }
@@ -573,7 +573,7 @@ int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
   assert(data_len < JSD_EL6001_NUM_DATA_BYTES);  
   
-  memcpy(self->slave_states[slave_id].el6001.transmit_bytes, data_in, data_len*sizeof(uint8_t));  
+  memcpy(self->slave_states[slave_id].el6001.pub.transmit_bytes, data_in, data_len*sizeof(uint8_t));  
 
   return 0; 
 }
@@ -592,7 +592,7 @@ int jsd_el6001_set_baud_rate(jsd_t* self, uint16_t slave_id, jsd_el6001_baud_rat
     || (baud_rate == JSD_EL6001_BAUD_RATE_12000)
     || (baud_rate == JSD_EL6001_BAUD_RATE_14400));
 
-  self->slave_states[slave_id].el6001.baud_rate = baud_rate;
+  self->slave_states[slave_id].el6001.pub.baud_rate = baud_rate;
 
   return 0;
 }
@@ -619,7 +619,7 @@ int jsd_el6001_set_persistent_transmit_data(jsd_t* self, uint16_t slave_id, bool
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
 
   // Set bool to advance transmit state machine
-  self->slave_states[slave_id].el6001.user_requests_to_transmit_data_persistently = is_persistent;
+  self->slave_states[slave_id].el6001.pub.user_requests_to_transmit_data_persistently = is_persistent;
   MSG("Setting transmit data as persistent: %s", is_persistent? "yes" : "no");
 
   return 0;

@@ -69,7 +69,7 @@ typedef struct {
     jsd_el3318_state_t      el3318;
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
-    jsd_el6001_state_t      el6001;
+    jsd_el6001_private_state_t      el6001;
     jsd_ild1900_state_t     ild1900;
     jsd_epd_private_state_t epd;
   };

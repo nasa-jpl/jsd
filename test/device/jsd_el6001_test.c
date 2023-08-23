@@ -51,33 +51,33 @@ void telemetry_data(void* self) {
   }
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
-  const jsd_el6001_state_t* state = jsd_el6001_get_state(sds->jsd, slave_id);
+  const jsd_el6001_private_state_t* state = jsd_el6001_get_state(sds->jsd, slave_id);
 
-  fprintf(file, "%u, %u, ", state->controlword_user_last, state->controlword_user);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[0], state->transmit_bytes[1]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[2], state->transmit_bytes[3]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[4], state->transmit_bytes[5]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[6], state->transmit_bytes[7]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[8], state->transmit_bytes[9]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[10], state->transmit_bytes[11]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[12], state->transmit_bytes[13]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[14], state->transmit_bytes[15]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[16], state->transmit_bytes[17]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[18], state->transmit_bytes[19]);
-  fprintf(file, "%u, %u, ", state->transmit_bytes[20], state->transmit_bytes[21]);
+  fprintf(file, "%u, %u,", state->controlword_user_last, state->controlword_user);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[0], state->pub.transmit_bytes[1]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[2], state->pub.transmit_bytes[3]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[4], state->pub.transmit_bytes[5]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[6], state->pub.transmit_bytes[7]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[8], state->pub.transmit_bytes[9]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[10], state->pub.transmit_bytes[11]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[12], state->pub.transmit_bytes[13]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[14], state->pub.transmit_bytes[15]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[16], state->pub.transmit_bytes[17]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[18], state->pub.transmit_bytes[19]);
+  fprintf(file, "%u, %u,", state->pub.transmit_bytes[20], state->pub.transmit_bytes[21]);
 
-  fprintf(file, "%u, %u, ", state->statusword_last, state->statusword);
-  fprintf(file, "%u, %u, ", state->received_bytes[0], state->received_bytes[1]);
-  fprintf(file, "%u, %u, ", state->received_bytes[2], state->received_bytes[3]);
-  fprintf(file, "%u, %u, ", state->received_bytes[4], state->received_bytes[5]);
-  fprintf(file, "%u, %u, ", state->received_bytes[6], state->received_bytes[7]);
-  fprintf(file, "%u, %u, ", state->received_bytes[8], state->received_bytes[9]);
-  fprintf(file, "%u, %u, ", state->received_bytes[10], state->received_bytes[11]);
-  fprintf(file, "%u, %u, ", state->received_bytes[12], state->received_bytes[13]);
-  fprintf(file, "%u, %u, ", state->received_bytes[14], state->received_bytes[15]);
-  fprintf(file, "%u, %u, ", state->received_bytes[16], state->received_bytes[17]);
-  fprintf(file, "%u, %u, ", state->received_bytes[18], state->received_bytes[19]);
-  fprintf(file, "%u, %u, ", state->received_bytes[20], state->received_bytes[21]);
+  fprintf(file, "%u, %u,", state->statusword_last, state->statusword);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[0], state->pub.received_bytes[1]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[2], state->pub.received_bytes[3]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[4], state->pub.received_bytes[5]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[6], state->pub.received_bytes[7]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[8], state->pub.received_bytes[9]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[10], state->pub.received_bytes[11]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[12], state->pub.received_bytes[13]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[14], state->pub.received_bytes[15]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[16], state->pub.received_bytes[17]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[18], state->pub.received_bytes[19]);
+  fprintf(file, "%u, %u,", state->pub.received_bytes[20], state->pub.received_bytes[21]);
   
   fprintf(file, "\n");
   fflush(file);
@@ -87,7 +87,7 @@ void print_info(void* self) {
   assert(self);
 
   single_device_server_t*   sds   = (single_device_server_t*)self;
-  const jsd_el6001_state_t* state = jsd_el6001_get_state(sds->jsd, slave_id);
+  const jsd_el6001_private_state_t* state = jsd_el6001_get_state(sds->jsd, slave_id);
   MSG("Controlword_user: %u ", state->controlword_user);
   MSG("Statusword: %u ", state->statusword);
 }

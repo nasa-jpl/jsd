@@ -18,7 +18,7 @@ extern "C" {
  * @param slave_id Slave ID of EL6001 device
  * @return Pointer to EL6001 device state
  */
-const jsd_el6001_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
+const jsd_el6001_private_state_t* jsd_el6001_get_state(jsd_t* self, uint16_t slave_id);
 
 /**
  * @brief Writes the set commands into the SOEM IOmap and processes asynchronous
