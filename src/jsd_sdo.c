@@ -89,6 +89,12 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
                             char* verb) {
   jsd_sdo_data_t data = *(jsd_sdo_data_t*)void_data;
 
+  (void)data;
+  (void)slave_id;
+  (void)index;
+  (void)subindex;
+  (void)verb;
+
   switch (data_type) {
     case JSD_SDO_DATA_I8:
       MSG_DEBUG("Slave[%d] %s 0x%X:%d (I8)  = %d", slave_id, verb, index, subindex,

@@ -770,6 +770,13 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   bool prof_csv_sup    = (supported_drive_modes & (0x01 << 8));
   bool prof_cst_sup    = (supported_drive_modes & (0x01 << 9));
 
+  (void) prof_pos_sup;
+  (void) prof_vel_sup;
+  (void) prof_torque_sup;
+  (void) prof_csp_sup;
+  (void) prof_csv_sup;
+  (void) prof_cst_sup;
+
   if(!prof_pos_sup) {
     ERROR("EGD[%d] does not support PROF_POS mode. A valid position controller must be tuned before use", 
         slave_id);

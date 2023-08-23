@@ -12,6 +12,7 @@ extern "C" {
 #include "jsd/jsd_ati_fts_types.h"
 #include "jsd/jsd_egd_types.h"
 #include "jsd/jsd_el2124_types.h"
+#include "jsd/jsd_el1008_types.h"
 #include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
@@ -32,6 +33,7 @@ typedef struct {
   uint32_t product_code;
   char     name[JSD_NAME_LEN];
   union {
+    jsd_el1008_config_t  el1008;
     jsd_el3602_config_t  el3602;
     jsd_el3208_config_t  el3208;
     jsd_el2124_config_t  el2124;
@@ -54,6 +56,7 @@ typedef struct {
 
 typedef struct {
   union {
+    jsd_el1008_state_t      el1008;
     jsd_el3602_state_t      el3602;
     jsd_el3208_state_t      el3208;
     jsd_el2124_state_t      el2124;

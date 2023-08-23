@@ -36,6 +36,11 @@ if(BUILD_JSD_TESTS)
         jsd_test_utils.c)
     target_link_libraries(jsd_device_test_template ${jsd_test_libs})
 
+    add_executable(jsd_el1008_test
+        device/jsd_el1008_test.c
+        jsd_test_utils.c)
+    target_link_libraries(jsd_el1008_test ${jsd_test_libs})
+
     add_executable(jsd_el2124_test
         device/jsd_el2124_test.c
         jsd_test_utils.c)
@@ -160,7 +165,11 @@ if(BUILD_JSD_TESTS)
             memcheck
             ${CMAKE_CTEST_COMMAND} -D ExperimentalMemCheck \${ARGS}
             WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
-            )
+        )
+        if(CMAKE_TEST_COMMAND)
+            message(STATUS "CMAKE_TEST_COMMAND=${CMAKE_TEST_COMMAND}")
+        endif()
+        message(STATUS "VALGRIND_EXECUTABLE=${VALGRIND_EXECUTABLE}")
     else()
         message(WARNING "Memcheck target will not be built, valgrind was not found on this machine")
     endif()

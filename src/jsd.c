@@ -8,6 +8,7 @@
 
 #include "jsd/jsd_ati_fts.h"
 #include "jsd/jsd_egd.h"
+#include "jsd/jsd_el1008.h"
 #include "jsd/jsd_el2124.h"
 #include "jsd/jsd_el3104.h"
 #include "jsd/jsd_el3162.h"
@@ -380,7 +381,8 @@ bool jsd_init_all_devices(jsd_t* self) {
     }
 
     // Check the user-provided product code
-    if (self->slave_configs[slave_idx].product_code != slave->eep_id) {
+    if (!jsd_product_codes_match(self->slave_configs[slave_idx].product_code,
+                                 slave->eep_id)) {
       ERROR("User product code (%u) does not match device product code (%u)",
             self->slave_configs[slave_idx].product_code, slave->eep_id);
       ERROR("Not configuring this device, check your configuration!");
@@ -393,10 +395,10 @@ bool jsd_init_all_devices(jsd_t* self) {
       return false;
     }
 
-    // EGDs don't have the name field populated
+    // EGDs nor EPDs have the name field populated.
     if (slave->eep_id == JSD_EGD_PRODUCT_CODE) {
       SUCCESS("\tslave[%u] Elmo Gold Drive - Configured", slave_idx);
-    } else if (slave->eep_id == JSD_EPD_PRODUCT_CODE) {
+    } else if (jsd_epd_product_code_is_compatible(slave->eep_id)) {
       SUCCESS("\tslave[%u] Elmo Platinum Drive - Configured", slave_idx);
     } else {
       SUCCESS("\tslave[%u] %s - Configured", slave_idx, slave->name);
@@ -404,6 +406,15 @@ bool jsd_init_all_devices(jsd_t* self) {
   }
 
   return true;
+}
+
+bool jsd_product_codes_match(uint32_t user_product_code,
+                             uint32_t device_product_code) {
+  if (jsd_epd_product_code_is_compatible(user_product_code)) {
+    return jsd_epd_product_code_is_compatible(device_product_code);
+  } else {
+    return user_product_code == device_product_code;
+  }
 }
 
 bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
@@ -427,6 +438,10 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     }
     case JSD_EGD_PRODUCT_CODE: {
       return jsd_egd_init(self, slave_id);
+      break;
+    }
+    case JSD_EL1008_PRODUCT_CODE: {
+      return jsd_el1008_init(self, slave_id);
       break;
     }
     case JSD_EL2124_PRODUCT_CODE: {
@@ -469,7 +484,8 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       return jsd_ild1900_init(self, slave_id);
       break;
     }
-    case JSD_EPD_PRODUCT_CODE: {
+    case JSD_EPD_PRODUCT_CODE_STD_FW:
+    case JSD_EPD_PRODUCT_CODE_SAFETY_FW: {
       return jsd_epd_init(self, slave_id);
       break;
     }

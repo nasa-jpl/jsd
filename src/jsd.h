@@ -26,6 +26,12 @@ char* jsd_ec_state_to_string(ec_state state);
  */
 bool jsd_init_all_devices(jsd_t* self);
 
+// Helper function to check whether the product code of a device matches the
+// product code specified by the user or a compatible code of the corresponding
+// device-type family (e.g. Platinum's product codes).
+bool jsd_product_codes_match(uint32_t user_product_code,
+                             uint32_t device_product_code);
+
 /**
  * @brief Initializes single device
  *

@@ -63,13 +63,15 @@ uint16_t jsd_epd_lc_to_do(char letter_command[2]) {
 
 const jsd_epd_state_t* jsd_epd_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   return &self->slave_states[slave_id].epd.pub;
 }
 
 void jsd_epd_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   // Copy TxPDO data from SOEM's IOmap
   assert(sizeof(jsd_epd_txpdo_data_t) ==
@@ -83,7 +85,8 @@ void jsd_epd_read(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_process_state_machine(self, slave_id);
 
@@ -97,7 +100,8 @@ void jsd_epd_process(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   double now = jsd_time_get_mono_time_sec();
 
@@ -119,9 +123,19 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
   }
 }
 
+void jsd_epd_clear_errors(jsd_t* self, uint16_t slave_id) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  self->slave_states[slave_id].epd.pub.fault_code      = JSD_EPD_FAULT_OKAY;
+  self->slave_states[slave_id].epd.pub.emcy_error_code = 0;
+}
+
 void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   self->slave_states[slave_id].epd.new_halt_command = true;
 }
@@ -130,7 +144,8 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
                                        bool     lsb_byte,
                                        uint16_t gain_scheduling_index) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   if (gain_scheduling_index < 1 || gain_scheduling_index > 63) {
     ERROR("The provided gain scheduling index %d is out of range [1,63]",
@@ -154,8 +169,8 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
 void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
                                 uint8_t output) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
-
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   if (index <= 0 || index > JSD_EPD_NUM_DIGITAL_OUTPUTS) {
     ERROR("The provided digital output index %d is out of range [1,%d]",
           index, JSD_EPD_NUM_DIGITAL_OUTPUTS);
@@ -173,7 +188,8 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
 void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
                               double peak_current) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
@@ -184,7 +200,8 @@ void jsd_epd_set_motion_command_csp(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_csp_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -196,7 +213,8 @@ void jsd_epd_set_motion_command_csv(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_csv_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -208,7 +226,8 @@ void jsd_epd_set_motion_command_cst(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_cst_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -220,7 +239,8 @@ void jsd_epd_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_pos_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -232,7 +252,8 @@ void jsd_epd_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_vel_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -244,7 +265,8 @@ void jsd_epd_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_torque_t motion_command) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -361,7 +383,8 @@ const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
 
 bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
   assert(sizeof(jsd_epd_txpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
   assert(sizeof(jsd_epd_rxpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
@@ -399,14 +422,14 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 
   state->setpoint_ack                  = 0;
   state->last_setpoint_ack             = 0;
-  state->prof_pos_waiting_setpoint_ack = false;
 
   return true;
 }
 
 int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(ecx_context->slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      ecx_context->slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within the ecx_context and extract it here.
@@ -781,7 +804,8 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
 void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
@@ -823,8 +847,6 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
         jsd_elmo_state_machine_state_to_string(
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
-
-    state->prof_pos_waiting_setpoint_ack = false;
 
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
@@ -878,7 +900,8 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
@@ -925,11 +948,6 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
         break;
       }
-      // Set the controlword to a known value before potentially setting its
-      // mode of operation bits for profiled position mode. It does not
-      // represent a transition.
-      state->rxpdo.controlword =
-          JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION;
       jsd_epd_process_mode_of_operation(self, slave_id);
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
@@ -1008,16 +1026,11 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EPD_PRODUCT_CODE);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
-  // TODO(dloret): EGD code prints mode of operation change and warns about
-  // changing mode of operation during motion.
-  if (state->last_requested_mode_of_operation !=
-      state->requested_mode_of_operation) {
-    state->prof_pos_waiting_setpoint_ack = false;
-  }
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;
 
   switch (state->requested_mode_of_operation) {
@@ -1128,20 +1141,17 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.profile_accel    = cmd.prof_pos.profile_accel;
   state->rxpdo.profile_decel    = cmd.prof_pos.profile_decel;
 
+  // Signal new set-point
   // Having the new set-point bit on until the drive acknowledges reception of
   // the command is necessary so that the drive does not miss the bit when
   // changing between modes of operation.
   if (state->new_motion_command) {
-    state->prof_pos_waiting_setpoint_ack = true;
-  }
-  if (state->prof_pos_waiting_setpoint_ack) {
-    // Signal new set-point
     state->rxpdo.controlword |= (0x01 << 4);
   }
   if (state->pub.setpoint_ack_rise) {
     // After the rise of set-point acknowledge bit in statusword, new set-point
     // bit in controlword can be turned off.
-    state->prof_pos_waiting_setpoint_ack = false;
+    state->rxpdo.controlword &= ~(0x01 << 4);
   }
 
   // Request immediate change of set-point
@@ -1298,4 +1308,9 @@ jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
       fault_code = JSD_EPD_FAULT_UNKNOWN;
   }
   return fault_code;
+}
+
+bool jsd_epd_product_code_is_compatible(uint32_t product_code) {
+  return (product_code == JSD_EPD_PRODUCT_CODE_STD_FW) ||
+         (product_code == JSD_EPD_PRODUCT_CODE_SAFETY_FW);
 }

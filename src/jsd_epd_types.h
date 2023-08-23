@@ -8,7 +8,13 @@ extern "C" {
 #include "jsd/jsd_common_device_types.h"
 #include "jsd/jsd_elmo_common_types.h"
 
-#define JSD_EPD_PRODUCT_CODE (uint32_t)0x01100002
+// Currently JSD does not support the Functional Safety capability offered by
+// some Platinum drive models. Such drives can still be run with this driver,
+// but they will behave as the standard non-Safety drives.
+// Product code of Platinum drives that use the standard non-Safety firmware
+#define JSD_EPD_PRODUCT_CODE_STD_FW (uint32_t)0x00100002
+// Product code of Platinum drives that use the Safety firmware (FSOE, Safe I/O)
+#define JSD_EPD_PRODUCT_CODE_SAFETY_FW (uint32_t)0x01100002
 
 // TODO(dloret): Consider making the types related to DS-402 common between the
 // EGD and EPD drivers:
@@ -299,13 +305,6 @@ typedef struct {
   uint8_t setpoint_ack;  ///< Setpoint ackowledge (Profiled Position mode),
                          ///< statustword, bit 12
   uint8_t last_setpoint_ack;
-  bool prof_pos_waiting_setpoint_ack;  ///< When in Profiled Position mode, it
-                                       ///< indicates whether the driver is
-                                       ///< waiting for the drive to acknowledge
-                                       ///< reception of a new profiled position
-                                       ///< set-point so that the driver can
-                                       ///< turn off the new set-point bit in
-                                       ///< the controlword.
 } jsd_epd_private_state_t;
 
 #ifdef __cplusplus

@@ -52,6 +52,16 @@ void jsd_epd_process(jsd_t* self, uint16_t slave_id);
 void jsd_epd_reset(jsd_t* self, uint16_t slave_id);
 
 /**
+ * @brief Clears the state's latched errors.
+ *
+ * Real-time safe
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ */
+void jsd_epd_clear_errors(jsd_t* self, uint16_t slave_id);
+
+/**
  * @brief Halts the EPD. Requires reset to clear.
  *
  * Real-time safe
