@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <math.h>
+#include <string.h>
 
 #include "jsd/jsd.h"
 #include "jsd/jsd_sdo.h"
@@ -469,28 +470,6 @@ void jsd_el6001_read(jsd_t* self, uint16_t slave_id) {
   for(int i = 0; i < JSD_EL6001_NUM_DATA_BYTES; i ++){
     state->received_bytes[i] = txpdo->data_in[i];
   }
-  // state->received_bytes[0] = txpdo->data_in_0;
-  // state->received_bytes[1] = txpdo->data_in_1;
-  // state->received_bytes[2] = txpdo->data_in_2;
-  // state->received_bytes[3] = txpdo->data_in_3;
-  // state->received_bytes[4] = txpdo->data_in_4;
-  // state->received_bytes[5] = txpdo->data_in_5;
-  // state->received_bytes[6] = txpdo->data_in_6;
-  // state->received_bytes[7] = txpdo->data_in_7;
-  // state->received_bytes[8] = txpdo->data_in_8;
-  // state->received_bytes[9] = txpdo->data_in_9;
-  // state->received_bytes[10] = txpdo->data_in_10;
-  // state->received_bytes[11] = txpdo->data_in_11;  
-  // state->received_bytes[12] = txpdo->data_in_12;
-  // state->received_bytes[13] = txpdo->data_in_13;
-  // state->received_bytes[14] = txpdo->data_in_14;
-  // state->received_bytes[15] = txpdo->data_in_15;
-  // state->received_bytes[16] = txpdo->data_in_16;
-  // state->received_bytes[17] = txpdo->data_in_17;
-  // state->received_bytes[18] = txpdo->data_in_18;
-  // state->received_bytes[19] = txpdo->data_in_19;
-  // state->received_bytes[20] = txpdo->data_in_20;
-  // state->received_bytes[21] = txpdo->data_in_21;
 }
 
 void jsd_el6001_write_PDO_data(jsd_t* self, uint16_t slave_id) {
@@ -593,11 +572,8 @@ int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
   assert(data_len < JSD_EL6001_NUM_DATA_BYTES);  
-
-  uint8_t index;
-  for(index = 0; index < data_len; index++){
-    self->slave_states[slave_id].el6001.transmit_bytes[index] = *(data_in+index*sizeof(uint8_t));    
-  }  
+  
+  memcpy(self->slave_states[slave_id].el6001.transmit_bytes, data_in, data_len*sizeof(uint8_t));  
 
   return 0; 
 }

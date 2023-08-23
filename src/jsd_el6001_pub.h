@@ -43,8 +43,24 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id);
  */
 void jsd_el6001_read(jsd_t* self, uint16_t slave_id);
 
+/**
+ * @brief Set a transmission buffer at specific byte index
+ *
+ * @param self pointer JSD context
+ * @param slave_id index of device on EtherCAT bus
+ * @param byte index of transmit buffer
+ * @param value 1byte data to be populated
+ */
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value);
 
+/**
+ * @brief Set a transmission full buffer at specific byte index
+ *
+ * @param self pointer JSD context
+ * @param slave_id index of device on EtherCAT bus
+ * @param data_in pointer of array to be populated in transmit buffer
+ * @param data_len length of data buffer to be populated
+ */
 int jsd_el6001_set_transmit_data_payload(jsd_t* self, uint16_t slave_id, uint8_t* data_in, uint8_t data_len);
 
 int jsd_el6001_request_transmit_data(jsd_t* self, uint16_t slave_id, int num_bytes_to_transmit);
