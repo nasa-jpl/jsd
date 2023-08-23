@@ -581,7 +581,7 @@ void jsd_el6001_process(jsd_t* self, uint16_t slave_id) {
 int jsd_el6001_set_transmit_data_8bits(jsd_t* self, uint16_t slave_id, int byte, uint8_t value) {  
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EL6001_PRODUCT_CODE);
-  assert(byte < JSD_EL6001_DATA_OUT_BYTE_21);
+  assert(byte < JSD_EL6001_NUM_DATA_BYTES);
   assert(byte >= 0);
 
   self->slave_states[slave_id].el6001.transmit_bytes[byte] = value;
