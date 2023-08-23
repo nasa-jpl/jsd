@@ -21,6 +21,9 @@ double       sil_input_r2_5_values[2];
 double       sil_input_r2_6_values[2];
 double       sil_input_r2_7_values[2];
 double       sil_input_r2_8_values[2];
+int32_t      sil_input_r1_1_values[2];
+int32_t      sil_input_r1_2_values[2];
+int32_t      sil_input_r1_3_values[2];
 
 int16_t BRAKE_TIME_MSEC = 100;
 
@@ -75,6 +78,12 @@ void telemetry_header() {
   fprintf(file, "sil_output_r2_71, ");
   fprintf(file, "sil_input_r2_8, ");
   fprintf(file, "sil_output_r2_72, ");
+  fprintf(file, "sil_input_r1_1, ");
+  fprintf(file, "sil_output_r1_129, ");
+  fprintf(file, "sil_input_r1_2, ");
+  fprintf(file, "sil_output_r1_130, ");
+  fprintf(file, "sil_input_r1_3, ");
+  fprintf(file, "sil_output_r1_131, ");
   fprintf(file, "sil_initialized, ");
   fprintf(file, "sil_running, ");
   fprintf(file, "sil_faulted, ");
@@ -144,6 +153,12 @@ void telemetry_data(void* self) {
   fprintf(file, "%lf, ", state->sil_output_r2_71);
   fprintf(file, "%lf, ", state->sil_input_r2_8);
   fprintf(file, "%lf, ", state->sil_output_r2_72);
+  fprintf(file, "%i, ", state->sil_input_r1_1);
+  fprintf(file, "%i, ", state->sil_output_r1_129);
+  fprintf(file, "%i, ", state->sil_input_r1_2);
+  fprintf(file, "%i, ", state->sil_output_r1_130);
+  fprintf(file, "%i, ", state->sil_input_r1_3);
+  fprintf(file, "%i, ", state->sil_output_r1_131);
   fprintf(file, "%d, ", state->sil_initialized);
   fprintf(file, "%d, ", state->sil_running);
   fprintf(file, "%d, ", state->sil_faulted);
@@ -207,19 +222,26 @@ void command(void* self) {
                                sil_input_r2_7_values[sil_input_value_idx]);
     jsd_epd_set_sil_input_r2_8(sds->jsd, slave_id,
                                sil_input_r2_8_values[sil_input_value_idx]);
+    jsd_epd_set_sil_input_r1_1(sds->jsd, slave_id,
+                               sil_input_r1_1_values[sil_input_value_idx]);
+    jsd_epd_set_sil_input_r1_2(sds->jsd, slave_id,
+                               sil_input_r1_2_values[sil_input_value_idx]);
+    jsd_epd_set_sil_input_r1_3(sds->jsd, slave_id,
+                               sil_input_r1_3_values[sil_input_value_idx]);
   }
 
   ++iter;
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 12) {
-    ERROR("Expecting exactly 11 arguments");
+  if (argc != 15) {
+    ERROR("Expecting exactly 14 arguments");
     MSG("Usage: jsd_epd_sil_test <ifname> <epd_slave_index> <loop_freq_hz> "
         "<sil_input_r2_1> <sil_input_r2_2> <sil_input_r2_3> <sil_input_r2_4> "
-        "<sil_input_r2_5> <sil_input_r2_6> <sil_input_r2_7> <sil_input_r2_8> ");
+        "<sil_input_r2_5> <sil_input_r2_6> <sil_input_r2_7> <sil_input_r2_8> "
+        "<sil_input_r1_1> <sil_input_r1_2> <sil_input_r1_3> ");
     MSG("Example: $ jsd_epd_sil_test eth0 2 100 11.11 22.22 33.33 44.44 55.55 "
-        "66.66 77.77 88.88");
+        "66.66 77.77 88.88 1 2 3");
     return 0;
   }
 
@@ -242,6 +264,12 @@ int main(int argc, char* argv[]) {
   sil_input_r2_7_values[1] = sil_input_r2_7_values[0] + 100.0;
   sil_input_r2_8_values[0] = atof(argv[11]);
   sil_input_r2_8_values[1] = sil_input_r2_8_values[0] + 100.0;
+  sil_input_r1_1_values[0] = atoi(argv[12]);
+  sil_input_r1_1_values[1] = sil_input_r1_1_values[0] + 50;
+  sil_input_r1_2_values[0] = atoi(argv[13]);
+  sil_input_r1_2_values[1] = sil_input_r1_2_values[0] + 50;
+  sil_input_r1_3_values[0] = atoi(argv[14]);
+  sil_input_r1_3_values[1] = sil_input_r1_3_values[0] + 50;
 
   MSG("Configuring device %s, using slave %d", ifname, slave_id);
   MSG("Using loop frequency of %i hz", loop_freq_hz);
@@ -261,6 +289,12 @@ int main(int argc, char* argv[]) {
       sil_input_r2_7_values[0], sil_input_r2_7_values[1]);
   MSG("Using SIL input R2[8] alternating values {%lf, %lf}",
       sil_input_r2_8_values[0], sil_input_r2_8_values[1]);
+  MSG("Using SIL input R1[1] alternating values {%i, %i}",
+      sil_input_r1_1_values[0], sil_input_r1_1_values[1]);
+  MSG("Using SIL input R1[2] alternating values {%i, %i}",
+      sil_input_r1_2_values[0], sil_input_r1_2_values[1]);
+  MSG("Using SIL input R1[3] alternating values {%i, %i}",
+      sil_input_r1_3_values[0], sil_input_r1_3_values[1]);
 
   single_device_server_t sds;
 

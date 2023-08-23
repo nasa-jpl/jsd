@@ -351,6 +351,36 @@ void jsd_epd_set_sil_input_r2_8(jsd_t* self, uint16_t slave_id, double input) {
   state->rxpdo.sil_input_r2_8 = input;
 }
 
+void jsd_epd_set_sil_input_r1_1(jsd_t* self, uint16_t slave_id, int32_t input) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+
+  state->rxpdo.sil_input_r1_1 = input;
+}
+
+void jsd_epd_set_sil_input_r1_2(jsd_t* self, uint16_t slave_id, int32_t input) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+
+  state->rxpdo.sil_input_r1_2 = input;
+}
+
+void jsd_epd_set_sil_input_r1_3(jsd_t* self, uint16_t slave_id, int32_t input) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+
+  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+
+  state->rxpdo.sil_input_r1_3 = input;
+}
+
 void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
                                           double position, uint16_t app_id) {
   jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("PX"), 1,
@@ -589,8 +619,20 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
     return 0;
   }
 
+  uint16_t map_output_pdos_1601[] = {
+      0x0003,          // Number of mapped parameters
+      0x0120, 0x22F3,  // sil_input_r1_1
+      0x0220, 0x22F3,  // sil_input_r1_2
+      0x0320, 0x22F3,  // sil_input_r1_3
+  };
+  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1601, 0x00,
+                                     sizeof(map_output_pdos_1601),
+                                     &map_output_pdos_1601)) {
+    return 0;
+  }
+
   // TODO(dloret): Didn't we disable Complete Access somewhere else?
-  uint16_t map_output_RxPDO[] = {0x0003, 0x1602, 0x1603, 0x1600};
+  uint16_t map_output_RxPDO[] = {0x0004, 0x1602, 0x1603, 0x1600, 0x1601};
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
                                      sizeof(map_output_RxPDO),
                                      &map_output_RxPDO)) {
@@ -645,7 +687,19 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
     return 0;
   }
 
-  uint16_t map_input_TxPDO[] = {0x0003, 0x1A02, 0x1A03, 0x1A00};
+  uint16_t map_output_pdos_1a01[] = {
+      0x0003,          // Number of mapped parameters
+      0x8120, 0x22F3,  // sil_output_r1_129
+      0x8220, 0x22F3,  // sil_output_r1_130
+      0x8320, 0x22F3,  // sil_output_r1_131
+  };
+  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1A01, 0x00,
+                                     sizeof(map_output_pdos_1a01),
+                                     &map_output_pdos_1a01)) {
+    return 0;
+  };
+
+  uint16_t map_input_TxPDO[] = {0x0004, 0x1A02, 0x1A03, 0x1A00, 0x1A01};
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
                                      sizeof(map_input_TxPDO),
                                      &map_input_TxPDO)) {
@@ -1045,6 +1099,14 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->pub.sil_output_r2_70 = state->txpdo.sil_output_r2_70;
   state->pub.sil_output_r2_71 = state->txpdo.sil_output_r2_71;
   state->pub.sil_output_r2_72 = state->txpdo.sil_output_r2_72;
+  // SIL R1 data sent to the drive
+  state->pub.sil_input_r1_1 = state->rxpdo.sil_input_r1_1;
+  state->pub.sil_input_r1_2 = state->rxpdo.sil_input_r1_2;
+  state->pub.sil_input_r1_3 = state->rxpdo.sil_input_r1_3;
+  // SIL R1 data received from the drive
+  state->pub.sil_output_r1_129 = state->txpdo.sil_output_r1_129;
+  state->pub.sil_output_r1_130 = state->txpdo.sil_output_r1_130;
+  state->pub.sil_output_r1_131 = state->txpdo.sil_output_r1_131;
   // SIL status
   state->pub.sil_initialized = state->txpdo.status_register_2 >> 17 & 0x01;
   state->pub.sil_running     = state->txpdo.status_register_2 >> 18 & 0x01;

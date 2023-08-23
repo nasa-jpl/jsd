@@ -232,6 +232,14 @@ typedef struct {
   double sil_output_r2_70;
   double sil_output_r2_71;
   double sil_output_r2_72;
+  // SIL R1 data sent to the drive
+  int32_t sil_input_r1_1;
+  int32_t sil_input_r1_2;
+  int32_t sil_input_r1_3;
+  // SIL R1 data received from the drive
+  int32_t sil_output_r1_129;
+  int32_t sil_output_r1_130;
+  int32_t sil_output_r1_131;
   // SIL status
   bool sil_initialized;  ///< Whether SIL is loaded and initialized.
   bool sil_running;      ///< Whether SIL is running.
@@ -267,6 +275,10 @@ typedef struct __attribute__((__packed__)) {
   double sil_output_r2_70;  ///< 0x22F4:70
   double sil_output_r2_71;  ///< 0x22F4:71
   double sil_output_r2_72;  ///< 0x22F4:72
+  // SIL R1 user parameters to retrieve data from the drive (R1[129] - R1[131])
+  int32_t sil_output_r1_129;  ///< 0x22F3:129
+  int32_t sil_output_r1_130;  ///< 0x22F3:130
+  int32_t sil_output_r1_131;  ///< 0x22F3:131
 } jsd_epd_txpdo_data_t;
 
 /**
@@ -304,6 +316,10 @@ typedef struct __attribute__((__packed__)) {
   double sil_input_r2_6;  ///< 0x22F4:06
   double sil_input_r2_7;  ///< 0x22F4:07
   double sil_input_r2_8;  ///< 0x22F4:08
+  // SIL R1 parameters to send data to the drive (R1[1] - R1[3])
+  int32_t sil_input_r1_1;  ///< 0x22F3:1
+  int32_t sil_input_r1_2;  ///< 0x22F3:2
+  int32_t sil_input_r1_3;  ///< 0x22F3:3
 } jsd_epd_rxpdo_data_t;
 
 /**
