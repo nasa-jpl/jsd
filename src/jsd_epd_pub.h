@@ -204,14 +204,76 @@ void jsd_epd_set_motion_command_prof_torque(
     jsd_elmo_motion_command_prof_torque_t motion_command);
 
 /**
- * @brief Sets the value of SIL's integer input 1
+ * @brief Sets the value of SIL's input R2[1].
  *
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  * @param input Input value
  */
-void jsd_epd_set_sil_integer_input_1(jsd_t* self, uint16_t slave_id,
-                                     int32_t input);
+void jsd_epd_set_sil_input_r2_1(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[2].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_2(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[3].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_3(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[4].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_4(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[5].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_5(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[6].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_6(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[7].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_7(jsd_t* self, uint16_t slave_id, double input);
+
+/**
+ * @brief Sets the value of SIL's input R2[8].
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param input Input value
+ */
+void jsd_epd_set_sil_input_r2_8(jsd_t* self, uint16_t slave_id, double input);
 
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,

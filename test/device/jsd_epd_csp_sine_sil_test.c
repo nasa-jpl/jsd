@@ -13,14 +13,6 @@ double       server_startup_s;
 double       amplitude;
 double       sine_freq;
 uint8_t      enable_velocity_offset;
-double       sil_input_r2_1_values[2];
-double       sil_input_r2_2_values[2];
-double       sil_input_r2_3_values[2];
-double       sil_input_r2_4_values[2];
-double       sil_input_r2_5_values[2];
-double       sil_input_r2_6_values[2];
-double       sil_input_r2_7_values[2];
-double       sil_input_r2_8_values[2];
 
 int16_t BRAKE_TIME_MSEC = 100;
 
@@ -60,21 +52,6 @@ void telemetry_header() {
   fprintf(file, "drive_temperature, ");
   fprintf(file, "emcy_error_code, ");
   fprintf(file, "sil_input_r2_1, ");
-  fprintf(file, "sil_output_r2_65, ");
-  fprintf(file, "sil_input_r2_2, ");
-  fprintf(file, "sil_output_r2_66, ");
-  fprintf(file, "sil_input_r2_3, ");
-  fprintf(file, "sil_output_r2_67, ");
-  fprintf(file, "sil_input_r2_4, ");
-  fprintf(file, "sil_output_r2_68, ");
-  fprintf(file, "sil_input_r2_5, ");
-  fprintf(file, "sil_output_r2_69, ");
-  fprintf(file, "sil_input_r2_6, ");
-  fprintf(file, "sil_output_r2_70, ");
-  fprintf(file, "sil_input_r2_7, ");
-  fprintf(file, "sil_output_r2_71, ");
-  fprintf(file, "sil_input_r2_8, ");
-  fprintf(file, "sil_output_r2_72, ");
   fprintf(file, "sil_initialized, ");
   fprintf(file, "sil_running, ");
   fprintf(file, "sil_faulted, ");
@@ -129,21 +106,6 @@ void telemetry_data(void* self) {
   fprintf(file, "%f, ", state->drive_temperature);
   fprintf(file, "%u, ", state->emcy_error_code);
   fprintf(file, "%lf, ", state->sil_input_r2_1);
-  fprintf(file, "%lf, ", state->sil_output_r2_65);
-  fprintf(file, "%lf, ", state->sil_input_r2_2);
-  fprintf(file, "%lf, ", state->sil_output_r2_66);
-  fprintf(file, "%lf, ", state->sil_input_r2_3);
-  fprintf(file, "%lf, ", state->sil_output_r2_67);
-  fprintf(file, "%lf, ", state->sil_input_r2_4);
-  fprintf(file, "%lf, ", state->sil_output_r2_68);
-  fprintf(file, "%lf, ", state->sil_input_r2_5);
-  fprintf(file, "%lf, ", state->sil_output_r2_69);
-  fprintf(file, "%lf, ", state->sil_input_r2_6);
-  fprintf(file, "%lf, ", state->sil_output_r2_70);
-  fprintf(file, "%lf, ", state->sil_input_r2_7);
-  fprintf(file, "%lf, ", state->sil_output_r2_71);
-  fprintf(file, "%lf, ", state->sil_input_r2_8);
-  fprintf(file, "%lf, ", state->sil_output_r2_72);
   fprintf(file, "%d, ", state->sil_initialized);
   fprintf(file, "%d, ", state->sil_running);
   fprintf(file, "%d, ", state->sil_faulted);
@@ -162,8 +124,9 @@ void extract_data(void* self) {
 }
 
 void command(void* self) {
-  static int32_t iter                = 0;
-  static size_t  sil_input_value_idx = 0;
+  static int32_t pos_offset       = 0;
+  static double  motion_startup_s = 0.0;
+  static bool    first_motion_cmd = true;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -181,86 +144,51 @@ void command(void* self) {
   if (!state->servo_enabled) {
     MSG("Sending reset.");
     jsd_epd_reset(sds->jsd, slave_id);
-    iter                = 0;
-    sil_input_value_idx = 0;
     return;
   }
 
-  // Alternate values of SIL inputs every 2 seconds.
-  if (iter % (sds->loop_rate_hz * 2) == 0) {
-    ++sil_input_value_idx;
-    sil_input_value_idx %= 2;
-
-    jsd_epd_set_sil_input_r2_1(sds->jsd, slave_id,
-                               sil_input_r2_1_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_2(sds->jsd, slave_id,
-                               sil_input_r2_2_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_3(sds->jsd, slave_id,
-                               sil_input_r2_3_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_4(sds->jsd, slave_id,
-                               sil_input_r2_4_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_5(sds->jsd, slave_id,
-                               sil_input_r2_5_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_6(sds->jsd, slave_id,
-                               sil_input_r2_6_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_7(sds->jsd, slave_id,
-                               sil_input_r2_7_values[sil_input_value_idx]);
-    jsd_epd_set_sil_input_r2_8(sds->jsd, slave_id,
-                               sil_input_r2_8_values[sil_input_value_idx]);
+  if (first_motion_cmd) {
+    pos_offset       = state->actual_position;
+    motion_startup_s = jsd_time_get_mono_time_sec();
+    now_s = motion_startup_s;  // Force first value of time variable in
+                               // sinusoidal command to be 0 for simplicity.
+    first_motion_cmd = false;
   }
 
-  ++iter;
+  double w               = 2.0 * M_PI * sine_freq;
+  double t               = now_s - motion_startup_s;
+  double target_position = amplitude * sin(w * t) + pos_offset;
+
+  jsd_epd_set_sil_input_r2_1(sds->jsd, slave_id, target_position);
 }
 
 int main(int argc, char* argv[]) {
-  if (argc != 12) {
-    ERROR("Expecting exactly 11 arguments");
-    MSG("Usage: jsd_epd_sil_test <ifname> <epd_slave_index> <loop_freq_hz> "
-        "<sil_input_r2_1> <sil_input_r2_2> <sil_input_r2_3> <sil_input_r2_4> "
-        "<sil_input_r2_5> <sil_input_r2_6> <sil_input_r2_7> <sil_input_r2_8> ");
-    MSG("Example: $ jsd_epd_sil_test eth0 2 100 11.11 22.22 33.33 44.44 55.55 "
-        "66.66 77.77 88.88");
+  if (argc != 9) {
+    ERROR("Expecting exactly 8 arguments");
+    MSG("Usage: jsd_epd_csp_sine_sil_test <ifname> <epd_slave_index> "
+        "<loop_freq_hz> <amplitude> <sine_freq> "
+        "<peak_current_amps> <continuous_current_amps> <max_motor_speed> ");
+    MSG("Example: $ jsd_epd_csp_sine_test eth0 2 100 25000 0.25 0.25 0.45 "
+        "50000");
     return 0;
   }
 
-  char* ifname         = strdup(argv[1]);
-  slave_id             = atoi(argv[2]);
-  int32_t loop_freq_hz = atoi(argv[3]);
-  sil_input_r2_1_values[0] = atof(argv[4]);
-  sil_input_r2_1_values[1] = sil_input_r2_1_values[0] + 100.0;
-  sil_input_r2_2_values[0] = atof(argv[5]);
-  sil_input_r2_2_values[1] = sil_input_r2_2_values[0] + 100.0;
-  sil_input_r2_3_values[0] = atof(argv[6]);
-  sil_input_r2_3_values[1] = sil_input_r2_3_values[0] + 100.0;
-  sil_input_r2_4_values[0] = atof(argv[7]);
-  sil_input_r2_4_values[1] = sil_input_r2_4_values[0] + 100.0;
-  sil_input_r2_5_values[0] = atof(argv[8]);
-  sil_input_r2_5_values[1] = sil_input_r2_5_values[0] + 100.0;
-  sil_input_r2_6_values[0] = atof(argv[9]);
-  sil_input_r2_6_values[1] = sil_input_r2_6_values[0] + 100.0;
-  sil_input_r2_7_values[0] = atof(argv[10]);
-  sil_input_r2_7_values[1] = sil_input_r2_7_values[0] + 100.0;
-  sil_input_r2_8_values[0] = atof(argv[11]);
-  sil_input_r2_8_values[1] = sil_input_r2_8_values[0] + 100.0;
+  char* ifname              = strdup(argv[1]);
+  slave_id                  = atoi(argv[2]);
+  int32_t loop_freq_hz      = atoi(argv[3]);
+  amplitude                 = atof(argv[4]);
+  sine_freq                 = atof(argv[5]);
+  float  peak_current       = atof(argv[6]);
+  float  continuous_current = atof(argv[7]);
+  double max_motor_speed    = atof(argv[8]);
 
   MSG("Configuring device %s, using slave %d", ifname, slave_id);
   MSG("Using loop frequency of %i hz", loop_freq_hz);
-  MSG("Using SIL input R2[1] alternating values {%lf, %lf}",
-      sil_input_r2_1_values[0], sil_input_r2_1_values[1]);
-  MSG("Using SIL input R2[2] alternating values {%lf, %lf}",
-      sil_input_r2_2_values[0], sil_input_r2_2_values[1]);
-  MSG("Using SIL input R2[3] alternating values {%lf, %lf}",
-      sil_input_r2_3_values[0], sil_input_r2_3_values[1]);
-  MSG("Using SIL input R2[4] alternating values {%lf, %lf}",
-      sil_input_r2_4_values[0], sil_input_r2_4_values[1]);
-  MSG("Using SIL input R2[5] alternating values {%lf, %lf}",
-      sil_input_r2_5_values[0], sil_input_r2_5_values[1]);
-  MSG("Using SIL input R2[6] alternating values {%lf, %lf}",
-      sil_input_r2_6_values[0], sil_input_r2_6_values[1]);
-  MSG("Using SIL input R2[7] alternating values {%lf, %lf}",
-      sil_input_r2_7_values[0], sil_input_r2_7_values[1]);
-  MSG("Using SIL input R2[8] alternating values {%lf, %lf}",
-      sil_input_r2_8_values[0], sil_input_r2_8_values[1]);
+  MSG("Using amplitude of %lf counts", amplitude);
+  MSG("Using sine frequency of %lf hz", sine_freq);
+  MSG("Using peak current of %f A", peak_current);
+  MSG("Using continuous current of %f A", continuous_current);
+  MSG("Using max_motor_speed of %lf cnts/sec", max_motor_speed);
 
   single_device_server_t sds;
 
@@ -277,16 +205,16 @@ int main(int argc, char* argv[]) {
   snprintf(config.name, JSD_NAME_LEN, "kukulkan");
   config.configuration_active         = true;
   config.product_code                 = JSD_EPD_PRODUCT_CODE_STD_FW;
-  config.epd.max_motor_speed          = 1.0;
+  config.epd.max_motor_speed          = max_motor_speed;
   config.epd.loop_period_ms           = 1000 / loop_freq_hz;
   config.epd.torque_slope             = 1e7;
   config.epd.max_profile_accel        = 1e6;
   config.epd.max_profile_decel        = 1e7;
   config.epd.velocity_tracking_error  = 1e8;
   config.epd.position_tracking_error  = 1e9;
-  config.epd.peak_current_limit       = 0.25f;
+  config.epd.peak_current_limit       = peak_current;
   config.epd.peak_current_time        = 3.0f;
-  config.epd.continuous_current_limit = 0.25f;
+  config.epd.continuous_current_limit = continuous_current;
   config.epd.motor_stuck_current_level_pct =
       0.0f;  // Disable motor stuck protection.
   config.epd.motor_stuck_velocity_threshold = 0.0f;
@@ -308,7 +236,7 @@ int main(int argc, char* argv[]) {
 
   server_startup_s = jsd_time_get_mono_time_sec();
 
-  sds_run(&sds, ifname, "/tmp/jsd_epd_sil_test.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_epd_csp_sine_sil_test.csv");
 
   return 0;
 }

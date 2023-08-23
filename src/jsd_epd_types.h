@@ -213,15 +213,33 @@ typedef struct {
   uint8_t digital_output_cmd[JSD_EPD_NUM_DIGITAL_OUTPUTS];
   float   drive_temperature;  ///< deg C
 
-  int32_t sil_integer_output_1;  ///< SIL output data 1
-
+  // SIL Data
+  // SIL R2 data sent to the drive
+  double sil_input_r2_1;
+  double sil_input_r2_2;
+  double sil_input_r2_3;
+  double sil_input_r2_4;
+  double sil_input_r2_5;
+  double sil_input_r2_6;
+  double sil_input_r2_7;
+  double sil_input_r2_8;
+  // SIL R2 data received from the drive
+  double sil_output_r2_65;
+  double sil_output_r2_66;
+  double sil_output_r2_67;
+  double sil_output_r2_68;
+  double sil_output_r2_69;
+  double sil_output_r2_70;
+  double sil_output_r2_71;
+  double sil_output_r2_72;
+  // SIL status
   bool sil_initialized;  ///< Whether SIL is loaded and initialized.
   bool sil_running;      ///< Whether SIL is running.
   bool sil_faulted;      ///< Whether there is a SIL run time error.
-  // TODO(dloret): Change sil_error_code to enum
-  //  uint32_t sil_error_code; ///< SIL error code.
 } jsd_epd_state_t;
 
+// TODO(dloret): Have SIL and non-SIL versions of jsd_epd_txpdo_data_t and
+// jsd_epd_rxpdo_data_t.
 /**
  * @brief TxPDO struct used to read device data in SOEM IOmap
  *
@@ -240,9 +258,15 @@ typedef struct __attribute__((__packed__)) {
   uint32_t status_register_1;        ///< 0x3607:01
   uint32_t status_register_2;        ///< 0x3607:02
   uint16_t statusword;               ///< 0x6041
-  // TODO(dloret): Rename SIL variables
-  //  uint32_t sil_error_code; ///< 0x309E:14
-  int32_t sil_integer_output_1;  ///< 0x22F3:01
+  // SIL R2 user parameters to retrieve data from the drive (R2[65] - R2[72])
+  double sil_output_r2_65;  ///< 0x22F4:65
+  double sil_output_r2_66;  ///< 0x22F4:66
+  double sil_output_r2_67;  ///< 0x22F4:67
+  double sil_output_r2_68;  ///< 0x22F4:68
+  double sil_output_r2_69;  ///< 0x22F4:69
+  double sil_output_r2_70;  ///< 0x22F4:70
+  double sil_output_r2_71;  ///< 0x22F4:71
+  double sil_output_r2_72;  ///< 0x22F4:72
 } jsd_epd_txpdo_data_t;
 
 /**
@@ -271,8 +295,15 @@ typedef struct __attribute__((__packed__)) {
   uint32_t profile_accel;     ///< 0x6083
   uint32_t profile_decel;     ///< 0x6084
   int16_t  gain_scheduling_index;  ///< 0x36E0
-  // TODO(dloret): Think whether a different RxPDO should be used in SIL mode.
-  int32_t sil_integer_input_1;  ///< 0x22F3:02
+  // SIL R2 user parameters to send data to the drive (R2[1] - R2[8])
+  double sil_input_r2_1;  ///< 0x22F4:01
+  double sil_input_r2_2;  ///< 0x22F4:02
+  double sil_input_r2_3;  ///< 0x22F4:03
+  double sil_input_r2_4;  ///< 0x22F4:04
+  double sil_input_r2_5;  ///< 0x22F4:05
+  double sil_input_r2_6;  ///< 0x22F4:06
+  double sil_input_r2_7;  ///< 0x22F4:07
+  double sil_input_r2_8;  ///< 0x22F4:08
 } jsd_epd_rxpdo_data_t;
 
 /**
