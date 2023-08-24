@@ -1240,9 +1240,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCHED_ON:
       // STO drops us here
       // Handle reset
-      ERROR("Inside switched on!");
       if (state->new_reset) {
-        ERROR("Inside switched on new reset");
         set_controlword(self, slave_id,
           JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
 
