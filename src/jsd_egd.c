@@ -1223,6 +1223,13 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   ec_errort error;
 
+  if (state->new_halt_command){
+    ERROR("-----");
+    ERROR("We should be trying to perform the halt now...");
+    ERROR("Current state machine state is %d", state->pub.actual_state_machine_state);
+    ERROR("-----");
+  }
+
   switch (state->pub.actual_state_machine_state) {
     case JSD_ELMO_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
       // no-op
@@ -1241,7 +1248,9 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCHED_ON:
       // STO drops us here
       // Handle reset
+      ERROR("Inside switched on!");
       if (state->new_reset) {
+        ERROR("Inside switched on new reset");
         set_controlword(self, slave_id,
           JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
 
@@ -1260,7 +1269,8 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       state->pub.emcy_error_code = 0;
 
       // Handle halt
-      if (state->new_halt_command) {
+      if (state->new_halt_command){
+        ERROR("Handling the new halt command in JSD!!!!!");
         state->new_reset = false;
         uint16_t cw = get_controlword(self, slave_id);
         cw &= ~(0x01 << 2);  // Quickstop
