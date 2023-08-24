@@ -123,7 +123,12 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
                                 uint8_t output_level) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
-  assert(digital_output_index > 0 && digital_output_index <= JSD_EGD_NUM_DIGITAL_OUTPUTS);
+
+  if (digital_output_index <= 0 || digital_output_index > JSD_EGD_NUM_DIGITAL_OUTPUTS) {
+    ERROR("The provided digital output index %d is out of range [1,%d]",
+          digital_output_index, JSD_EGD_NUM_DIGITAL_OUTPUTS);
+    return;
+  }
 
   if (self->slave_configs[slave_id].egd.drive_cmd_mode !=
       JSD_EGD_DRIVE_CMD_MODE_CS) {
@@ -764,6 +769,13 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   bool prof_csp_sup    = (supported_drive_modes & (0x01 << 7));
   bool prof_csv_sup    = (supported_drive_modes & (0x01 << 8));
   bool prof_cst_sup    = (supported_drive_modes & (0x01 << 9));
+
+  (void) prof_pos_sup;
+  (void) prof_vel_sup;
+  (void) prof_torque_sup;
+  (void) prof_csp_sup;
+  (void) prof_csv_sup;
+  (void) prof_cst_sup;
 
   if(!prof_pos_sup) {
     ERROR("EGD[%d] does not support PROF_POS mode. A valid position controller must be tuned before use", 

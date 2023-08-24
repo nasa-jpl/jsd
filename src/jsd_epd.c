@@ -171,7 +171,11 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
-  assert(index > 0 && index <= JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  if (index <= 0 || index > JSD_EPD_NUM_DIGITAL_OUTPUTS) {
+    ERROR("The provided digital output index %d is out of range [1,%d]",
+          index, JSD_EPD_NUM_DIGITAL_OUTPUTS);
+    return;
+  }
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   if (output > 0) {
@@ -418,7 +422,6 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 
   state->setpoint_ack                  = 0;
   state->last_setpoint_ack             = 0;
-  state->prof_pos_waiting_setpoint_ack = false;
 
   return true;
 }
@@ -845,8 +848,6 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
 
-    state->prof_pos_waiting_setpoint_ack = false;
-
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
       // TODO(dloret): Check if setting state->new_reset to false like in EGD
@@ -947,11 +948,6 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
         break;
       }
-      // Set the controlword to a known value before potentially setting its
-      // mode of operation bits for profiled position mode. It does not
-      // represent a transition.
-      state->rxpdo.controlword =
-          JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION;
       jsd_epd_process_mode_of_operation(self, slave_id);
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
@@ -1035,12 +1031,6 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
-  // TODO(dloret): EGD code prints mode of operation change and warns about
-  // changing mode of operation during motion.
-  if (state->last_requested_mode_of_operation !=
-      state->requested_mode_of_operation) {
-    state->prof_pos_waiting_setpoint_ack = false;
-  }
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;
 
   switch (state->requested_mode_of_operation) {
@@ -1151,20 +1141,17 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.profile_accel    = cmd.prof_pos.profile_accel;
   state->rxpdo.profile_decel    = cmd.prof_pos.profile_decel;
 
+  // Signal new set-point
   // Having the new set-point bit on until the drive acknowledges reception of
   // the command is necessary so that the drive does not miss the bit when
   // changing between modes of operation.
   if (state->new_motion_command) {
-    state->prof_pos_waiting_setpoint_ack = true;
-  }
-  if (state->prof_pos_waiting_setpoint_ack) {
-    // Signal new set-point
     state->rxpdo.controlword |= (0x01 << 4);
   }
   if (state->pub.setpoint_ack_rise) {
     // After the rise of set-point acknowledge bit in statusword, new set-point
     // bit in controlword can be turned off.
-    state->prof_pos_waiting_setpoint_ack = false;
+    state->rxpdo.controlword &= ~(0x01 << 4);
   }
 
   // Request immediate change of set-point
