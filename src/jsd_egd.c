@@ -123,12 +123,7 @@ void jsd_egd_set_digital_output(jsd_t* self, uint16_t slave_id,
                                 uint8_t output_level) {
   assert(self);
   assert(self->ecx_context.slavelist[slave_id].eep_id == JSD_EGD_PRODUCT_CODE);
-
-  if (digital_output_index <= 0 || digital_output_index > JSD_EGD_NUM_DIGITAL_OUTPUTS) {
-    ERROR("The provided digital output index %d is out of range [1,%d]",
-          digital_output_index, JSD_EGD_NUM_DIGITAL_OUTPUTS);
-    return;
-  }
+  assert(digital_output_index > 0 && digital_output_index <= JSD_EGD_NUM_DIGITAL_OUTPUTS);
 
   if (self->slave_configs[slave_id].egd.drive_cmd_mode !=
       JSD_EGD_DRIVE_CMD_MODE_CS) {
