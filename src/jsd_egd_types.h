@@ -294,6 +294,7 @@ typedef struct {
   uint32_t motor_rated_current;  ///< CL[1] in mA
 
   // user input
+  bool                        enabling_operation;
   bool                        new_reset;
   bool                        new_halt_command;
   bool                        new_motion_command;

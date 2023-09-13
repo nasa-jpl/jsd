@@ -108,7 +108,7 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
   if ((now - self->slave_states[slave_id].epd.last_reset_time) >
       JSD_EPD_RESET_DERATE_SEC) {
     // Flag below used to latch halt commands until we are in the OPERATION ENABLED state.
-    self->slave_states[slave_id].egd.enabling_operation = true;
+    self->slave_states[slave_id].epd.enabling_operation = true;
     
     self->slave_states[slave_id].epd.new_reset       = true;
     self->slave_states[slave_id].epd.last_reset_time = now;
