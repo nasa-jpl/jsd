@@ -46,6 +46,11 @@ if(BUILD_JSD_TESTS)
         jsd_test_utils.c)
     target_link_libraries(jsd_el2124_test ${jsd_test_libs})
 
+    add_executable(jsd_el2809_test
+        device/jsd_el2809_test.c
+        jsd_test_utils.c)
+    target_link_libraries(jsd_el2809_test ${jsd_test_libs})
+
     add_executable(jsd_el3602_test
         device/jsd_el3602_test.c
         jsd_test_utils.c)
