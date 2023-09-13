@@ -11,6 +11,10 @@
 #define JSD_EPD_MAX_ERROR_POPS_PER_CYCLE (5)
 #define JSD_EPD_MAX_BYTES_PDO_CHANNEL (128)
 
+// WARNING: Only use this macro on raw arrays. Do not use it on array function
+// parameters or pointers.
+#define JSD_EPD_ARRAY_SIZE(array) (sizeof((array)) / sizeof((array)[0]))
+
 // Pair of Elmo letter command and corresponding object dictionary index
 typedef struct {
   char*    lc_chars;
@@ -48,6 +52,8 @@ static int jsd_epd_compare_lc_keys(const void* lhs, const void* rhs) {
   return strcmp(l->lc_chars, r->lc_chars);
 }
 
+static int jsd_epd_min(int lhs, int rhs) { return (lhs < rhs) ? lhs : rhs; }
+
 /****************************************************
  * Public functions
  ****************************************************/
@@ -73,14 +79,40 @@ void jsd_epd_read(jsd_t* self, uint16_t slave_id) {
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  // Copy TxPDO data from SOEM's IOmap
-  assert(sizeof(jsd_epd_txpdo_data_t) ==
-         self->ecx_context.slavelist[slave_id].Ibytes);
-  memcpy(&self->slave_states[slave_id].epd.txpdo,
-         self->ecx_context.slavelist[slave_id].inputs,
-         self->ecx_context.slavelist[slave_id].Ibytes);
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
 
-  jsd_epd_update_state_from_PDO_data(self, slave_id);
+  // Copy TxPDO data from SOEM's IOmap
+  if (config->epd.use_sil) {
+    assert((sizeof(jsd_epd_txpdo_data_common_t) +
+            (config->epd.sil.outputs_r1_num * 4) +
+            (config->epd.sil.outputs_r2_num * 8)) ==
+           self->ecx_context.slavelist[slave_id].Ibytes);
+    memcpy(&self->slave_states[slave_id].epd.txpdo_common,
+           self->ecx_context.slavelist[slave_id].inputs,
+           sizeof(self->slave_states[slave_id].epd.txpdo_common));
+    memcpy(&self->slave_states[slave_id].epd.sil_outputs_r1,
+           self->ecx_context.slavelist[slave_id].inputs +
+               sizeof(self->slave_states[slave_id].epd.txpdo_common),
+           config->epd.sil.outputs_r1_num * 4);
+    memcpy(&self->slave_states[slave_id].epd.sil_outputs_r2,
+           self->ecx_context.slavelist[slave_id].inputs +
+               (sizeof(self->slave_states[slave_id].epd.txpdo_common) +
+                (config->epd.sil.outputs_r1_num * 4)),
+           config->epd.sil.outputs_r2_num * 8);
+  } else {
+    assert((sizeof(jsd_epd_txpdo_data_common_t) +
+            sizeof(jsd_epd_txpdo_data_nominal_t)) ==
+           self->ecx_context.slavelist[slave_id].Ibytes);
+    memcpy(&self->slave_states[slave_id].epd.txpdo_common,
+           self->ecx_context.slavelist[slave_id].inputs,
+           sizeof(self->slave_states[slave_id].epd.txpdo_common));
+    memcpy(&self->slave_states[slave_id].epd.txpdo_nominal,
+           self->ecx_context.slavelist[slave_id].inputs +
+               sizeof(self->slave_states[slave_id].epd.txpdo_common),
+           sizeof(self->slave_states[slave_id].epd.txpdo_nominal));
+  }
+
+  jsd_epd_update_state_from_PDO_data(self, slave_id, config);
 }
 
 void jsd_epd_process(jsd_t* self, uint16_t slave_id) {
@@ -88,14 +120,40 @@ void jsd_epd_process(jsd_t* self, uint16_t slave_id) {
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_process_state_machine(self, slave_id);
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+
+  jsd_epd_process_state_machine(self, slave_id, config);
 
   // Copy RxPDO data into SOEM's IOmap
-  assert(sizeof(jsd_epd_rxpdo_data_t) ==
-         self->ecx_context.slavelist[slave_id].Obytes);
-  memcpy(self->ecx_context.slavelist[slave_id].outputs,
-         &self->slave_states[slave_id].epd.rxpdo,
-         self->ecx_context.slavelist[slave_id].Obytes);
+  if (config->epd.use_sil) {
+    assert((sizeof(jsd_epd_rxpdo_data_common_t) +
+            (config->epd.sil.inputs_r1_num * 4) +
+            (config->epd.sil.inputs_r2_num * 8)) ==
+           self->ecx_context.slavelist[slave_id].Obytes);
+    memcpy(self->ecx_context.slavelist[slave_id].outputs,
+           &self->slave_states[slave_id].epd.rxpdo_common,
+           sizeof(self->slave_states[slave_id].epd.rxpdo_common));
+    memcpy(self->ecx_context.slavelist[slave_id].outputs +
+               sizeof(self->slave_states[slave_id].epd.rxpdo_common),
+           &self->slave_states[slave_id].epd.sil_inputs_r1,
+           config->epd.sil.inputs_r1_num * 4);
+    memcpy(self->ecx_context.slavelist[slave_id].outputs +
+               (sizeof(self->slave_states[slave_id].epd.rxpdo_common) +
+                (config->epd.sil.inputs_r1_num * 4)),
+           &self->slave_states[slave_id].epd.sil_inputs_r2,
+           config->epd.sil.inputs_r2_num * 8);
+  } else {
+    assert((sizeof(jsd_epd_rxpdo_data_common_t) +
+            sizeof(jsd_epd_rxpdo_data_nominal_t)) ==
+           self->ecx_context.slavelist[slave_id].Obytes);
+    memcpy(self->ecx_context.slavelist[slave_id].outputs,
+           &self->slave_states[slave_id].epd.rxpdo_common,
+           sizeof(self->slave_states[slave_id].epd.rxpdo_common));
+    memcpy(self->ecx_context.slavelist[slave_id].outputs +
+               sizeof(self->slave_states[slave_id].epd.rxpdo_common),
+           &self->slave_states[slave_id].epd.rxpdo_nominal,
+           sizeof(self->slave_states[slave_id].epd.rxpdo_nominal));
+  }
 }
 
 void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
@@ -146,6 +204,7 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   if (gain_scheduling_index < 1 || gain_scheduling_index > 63) {
     ERROR("The provided gain scheduling index %d is out of range [1,63]",
@@ -156,12 +215,12 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
   jsd_epd_private_state_t* state   = &self->slave_states[slave_id].epd;
   uint16_t                 bitmask = 0x00FF;
   if (lsb_byte) {
-    state->rxpdo.gain_scheduling_index =
-        (state->rxpdo.gain_scheduling_index & (bitmask << 8)) |
+    state->rxpdo_nominal.gain_scheduling_index =
+        (state->rxpdo_nominal.gain_scheduling_index & (bitmask << 8)) |
         gain_scheduling_index;
   } else {
-    state->rxpdo.gain_scheduling_index =
-        (state->rxpdo.gain_scheduling_index & bitmask) |
+    state->rxpdo_nominal.gain_scheduling_index =
+        (state->rxpdo_nominal.gain_scheduling_index & bitmask) |
         (gain_scheduling_index << 8);
   }
 }
@@ -172,12 +231,13 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   assert(index > 0 && index <= JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   if (output > 0) {
-    state->rxpdo.digital_outputs |= (0x01 << (15 + index));
+    state->rxpdo_nominal.digital_outputs |= (0x01 << (15 + index));
   } else {
-    state->rxpdo.digital_outputs &= ~(0x01 << (15 + index));
+    state->rxpdo_nominal.digital_outputs &= ~(0x01 << (15 + index));
   }
 }
 
@@ -189,7 +249,8 @@ void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
 
-  state->rxpdo.max_current = peak_current * 1e6 / state->motor_rated_current;
+  state->rxpdo_common.max_current =
+      peak_current * 1e6 / state->motor_rated_current;
 }
 
 void jsd_epd_set_motion_command_csp(
@@ -198,6 +259,7 @@ void jsd_epd_set_motion_command_csp(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -211,6 +273,7 @@ void jsd_epd_set_motion_command_csv(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -224,6 +287,7 @@ void jsd_epd_set_motion_command_cst(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -237,6 +301,7 @@ void jsd_epd_set_motion_command_prof_pos(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -250,6 +315,7 @@ void jsd_epd_set_motion_command_prof_vel(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
@@ -263,11 +329,110 @@ void jsd_epd_set_motion_command_prof_torque(
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
+  assert(!self->slave_configs[slave_id].epd.use_sil);
 
   jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
   state->motion_command.prof_torque  = motion_command;
+}
+
+void jsd_epd_set_sil_input_r1(jsd_t* self, uint16_t slave_id, uint16_t subindex,
+                              int32_t value) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 1 && subindex <= config->epd.sil.inputs_r1_num);
+
+  self->slave_states[slave_id].epd.sil_inputs_r1[subindex - 1] = value;
+}
+
+void jsd_epd_set_sil_input_r2(jsd_t* self, uint16_t slave_id, uint16_t subindex,
+                              double value) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 1 && subindex <= config->epd.sil.inputs_r2_num);
+
+  self->slave_states[slave_id].epd.sil_inputs_r2[subindex - 1] = value;
+}
+
+int32_t jsd_epd_get_sil_input_r1(jsd_t* self, uint16_t slave_id,
+                                 uint16_t subindex) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 1 && subindex <= config->epd.sil.inputs_r1_num);
+
+  return self->slave_states[slave_id].epd.sil_inputs_r1[subindex - 1];
+}
+
+double jsd_epd_get_sil_input_r2(jsd_t* self, uint16_t slave_id,
+                                uint16_t subindex) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 1 && subindex <= config->epd.sil.inputs_r2_num);
+
+  return self->slave_states[slave_id].epd.sil_inputs_r2[subindex - 1];
+}
+
+int32_t jsd_epd_get_sil_output_r1(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 129 && subindex <= (128 + config->epd.sil.outputs_r1_num));
+
+  return self->slave_states[slave_id].epd.sil_outputs_r1[subindex - 129];
+}
+
+double jsd_epd_get_sil_output_r2(jsd_t* self, uint16_t slave_id,
+                                 uint16_t subindex) {
+  assert(self);
+  assert(jsd_epd_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  assert(subindex >= 65 && subindex <= (64 + config->epd.sil.outputs_r2_num));
+
+  return self->slave_states[slave_id].epd.sil_outputs_r2[subindex - 65];
+}
+
+void jsd_epd_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, int32_t value,
+                                  uint16_t app_id) {
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r1_num) ||
+      (subindex >= 129 && subindex <= (128 + config->epd.sil.outputs_r1_num))) {
+    ERROR("R1[%u] is already mapped to a PDO.", subindex);
+    return;
+  }
+  jsd_sdo_set_param_async(self, slave_id, 0x22F3, subindex, JSD_SDO_DATA_I32,
+                          &value, app_id);
+}
+
+void jsd_epd_async_sdo_set_sil_r2(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, double value,
+                                  uint16_t app_id) {
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r2_num) ||
+      (subindex >= 65 && subindex <= (64 + config->epd.sil.outputs_r2_num))) {
+    ERROR("R2[%u] is already mapped to a PDO.", subindex);
+    return;
+  }
+  jsd_sdo_set_param_async(self, slave_id, 0x22F4, subindex, JSD_SDO_DATA_DOUBLE,
+                          &value, app_id);
 }
 
 void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
@@ -382,13 +547,26 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
-  assert(sizeof(jsd_epd_txpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
-  assert(sizeof(jsd_epd_rxpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
 
   ec_slavet* slave = &self->ecx_context.slavelist[slave_id];
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   config->PO2SO_success      = false;
+
+  if (config->epd.use_sil) {
+    MSG("EPD[%d] will be operated in SIL mode. R1 inputs: %d, R2 inputs: %d, "
+        "R1 outputs: %d, R2 outputs: %d",
+        slave_id, config->epd.sil.inputs_r1_num, config->epd.sil.inputs_r2_num,
+        config->epd.sil.outputs_r1_num, config->epd.sil.outputs_r2_num);
+  } else if ((config->epd.sil.inputs_r1_num + config->epd.sil.inputs_r2_num +
+              config->epd.sil.outputs_r1_num + config->epd.sil.outputs_r2_num) >
+             0) {
+    ERROR(
+        "SIL inputs or outputs were requested through EPD[%d]'s configuration, "
+        "but use_sil parameter was set to false.",
+        slave_id);
+    return false;
+  }
 
   // The following disables Complete Access (CA) and was needed in Gold drives
   // to make PDO mapping work.
@@ -402,9 +580,6 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   state->requested_mode_of_operation      = JSD_EPD_MODE_OF_OPERATION_DISABLED;
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;
   state->last_reset_time         = 0;
-
-  MSG_DEBUG("TxPDO size: %zu Bytes", sizeof(jsd_epd_txpdo_data_t));
-  MSG_DEBUG("RxPDO size: %zu Bytes", sizeof(jsd_epd_rxpdo_data_t));
 
   state->motor_rated_current = config->epd.continuous_current_limit * 1000;
   if (state->motor_rated_current == 0) {
@@ -433,7 +608,7 @@ int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
       (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  if (!jsd_epd_config_PDO_mapping(ecx_context, slave_id)) {
+  if (!jsd_epd_config_PDO_mapping(ecx_context, slave_id, config)) {
     ERROR("Failed to map PDO parameters on EPD slave %u", slave_id);
     return 0;
   }
@@ -454,88 +629,368 @@ int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   return 1;
 }
 
-int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
+                               jsd_slave_config_t* config) {
   MSG_DEBUG("Attempting to map custom EPD PDOs...");
 
+  if (config->epd.use_sil) {
+    MSG_DEBUG("Mapping PDOs for driver's SIL mode of operation.");
+  } else {
+    MSG_DEBUG("Mapping PDOs for driver's nominal mode of operation.");
+  }
+
   //////////////// RxPDO Mapping //////////////////////////
-  uint16_t map_output_pdos_1602[] = {
-      0x0008,          // Number of mapped parameters
-      0x0020, 0x607A,  // target_position
-      0x0020, 0x60FF,  // target_velocity
-      0x0010, 0x6071,  // target_torque
-      0x0020, 0x60B0,  // position_offset
-      0x0020, 0x60B1,  // velocity_offset
-      0x0010, 0x60B2,  // torque_offset
-      0x0008, 0x6060,  // mode_of_operation
-      0x0010, 0x6073,  // max_current
-  };
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1602, 0x00,
-                                     sizeof(map_output_pdos_1602),
-                                     &map_output_pdos_1602)) {
-    return 0;
-  }
 
-  uint16_t map_output_pdos_1603[] = {
-      0x0007,          // Number of mapped parameters
-      0x0120, 0x60FE,  // digital_outputs
+  uint16_t rpdo_mapping_parameters[] = {0x1600, 0x1601, 0x1602, 0x1603};
+  size_t   rpdo_total_objects_limit =
+      JSD_EPD_ARRAY_SIZE(rpdo_mapping_parameters) * 8;
+  int rpdo_mapping_parameters_idx = 0;
+
+  uint16_t rpdo_mapping_elements_common[] = {
       0x0010, 0x6040,  // controlword
-      0x0020, 0x6081,  // profile_velocity
-      0x0020, 0x6082,  // end_velocity
-      0x0020, 0x6083,  // profile_accel
-      0x0020, 0x6084,  // profile_decel
-      0x0010, 0x36E0,  // gain_scheduling_index
+      0x0010, 0x6073,  // max_current
+      0x0008, 0x6060,  // mode_of_operation
   };
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1603, 0x00,
-                                     sizeof(map_output_pdos_1603),
-                                     &map_output_pdos_1603)) {
-    return 0;
+  int rpdo_mapping_elements_common_idx = 0;
+  int rpdo_objects_unmapped_common =
+      JSD_EPD_ARRAY_SIZE(rpdo_mapping_elements_common) / 2;
+  size_t rpdo_total_size = 0;
+
+  if (config->epd.use_sil) {
+    int sil_inputs_r1_unmapped = config->epd.sil.inputs_r1_num;
+    int sil_inputs_r1_subindex = 1;
+    int sil_inputs_r2_unmapped = config->epd.sil.inputs_r2_num;
+    int sil_inputs_r2_subindex = 1;
+
+    // Check for errors
+    rpdo_total_size = sizeof(jsd_epd_rxpdo_data_common_t) +
+                      (config->epd.sil.inputs_r1_num * 4) +
+                      (config->epd.sil.inputs_r2_num * 8);
+    if (rpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
+      ERROR(
+          "Total size of RPDO mapped objects (%zu) must be less than the "
+          "corresponding PDO channel's limit (%d).",
+          rpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+      return 0;
+    }
+    size_t rpdo_total_objects = rpdo_objects_unmapped_common +
+                                config->epd.sil.inputs_r1_num +
+                                config->epd.sil.inputs_r2_num;
+    if (rpdo_total_objects > rpdo_total_objects_limit) {
+      ERROR(
+          "Number of RPDO mapped objects (%zu) must be less than the limit on "
+          "RPDO mapped objects (%zu).",
+          rpdo_total_objects, rpdo_total_objects_limit);
+      return 0;
+    }
+
+    while ((rpdo_objects_unmapped_common + sil_inputs_r1_unmapped +
+            sil_inputs_r2_unmapped) > 0) {
+      int objects_mapped =
+          jsd_epd_min(8, rpdo_objects_unmapped_common + sil_inputs_r1_unmapped +
+                             sil_inputs_r2_unmapped);
+      uint16_t rpdo_mapping_parameter_record[objects_mapped * 2 + 1];
+      rpdo_mapping_parameter_record[0] = objects_mapped;
+
+      for (int i = 0; i < objects_mapped; ++i) {
+        int entry_start_idx = (i * 2) + 1;
+        if (rpdo_objects_unmapped_common > 0) {
+          rpdo_mapping_parameter_record[entry_start_idx] =
+              rpdo_mapping_elements_common[rpdo_mapping_elements_common_idx];
+          rpdo_mapping_parameter_record[entry_start_idx + 1] =
+              rpdo_mapping_elements_common[++rpdo_mapping_elements_common_idx];
+          ++rpdo_mapping_elements_common_idx;
+          --rpdo_objects_unmapped_common;
+        } else if (sil_inputs_r1_unmapped > 0) {
+          rpdo_mapping_parameter_record[entry_start_idx] =
+              0x0020 + 0x0100 * sil_inputs_r1_subindex;
+          rpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
+          ++sil_inputs_r1_subindex;
+          --sil_inputs_r1_unmapped;
+        } else if (sil_inputs_r2_unmapped > 0) {
+          rpdo_mapping_parameter_record[entry_start_idx] =
+              0x0040 + 0x0100 * sil_inputs_r2_subindex;
+          rpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
+          ++sil_inputs_r2_subindex;
+          --sil_inputs_r2_unmapped;
+        }
+      }
+
+      if (!jsd_sdo_set_ca_param_blocking(
+              ecx_context, slave_id,
+              rpdo_mapping_parameters[rpdo_mapping_parameters_idx], 0x00,
+              sizeof(rpdo_mapping_parameter_record),
+              &rpdo_mapping_parameter_record)) {
+        return 0;
+      }
+
+      ++rpdo_mapping_parameters_idx;
+    }
+  } else {
+    // Drive shall be configured for nominal mode.
+    uint16_t rpdo_mapping_elements_nominal[] = {
+        0x0020, 0x607A,  // target_position
+        0x0020, 0x60FF,  // target_velocity
+        0x0010, 0x6071,  // target_torque
+        0x0020, 0x60B0,  // position_offset
+        0x0020, 0x60B1,  // velocity_offset
+        0x0010, 0x60B2,  // torque_offset
+        0x0020, 0x6081,  // profile_velocity
+        0x0020, 0x6082,  // end_velocity
+        0x0020, 0x6083,  // profile_accel
+        0x0020, 0x6084,  // profile_decel
+        0x0010, 0x36E0,  // gain_scheduling_index
+        0x0120, 0x60FE,  // digital_outputs
+    };
+    int rpdo_mapping_elements_nominal_idx = 0;
+    int rpdo_objects_unmapped_nominal =
+        JSD_EPD_ARRAY_SIZE(rpdo_mapping_elements_nominal) / 2;
+
+    // Check for errors
+    rpdo_total_size = sizeof(jsd_epd_rxpdo_data_common_t) +
+                      sizeof(jsd_epd_rxpdo_data_nominal_t);
+    if (rpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
+      ERROR(
+          "Total size of RPDO mapped objects (%zu) must be less than the "
+          "corresponding PDO channel's limit (%d).",
+          rpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+      return 0;
+    }
+    size_t rpdo_total_objects =
+        rpdo_objects_unmapped_common + rpdo_objects_unmapped_nominal;
+    if (rpdo_total_objects > rpdo_total_objects_limit) {
+      ERROR(
+          "Number of RPDO mapped objects (%zu) must be less than the limit on "
+          "RPDO mapped objects (%zu).",
+          rpdo_total_objects, rpdo_total_objects_limit);
+      return 0;
+    }
+
+    while ((rpdo_objects_unmapped_common + rpdo_objects_unmapped_nominal) > 0) {
+      int objects_mapped = jsd_epd_min(
+          8, rpdo_objects_unmapped_common + rpdo_objects_unmapped_nominal);
+      uint16_t rpdo_mapping_parameter_record[objects_mapped * 2 + 1];
+      rpdo_mapping_parameter_record[0] = objects_mapped;
+
+      for (int i = 0; i < objects_mapped; ++i) {
+        int entry_start_idx = (i * 2) + 1;
+        if (rpdo_objects_unmapped_common > 0) {
+          rpdo_mapping_parameter_record[entry_start_idx] =
+              rpdo_mapping_elements_common[rpdo_mapping_elements_common_idx];
+          rpdo_mapping_parameter_record[entry_start_idx + 1] =
+              rpdo_mapping_elements_common[++rpdo_mapping_elements_common_idx];
+          ++rpdo_mapping_elements_common_idx;
+          --rpdo_objects_unmapped_common;
+        } else if (rpdo_objects_unmapped_nominal > 0) {
+          rpdo_mapping_parameter_record[entry_start_idx] =
+              rpdo_mapping_elements_nominal[rpdo_mapping_elements_nominal_idx];
+          rpdo_mapping_parameter_record[entry_start_idx + 1] =
+              rpdo_mapping_elements_nominal
+                  [++rpdo_mapping_elements_nominal_idx];
+          ++rpdo_mapping_elements_nominal_idx;
+          --rpdo_objects_unmapped_nominal;
+        }
+      }
+
+      if (!jsd_sdo_set_ca_param_blocking(
+              ecx_context, slave_id,
+              rpdo_mapping_parameters[rpdo_mapping_parameters_idx], 0x00,
+              sizeof(rpdo_mapping_parameter_record),
+              &rpdo_mapping_parameter_record)) {
+        return 0;
+      }
+
+      ++rpdo_mapping_parameters_idx;
+    }
   }
 
-  // TODO(dloret): Didn't we disable Complete Access somewhere else?
-  uint16_t map_output_RxPDO[] = {0x0002, 0x1602, 0x1603};
+  // Set RxPDO assign object
+  uint16_t rxpdo_assign_array[1 + rpdo_mapping_parameters_idx];
+  rxpdo_assign_array[0] = rpdo_mapping_parameters_idx;
+  for (int i = 1; i <= rpdo_mapping_parameters_idx; ++i) {
+    rxpdo_assign_array[i] = rpdo_mapping_parameters[i - 1];
+  }
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
-                                     sizeof(map_output_RxPDO),
-                                     &map_output_RxPDO)) {
+                                     sizeof(rxpdo_assign_array),
+                                     &rxpdo_assign_array)) {
     return 0;
   }
+  MSG_DEBUG("RxPDO size: %zu Bytes", rpdo_total_size);
 
   //////////////// TxPDO Mapping //////////////////////////
-  uint16_t map_input_pdos_1a02[] = {
-      0x0008,          // Number of mapped parameters
+
+  uint16_t tpdo_mapping_parameters[] = {0x1A00, 0x1A01, 0x1A02, 0x1A03};
+  size_t   tpdo_total_objects_limit =
+      JSD_EPD_ARRAY_SIZE(tpdo_mapping_parameters) * 8;
+  int tpdo_mapping_parameters_idx = 0;
+
+  uint16_t tpdo_mapping_elements_common[] = {
+      0x0010, 0x6041,  // statusword
+      0x0120, 0x3607,  // status_register_1
+      0x0008, 0x6061,  // mode_of_operation_display
       0x0020, 0x6064,  // actual_position
       0x0020, 0x6069,  // velocity_actual_value
       0x0010, 0x6078,  // current_actual_value
-      0x0008, 0x6061,  // mode_of_operation_display
-      0x0020, 0x6079,  // dc_link_circuit_voltage
-      0x0020, 0x3610,  // drive_temperature_deg_c
-      0x0020, 0x60FD,  // digital_inputs
-      0x0110, 0x2205,  // analog_input_1
   };
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1A02, 0x00,
-                                     sizeof(map_input_pdos_1a02),
-                                     &map_input_pdos_1a02)) {
-    return 0;
+  int tpdo_mapping_elements_common_idx = 0;
+  int tpdo_objects_unmapped_common =
+      JSD_EPD_ARRAY_SIZE(tpdo_mapping_elements_common) / 2;
+  size_t tpdo_total_size = 0;
+
+  if (config->epd.use_sil) {
+    int sil_outputs_r1_unmapped = config->epd.sil.outputs_r1_num;
+    int sil_outputs_r1_subindex = 129;
+    int sil_outputs_r2_unmapped = config->epd.sil.outputs_r2_num;
+    int sil_outputs_r2_subindex = 65;
+
+    // Check for errors
+    tpdo_total_size = sizeof(jsd_epd_txpdo_data_common_t) +
+                      (config->epd.sil.outputs_r1_num * 4) +
+                      (config->epd.sil.outputs_r2_num * 8);
+    if (tpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
+      ERROR(
+          "Total size of TPDO mapped objects (%zu) must be less than the "
+          "corresponding PDO channel's limit (%d).",
+          tpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+      return 0;
+    }
+    size_t tpdo_total_objects = tpdo_objects_unmapped_common +
+                                config->epd.sil.outputs_r1_num +
+                                config->epd.sil.outputs_r2_num;
+    if (tpdo_total_objects > tpdo_total_objects_limit) {
+      ERROR(
+          "Number of TPDO mapped objects (%zu) must be less than the limit on "
+          "TPDO mapped objects (%zu).",
+          tpdo_total_objects, tpdo_total_objects_limit);
+      return 0;
+    }
+
+    while ((tpdo_objects_unmapped_common + sil_outputs_r1_unmapped +
+            sil_outputs_r2_unmapped) > 0) {
+      int objects_mapped =
+          jsd_epd_min(8, tpdo_objects_unmapped_common +
+                             sil_outputs_r1_unmapped + sil_outputs_r2_unmapped);
+      uint16_t tpdo_mapping_parameter_record[objects_mapped * 2 + 1];
+      tpdo_mapping_parameter_record[0] = objects_mapped;
+
+      for (int i = 0; i < objects_mapped; ++i) {
+        int entry_start_idx = (i * 2) + 1;
+        if (tpdo_objects_unmapped_common > 0) {
+          tpdo_mapping_parameter_record[entry_start_idx] =
+              tpdo_mapping_elements_common[tpdo_mapping_elements_common_idx];
+          tpdo_mapping_parameter_record[entry_start_idx + 1] =
+              tpdo_mapping_elements_common[++tpdo_mapping_elements_common_idx];
+          ++tpdo_mapping_elements_common_idx;
+          --tpdo_objects_unmapped_common;
+        } else if (sil_outputs_r1_unmapped > 0) {
+          tpdo_mapping_parameter_record[entry_start_idx] =
+              0x8020 + 0x0100 * sil_outputs_r1_subindex;
+          tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
+          ++sil_outputs_r1_subindex;
+          --sil_outputs_r1_unmapped;
+        } else if (sil_outputs_r2_unmapped > 0) {
+          tpdo_mapping_parameter_record[entry_start_idx] =
+              0x4040 + 0x0100 * sil_outputs_r2_subindex;
+          tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
+          ++sil_outputs_r2_subindex;
+          --sil_outputs_r2_unmapped;
+        }
+      }
+
+      if (!jsd_sdo_set_ca_param_blocking(
+              ecx_context, slave_id,
+              tpdo_mapping_parameters[tpdo_mapping_parameters_idx], 0x00,
+              sizeof(tpdo_mapping_parameter_record),
+              &tpdo_mapping_parameter_record)) {
+        return 0;
+      }
+
+      ++tpdo_mapping_parameters_idx;
+    }
+  } else {
+    // Drive shall be configured for nominal mode.
+    uint16_t tpdo_mapping_elements_nominal[] = {
+        0x0020, 0x6079,  // dc_link_circuit_voltage
+        0x0020, 0x3610,  // drive_temperature_deg_c
+        0x0020, 0x60FD,  // digital_inputs
+        0x0110, 0x2205,  // analog_input_1
+        0x0210, 0x2205,  // analog_input_2
+        0x0220, 0x3607,  // status_register_2
+    };
+    int tpdo_mapping_elements_nominal_idx = 0;
+    int tpdo_objects_unmapped_nominal =
+        JSD_EPD_ARRAY_SIZE(tpdo_mapping_elements_nominal) / 2;
+
+    // Check for errors
+    tpdo_total_size = sizeof(jsd_epd_txpdo_data_common_t) +
+                      sizeof(jsd_epd_txpdo_data_nominal_t);
+    if (tpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
+      ERROR(
+          "Total size of TPDO mapped objects (%zu) must be less than the "
+          "corresponding PDO channel's limit (%d).",
+          tpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+      return 0;
+    }
+    size_t tpdo_total_objects =
+        tpdo_objects_unmapped_common + tpdo_objects_unmapped_nominal;
+    if (tpdo_total_objects > tpdo_total_objects_limit) {
+      ERROR(
+          "Number of TPDO mapped objects (%zu) must be less than the limit on "
+          "TPDO mapped objects (%zu).",
+          tpdo_total_objects, tpdo_total_objects_limit);
+      return 0;
+    }
+
+    while ((tpdo_objects_unmapped_common + tpdo_objects_unmapped_nominal) > 0) {
+      int objects_mapped = jsd_epd_min(
+          8, tpdo_objects_unmapped_common + tpdo_objects_unmapped_nominal);
+      uint16_t tpdo_mapping_parameter_record[objects_mapped * 2 + 1];
+      tpdo_mapping_parameter_record[0] = objects_mapped;
+
+      for (int i = 0; i < objects_mapped; ++i) {
+        int entry_start_idx = (i * 2) + 1;
+        if (tpdo_objects_unmapped_common > 0) {
+          tpdo_mapping_parameter_record[entry_start_idx] =
+              tpdo_mapping_elements_common[tpdo_mapping_elements_common_idx];
+          tpdo_mapping_parameter_record[entry_start_idx + 1] =
+              tpdo_mapping_elements_common[++tpdo_mapping_elements_common_idx];
+          ++tpdo_mapping_elements_common_idx;
+          --tpdo_objects_unmapped_common;
+        } else if (tpdo_objects_unmapped_nominal > 0) {
+          tpdo_mapping_parameter_record[entry_start_idx] =
+              tpdo_mapping_elements_nominal[tpdo_mapping_elements_nominal_idx];
+          tpdo_mapping_parameter_record[entry_start_idx + 1] =
+              tpdo_mapping_elements_nominal
+                  [++tpdo_mapping_elements_nominal_idx];
+          ++tpdo_mapping_elements_nominal_idx;
+          --tpdo_objects_unmapped_nominal;
+        }
+      }
+
+      if (!jsd_sdo_set_ca_param_blocking(
+              ecx_context, slave_id,
+              tpdo_mapping_parameters[tpdo_mapping_parameters_idx], 0x00,
+              sizeof(tpdo_mapping_parameter_record),
+              &tpdo_mapping_parameter_record)) {
+        return 0;
+      }
+
+      ++tpdo_mapping_parameters_idx;
+    }
   }
 
-  uint16_t map_input_pdos_1a03[] = {
-      0x0004,          // Number of mapped parameters
-      0x0210, 0x2205,  // analog_input_2
-      0x0120, 0x3607,  // status_register_1
-      0x0220, 0x3607,  // status_register_2
-      0x0010, 0x6041,  // statusword
-  };
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1A03, 0x00,
-                                     sizeof(map_input_pdos_1a03),
-                                     &map_input_pdos_1a03)) {
-    return 0;
+  // Set TxPDO assign object
+  uint16_t txpdo_assign_array[1 + tpdo_mapping_parameters_idx];
+  txpdo_assign_array[0] = tpdo_mapping_parameters_idx;
+  for (int i = 1; i <= tpdo_mapping_parameters_idx; ++i) {
+    txpdo_assign_array[i] = tpdo_mapping_parameters[i - 1];
   }
-
-  uint16_t map_input_TxPDO[] = {0x0002, 0x1A02, 0x1A03};
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
-                                     sizeof(map_input_TxPDO),
-                                     &map_input_TxPDO)) {
+                                     sizeof(txpdo_assign_array),
+                                     &txpdo_assign_array)) {
     return 0;
   }
+  MSG_DEBUG("TxPDO size: %zu Bytes", tpdo_total_size);
 
   return 1;
 }
@@ -550,34 +1005,6 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   int8_t controlword = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6060, 0x00,
                                   JSD_SDO_DATA_I8, &controlword)) {
-    return 0;
-  }
-
-  // Set relative motion to be relative to actual position
-  // TODO(dloret): Latest Platinum's firmware has a bug with option 0x02
-  // (relative to actual position). Until the issue is fixed, 0x01 (relative to
-  // desired position, not target profiled position) will be used to have a
-  // similar behavior.
-  uint16_t pos_opt_code = 0x01;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60F2, 0x00,
-                                  JSD_SDO_DATA_U16, &pos_opt_code)) {
-    return 0;
-  }
-
-  // Set interpolation time period.
-  // Drive actually supports microseconds.
-  uint8_t loop_period_ms = config->epd.loop_period_ms;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60C2, 1,
-                                  JSD_SDO_DATA_U8, &loop_period_ms)) {
-    return 0;
-  }
-
-  // Set Extrapolation Cycles Timeout (5 cycles based on ECAT lib testing)
-  // TODO(dloret): confirm whether object 0x2F75 remains unchanged for the
-  // Platinum.
-  int16_t extra_cycles = 5;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3675, 0,
-                                  JSD_SDO_DATA_I16, &extra_cycles)) {
     return 0;
   }
 
@@ -597,37 +1024,69 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
-  // Set torque slope for profile torque commands
-  uint32_t torque_slope = config->epd.torque_slope * 1e6 / motor_rated_current;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6087, 0,
-                                  JSD_SDO_DATA_U32, &torque_slope)) {
-    return 0;
-  }
+  if (!config->epd.use_sil) {
+    // Set relative motion to be relative to actual position
+    // TODO(dloret): Latest Platinum's firmware has a bug with option 0x02
+    // (relative to actual position). Until the issue is fixed, 0x01 (relative
+    // to desired position, not target profiled position) will be used to have a
+    // similar behavior.
+    uint16_t pos_opt_code = 0x01;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60F2, 0x00,
+                                    JSD_SDO_DATA_U16, &pos_opt_code)) {
+      return 0;
+    }
 
-  // Set maximum motor speed
-  // First, get feedback counts per electrical cycle (e.g. encoder counts per
-  // revolution) because the maximum motor speed parameter expects rpm units.
-  int64_t ca_18;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CA"),
-                                  18, JSD_SDO_DATA_I64, &ca_18)) {
-    return 0;
-  }
-  MSG("EPD[%d] read CA[18] = %ld counts per revolution", slave_id, ca_18);
-  // Express maximum motor speed in rpm units.
-  if (config->epd.max_motor_speed < 0.0) {
-    ERROR(
-        "EPD[%d] failed to set maximum motor speed (%lf). The parameter must "
-        "not be negative.",
-        slave_id, config->epd.max_motor_speed);
-    return 0;
-  }
-  uint32_t max_motor_speed_rpm =
-      (uint32_t)(config->epd.max_motor_speed / ca_18 * 60.0);
-  MSG("EPD[%d] max_motor_speed_rpm = %u", slave_id, max_motor_speed_rpm);
-  // Finally, set the maximum motor speed object.
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6080, 0,
-                                  JSD_SDO_DATA_U32, &max_motor_speed_rpm)) {
-    return 0;
+    // Set interpolation time period.
+    // Drive actually supports microseconds.
+    uint8_t loop_period_ms = config->epd.nominal.loop_period_ms;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60C2, 1,
+                                    JSD_SDO_DATA_U8, &loop_period_ms)) {
+      return 0;
+    }
+
+    // Set Extrapolation Cycles Timeout (5 cycles based on ECAT lib testing)
+    // TODO(dloret): confirm whether object 0x2F75 remains unchanged for the
+    // Platinum.
+    int16_t extra_cycles = 5;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x3675, 0,
+                                    JSD_SDO_DATA_I16, &extra_cycles)) {
+      return 0;
+    }
+
+    // Set torque slope for profile torque commands
+    uint32_t torque_slope =
+        config->epd.nominal.torque_slope * 1e6 / motor_rated_current;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6087, 0,
+                                    JSD_SDO_DATA_U32, &torque_slope)) {
+      return 0;
+    }
+
+    // Set maximum motor speed
+    // First, get feedback counts per electrical cycle (e.g. encoder counts per
+    // revolution) because the maximum motor speed parameter expects rpm units.
+    int64_t ca_18;
+    if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                    jsd_epd_lc_to_do("CA"), 18,
+                                    JSD_SDO_DATA_I64, &ca_18)) {
+      return 0;
+    }
+    MSG("EPD[%d] read CA[18] = %ld counts per revolution", slave_id, ca_18);
+    // Express maximum motor speed in rpm units.
+    if (config->epd.nominal.max_motor_speed < 0.0) {
+      ERROR(
+          "EPD[%d] failed to set maximum motor speed (%lf). The parameter must "
+          "not be negative.",
+          slave_id, config->epd.nominal.max_motor_speed);
+      return 0;
+    }
+    uint32_t max_motor_speed_rpm =
+        (uint32_t)(config->epd.nominal.max_motor_speed / ca_18 * 60.0);
+    MSG("EPD[%d] max_motor_speed_rpm = %u", slave_id, max_motor_speed_rpm);
+    // Finally, set the maximum motor speed object.
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6080, 0,
+                                    JSD_SDO_DATA_U32, &max_motor_speed_rpm)) {
+      return 0;
+    }
   }
 
   return 1;
@@ -636,31 +1095,6 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
                              jsd_slave_config_t* config) {
   // TODO(dloret): Verify the types of the corresponding data objects
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("AC"),
-                                  1, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.max_profile_accel)) {
-    // TODO(dloret): EGD code warns about a minimum permissible profile
-    // acceleration. Not sure if this applies to Platinum.
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("DC"),
-                                  1, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.max_profile_decel)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
-                                  2, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.velocity_tracking_error)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
-                                  3, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.position_tracking_error)) {
-    return 0;
-  }
 
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("PL"),
                                   2, JSD_SDO_DATA_FLOAT,
@@ -729,17 +1163,48 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
-  int64_t ctrl_gs_mode_i64 = config->epd.ctrl_gain_scheduling_mode;
-  if (ctrl_gs_mode_i64 != JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED &&
-      !jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("GS"),
-                                  2, JSD_SDO_DATA_I64, &ctrl_gs_mode_i64)) {
-    return 0;
-  }
+  if (!config->epd.use_sil) {
+    if (!jsd_sdo_set_param_blocking(
+            ecx_context, slave_id, jsd_epd_lc_to_do("AC"), 1,
+            JSD_SDO_DATA_DOUBLE, &config->epd.nominal.max_profile_accel)) {
+      // TODO(dloret): EGD code warns about a minimum permissible profile
+      // acceleration. Not sure if this applies to Platinum.
+      return 0;
+    }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("SF"),
-                                  1, JSD_SDO_DATA_I64,
-                                  &config->epd.smooth_factor)) {
-    return 0;
+    if (!jsd_sdo_set_param_blocking(
+            ecx_context, slave_id, jsd_epd_lc_to_do("DC"), 1,
+            JSD_SDO_DATA_DOUBLE, &config->epd.nominal.max_profile_decel)) {
+      return 0;
+    }
+
+    if (!jsd_sdo_set_param_blocking(
+            ecx_context, slave_id, jsd_epd_lc_to_do("ER"), 2,
+            JSD_SDO_DATA_DOUBLE,
+            &config->epd.nominal.velocity_tracking_error)) {
+      return 0;
+    }
+
+    if (!jsd_sdo_set_param_blocking(
+            ecx_context, slave_id, jsd_epd_lc_to_do("ER"), 3,
+            JSD_SDO_DATA_DOUBLE,
+            &config->epd.nominal.position_tracking_error)) {
+      return 0;
+    }
+
+    int64_t ctrl_gs_mode_i64 = config->epd.nominal.ctrl_gain_scheduling_mode;
+    if (ctrl_gs_mode_i64 != JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED &&
+        !jsd_sdo_set_param_blocking(ecx_context, slave_id,
+                                    jsd_epd_lc_to_do("GS"), 2, JSD_SDO_DATA_I64,
+                                    &ctrl_gs_mode_i64)) {
+      return 0;
+    }
+
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id,
+                                    jsd_epd_lc_to_do("SF"), 1, JSD_SDO_DATA_I64,
+                                    &config->epd.nominal.smooth_factor)) {
+      return 0;
+    }
   }
 
   // Verify startup parameters
@@ -798,7 +1263,8 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
   return 1;
 }
 
-void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id,
+                                        jsd_slave_config_t* config) {
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
@@ -808,34 +1274,18 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->last_state_machine_state = state->pub.actual_state_machine_state;
   state->last_setpoint_ack        = state->setpoint_ack;
 
-  state->pub.actual_position = state->txpdo.actual_position;
-  state->pub.actual_velocity = state->txpdo.velocity_actual_value;
-  state->pub.actual_current  = (double)state->txpdo.current_actual_value *
+  state->pub.actual_position = state->txpdo_common.actual_position;
+  state->pub.actual_velocity = state->txpdo_common.velocity_actual_value;
+  state->pub.actual_current = (double)state->txpdo_common.current_actual_value *
                               state->motor_rated_current / 1e6;
 
-  state->pub.cmd_position = state->rxpdo.target_position;
-  state->pub.cmd_velocity = state->rxpdo.target_velocity;
-  state->pub.cmd_current =
-      (double)state->rxpdo.target_torque * state->motor_rated_current / 1e6;
-  state->pub.cmd_max_current =
-      (double)state->rxpdo.max_current * state->motor_rated_current / 1e6;
-
-  state->pub.cmd_ff_position = state->rxpdo.position_offset;
-  state->pub.cmd_ff_velocity = state->rxpdo.velocity_offset;
-  state->pub.cmd_ff_current =
-      (double)state->rxpdo.torque_offset * state->motor_rated_current / 1e6;
-
-  state->pub.cmd_prof_velocity     = state->rxpdo.profile_velocity;
-  state->pub.cmd_prof_end_velocity = state->rxpdo.end_velocity;
-  state->pub.cmd_prof_accel        = state->rxpdo.profile_accel;
-  state->pub.cmd_prof_decel        = state->rxpdo.profile_decel;
-
-  state->pub.actual_mode_of_operation = state->txpdo.mode_of_operation_display;
+  state->pub.actual_mode_of_operation =
+      state->txpdo_common.mode_of_operation_display;
   // TODO(dloret): EGD code prints a change of mode of operation here.
 
   // Handle Statusword
   state->pub.actual_state_machine_state =
-      state->txpdo.statusword & JSD_EPD_STATE_MACHINE_STATE_BITMASK;
+      state->txpdo_common.statusword & JSD_EPD_STATE_MACHINE_STATE_BITMASK;
   // TODO(dloret): EGD code prints a change of state here.
   if (state->pub.actual_state_machine_state !=
       state->last_state_machine_state) {
@@ -855,46 +1305,84 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
     }
   }
 
-  state->pub.warning        = state->txpdo.statusword >> 7 & 0x01;
-  state->pub.target_reached = state->txpdo.statusword >> 10 & 0x01;
-  state->setpoint_ack       = state->txpdo.statusword >> 12 & 0x01;
-  state->pub.setpoint_ack_rise =
-      (state->last_setpoint_ack == 0 && state->setpoint_ack == 1);
+  state->pub.warning        = state->txpdo_common.statusword >> 7 & 0x01;
+  state->pub.target_reached = state->txpdo_common.statusword >> 10 & 0x01;
+  state->setpoint_ack       = state->txpdo_common.statusword >> 12 & 0x01;
 
   // Handle Status Register
-  state->pub.servo_enabled = state->txpdo.status_register_1 >> 4 & 0x01;
+  state->pub.servo_enabled = state->txpdo_common.status_register_1 >> 4 & 0x01;
   state->fault_occured_when_enabled =
-      state->txpdo.status_register_1 >> 6 & 0x01;
+      state->txpdo_common.status_register_1 >> 6 & 0x01;
   // TODO(dloret): Double check this is a proper way to check STO status.
-  state->pub.sto_engaged = !((state->txpdo.status_register_1 >> 25 & 0x01) &
-                             (state->txpdo.status_register_1 >> 26 & 0x01));
-  state->pub.motor_on    = state->txpdo.status_register_1 >> 22 & 0x01;
-  state->pub.in_motion   = state->txpdo.status_register_1 >> 23 & 0x01;
-  state->pub.hall_state  = state->txpdo.status_register_2 >> 0 & 0x07;
+  state->pub.sto_engaged =
+      !((state->txpdo_common.status_register_1 >> 25 & 0x01) &
+        (state->txpdo_common.status_register_1 >> 26 & 0x01));
+  state->pub.motor_on   = state->txpdo_common.status_register_1 >> 22 & 0x01;
+  state->pub.in_motion  = state->txpdo_common.status_register_1 >> 23 & 0x01;
+  state->pub.hall_state = state->txpdo_common.status_register_2 >> 0 & 0x07;
 
   // TODO(dloret): EGD code prints change in sto_engaged here.
 
-  // Digital inputs
-  state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;
-  for (int i = 0; i < JSD_EPD_NUM_DIGITAL_INPUTS; ++i) {
-    state->pub.digital_inputs[i] =
-        state->txpdo.digital_inputs >> (16 + i) & 0x01;
+  state->pub.cmd_max_current = (double)state->rxpdo_common.max_current *
+                               state->motor_rated_current / 1e6;
+
+  if (config->epd.use_sil) {
+    state->pub.sil.sil_initialized =
+        state->txpdo_common.status_register_2 >> 17 & 0x01;
+    state->pub.sil.sil_running =
+        state->txpdo_common.status_register_2 >> 18 & 0x01;
+    state->pub.sil.sil_faulted =
+        state->txpdo_common.status_register_2 >> 19 & 0x01;
+    // R1 and R2 input/output arrays are populated in jsd_epd_read function.
+  } else {
+    state->pub.nominal.cmd_position = state->rxpdo_nominal.target_position;
+    state->pub.nominal.cmd_velocity = state->rxpdo_nominal.target_velocity;
+    state->pub.nominal.cmd_current =
+        (double)state->rxpdo_nominal.target_torque *
+        state->motor_rated_current / 1e6;
+
+    state->pub.nominal.cmd_ff_position = state->rxpdo_nominal.position_offset;
+    state->pub.nominal.cmd_ff_velocity = state->rxpdo_nominal.velocity_offset;
+    state->pub.nominal.cmd_ff_current =
+        (double)state->rxpdo_nominal.torque_offset *
+        state->motor_rated_current / 1e6;
+
+    state->pub.nominal.cmd_prof_velocity =
+        state->rxpdo_nominal.profile_velocity;
+    state->pub.nominal.cmd_prof_end_velocity =
+        state->rxpdo_nominal.end_velocity;
+    state->pub.nominal.cmd_prof_accel = state->rxpdo_nominal.profile_accel;
+    state->pub.nominal.cmd_prof_decel = state->rxpdo_nominal.profile_decel;
+
+    state->pub.nominal.setpoint_ack_rise =
+        (state->last_setpoint_ack == 0 && state->setpoint_ack == 1);
+
+    // Digital inputs
+    state->interlock = state->txpdo_nominal.digital_inputs >> 3 & 0x01;
+    for (int i = 0; i < JSD_EPD_NUM_DIGITAL_INPUTS; ++i) {
+      state->pub.nominal.digital_inputs[i] =
+          state->txpdo_nominal.digital_inputs >> (16 + i) & 0x01;
+    }
+
+    // Bus voltage
+    state->pub.nominal.bus_voltage =
+        state->txpdo_nominal.dc_link_circuit_voltage / 1000.0;
+
+    // Analog input 1 voltage
+    state->pub.nominal.analog_input_voltage =
+        state->txpdo_nominal.analog_input_1 / 1000.0;
+
+    // Analog input 2 analog to digital conversion
+    state->pub.nominal.analog_input_adc = state->txpdo_nominal.analog_input_2;
+
+    // Drive's temperature
+    state->pub.nominal.drive_temperature =
+        state->txpdo_nominal.drive_temperature_deg_c;
   }
-
-  // Bus voltage
-  state->pub.bus_voltage = state->txpdo.dc_link_circuit_voltage / 1000.0;
-
-  // Analog input 1 voltage
-  state->pub.analog_input_voltage = state->txpdo.analog_input_1 / 1000.0;
-
-  // Analog input 2 analog to digital conversion
-  state->pub.analog_input_adc = state->txpdo.analog_input_2;
-
-  // Drive's temperature
-  state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
 }
 
-void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id,
+                                   jsd_slave_config_t* config) {
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
@@ -908,22 +1396,25 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       // Transition to READY TO SWITCH ON
-      state->rxpdo.controlword = JSD_EPD_STATE_MACHINE_CONTROLWORD_SHUTDOWN;
+      state->rxpdo_common.controlword =
+          JSD_EPD_STATE_MACHINE_CONTROLWORD_SHUTDOWN;
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       // Transition to SWITCHED ON
-      state->rxpdo.controlword = JSD_EPD_STATE_MACHINE_CONTROLWORD_SWITCH_ON;
+      state->rxpdo_common.controlword =
+          JSD_EPD_STATE_MACHINE_CONTROLWORD_SWITCH_ON;
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCHED_ON:
       // Startup, a fault, or the completion of a halt command (i.e. Quick Stop)
       // eventually land in this state. Transition to OPERATION ENABLED if a
       // reset command has been received.
       if (state->new_reset) {
-        state->rxpdo.controlword =
+        state->rxpdo_common.controlword =
             JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION;
         state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
-        state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
-        state->new_reset                   = false;
+        state->rxpdo_common.mode_of_operation =
+            state->requested_mode_of_operation;
+        state->new_reset = false;
       }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
@@ -939,12 +1430,16 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         // TODO(dloret): EGD code overwrites previous controlword, maybe to not
         // change the mode of operation bits. It does not seem to me that is
         // necessary.
-        state->rxpdo.controlword = JSD_EPD_STATE_MACHINE_CONTROLWORD_QUICK_STOP;
+        state->rxpdo_common.controlword =
+            JSD_EPD_STATE_MACHINE_CONTROLWORD_QUICK_STOP;
         state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
-        state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
+        state->rxpdo_common.mode_of_operation =
+            state->requested_mode_of_operation;
         break;
       }
-      jsd_epd_process_mode_of_operation(self, slave_id);
+      if (!config->epd.use_sil) {
+        jsd_epd_process_mode_of_operation(self, slave_id);
+      }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
       // No-op. Since the Quick Stop Option Code (0x605A) is set to 2, the drive
@@ -984,7 +1479,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
                   jsd_epd_fault_code_to_string(state->pub.fault_code));
 
             // Transition to SWITCHED ON DISABLED
-            state->rxpdo.controlword =
+            state->rxpdo_common.controlword =
                 JSD_EPD_STATE_MACHINE_CONTROLWORD_FAULT_RESET;
 
             error_found = true;
@@ -1005,7 +1500,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->pub.fault_code      = JSD_EPD_FAULT_UNKNOWN;
 
         // Transition to SWITCHED ON DISABLED
-        state->rxpdo.controlword =
+        state->rxpdo_common.controlword =
             JSD_EPD_STATE_MACHINE_CONTROLWORD_FAULT_RESET;
       }
       break;
@@ -1068,131 +1563,131 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position = cmd.csp.target_position;
-  state->rxpdo.position_offset = cmd.csp.position_offset;
-  state->rxpdo.target_velocity = 0;
-  state->rxpdo.velocity_offset = cmd.csp.velocity_offset;
-  state->rxpdo.target_torque   = 0;
-  state->rxpdo.torque_offset =
+  state->rxpdo_nominal.target_position = cmd.csp.target_position;
+  state->rxpdo_nominal.position_offset = cmd.csp.position_offset;
+  state->rxpdo_nominal.target_velocity = 0;
+  state->rxpdo_nominal.velocity_offset = cmd.csp.velocity_offset;
+  state->rxpdo_nominal.target_torque   = 0;
+  state->rxpdo_nominal.torque_offset =
       cmd.csp.torque_offset_amps * 1e6 / state->motor_rated_current;
-  state->rxpdo.profile_velocity = 0;
-  state->rxpdo.end_velocity     = 0;
-  state->rxpdo.profile_accel    = 0;
-  state->rxpdo.profile_decel    = 0;
+  state->rxpdo_nominal.profile_velocity = 0;
+  state->rxpdo_nominal.end_velocity     = 0;
+  state->rxpdo_nominal.profile_accel    = 0;
+  state->rxpdo_nominal.profile_decel    = 0;
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
 }
 
 void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position = 0;
-  state->rxpdo.position_offset = 0;
-  state->rxpdo.target_velocity = cmd.csv.target_velocity;
-  state->rxpdo.velocity_offset = cmd.csv.velocity_offset;
-  state->rxpdo.target_torque   = 0;
-  state->rxpdo.torque_offset =
+  state->rxpdo_nominal.target_position = 0;
+  state->rxpdo_nominal.position_offset = 0;
+  state->rxpdo_nominal.target_velocity = cmd.csv.target_velocity;
+  state->rxpdo_nominal.velocity_offset = cmd.csv.velocity_offset;
+  state->rxpdo_nominal.target_torque   = 0;
+  state->rxpdo_nominal.torque_offset =
       cmd.csv.torque_offset_amps * 1e6 / state->motor_rated_current;
-  state->rxpdo.profile_velocity = 0;
-  state->rxpdo.end_velocity     = 0;
-  state->rxpdo.profile_accel    = 0;
-  state->rxpdo.profile_decel    = 0;
+  state->rxpdo_nominal.profile_velocity = 0;
+  state->rxpdo_nominal.end_velocity     = 0;
+  state->rxpdo_nominal.profile_accel    = 0;
+  state->rxpdo_nominal.profile_decel    = 0;
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
 }
 
 void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position = 0;
-  state->rxpdo.position_offset = 0;
-  state->rxpdo.target_velocity = 0;
-  state->rxpdo.velocity_offset = 0;
-  state->rxpdo.target_torque =
+  state->rxpdo_nominal.target_position = 0;
+  state->rxpdo_nominal.position_offset = 0;
+  state->rxpdo_nominal.target_velocity = 0;
+  state->rxpdo_nominal.velocity_offset = 0;
+  state->rxpdo_nominal.target_torque =
       cmd.cst.target_torque_amps * 1e6 / state->motor_rated_current;
-  state->rxpdo.torque_offset =
+  state->rxpdo_nominal.torque_offset =
       cmd.cst.torque_offset_amps * 1e6 / state->motor_rated_current;
-  state->rxpdo.profile_velocity = 0;
-  state->rxpdo.end_velocity     = 0;
-  state->rxpdo.profile_accel    = 0;
-  state->rxpdo.profile_decel    = 0;
+  state->rxpdo_nominal.profile_velocity = 0;
+  state->rxpdo_nominal.end_velocity     = 0;
+  state->rxpdo_nominal.profile_accel    = 0;
+  state->rxpdo_nominal.profile_decel    = 0;
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CST;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CST;
 }
 
 void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position  = cmd.prof_pos.target_position;
-  state->rxpdo.position_offset  = 0;
-  state->rxpdo.target_velocity  = 0;
-  state->rxpdo.velocity_offset  = 0;
-  state->rxpdo.target_torque    = 0;
-  state->rxpdo.torque_offset    = 0;
-  state->rxpdo.profile_velocity = cmd.prof_pos.profile_velocity;
-  state->rxpdo.end_velocity     = cmd.prof_pos.end_velocity;
-  state->rxpdo.profile_accel    = cmd.prof_pos.profile_accel;
-  state->rxpdo.profile_decel    = cmd.prof_pos.profile_decel;
+  state->rxpdo_nominal.target_position  = cmd.prof_pos.target_position;
+  state->rxpdo_nominal.position_offset  = 0;
+  state->rxpdo_nominal.target_velocity  = 0;
+  state->rxpdo_nominal.velocity_offset  = 0;
+  state->rxpdo_nominal.target_torque    = 0;
+  state->rxpdo_nominal.torque_offset    = 0;
+  state->rxpdo_nominal.profile_velocity = cmd.prof_pos.profile_velocity;
+  state->rxpdo_nominal.end_velocity     = cmd.prof_pos.end_velocity;
+  state->rxpdo_nominal.profile_accel    = cmd.prof_pos.profile_accel;
+  state->rxpdo_nominal.profile_decel    = cmd.prof_pos.profile_decel;
 
   // Signal new set-point
   // Having the new set-point bit on until the drive acknowledges reception of
   // the command is necessary so that the drive does not miss the bit when
   // changing between modes of operation.
   if (state->new_motion_command) {
-    state->rxpdo.controlword |= (0x01 << 4);
+    state->rxpdo_common.controlword |= (0x01 << 4);
   }
-  if (state->pub.setpoint_ack_rise) {
+  if (state->pub.nominal.setpoint_ack_rise) {
     // After the rise of set-point acknowledge bit in statusword, new set-point
     // bit in controlword can be turned off.
-    state->rxpdo.controlword &= ~(0x01 << 4);
+    state->rxpdo_common.controlword &= ~(0x01 << 4);
   }
 
   // Request immediate change of set-point
-  state->rxpdo.controlword |= (0x01 << 5);
+  state->rxpdo_common.controlword |= (0x01 << 5);
   // Indicate whether motion is relative
-  state->rxpdo.controlword |= (cmd.prof_pos.relative << 6);
+  state->rxpdo_common.controlword |= (cmd.prof_pos.relative << 6);
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
 }
 
 void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position  = 0;
-  state->rxpdo.position_offset  = 0;
-  state->rxpdo.target_velocity  = cmd.prof_vel.target_velocity;
-  state->rxpdo.velocity_offset  = 0;
-  state->rxpdo.target_torque    = 0;
-  state->rxpdo.torque_offset    = 0;
-  state->rxpdo.profile_velocity = 0;
-  state->rxpdo.end_velocity     = 0;
-  state->rxpdo.profile_accel    = cmd.prof_vel.profile_accel;
-  state->rxpdo.profile_decel    = cmd.prof_vel.profile_decel;
+  state->rxpdo_nominal.target_position  = 0;
+  state->rxpdo_nominal.position_offset  = 0;
+  state->rxpdo_nominal.target_velocity  = cmd.prof_vel.target_velocity;
+  state->rxpdo_nominal.velocity_offset  = 0;
+  state->rxpdo_nominal.target_torque    = 0;
+  state->rxpdo_nominal.torque_offset    = 0;
+  state->rxpdo_nominal.profile_velocity = 0;
+  state->rxpdo_nominal.end_velocity     = 0;
+  state->rxpdo_nominal.profile_accel    = cmd.prof_vel.profile_accel;
+  state->rxpdo_nominal.profile_decel    = cmd.prof_vel.profile_decel;
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
 }
 
 void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   jsd_epd_motion_command_t cmd   = state->motion_command;
 
-  state->rxpdo.target_position = 0;
-  state->rxpdo.position_offset = 0;
-  state->rxpdo.target_velocity = 0;
-  state->rxpdo.velocity_offset = 0;
-  state->rxpdo.target_torque =
+  state->rxpdo_nominal.target_position = 0;
+  state->rxpdo_nominal.position_offset = 0;
+  state->rxpdo_nominal.target_velocity = 0;
+  state->rxpdo_nominal.velocity_offset = 0;
+  state->rxpdo_nominal.target_torque =
       cmd.prof_torque.target_torque_amps * 1e6 / state->motor_rated_current;
-  state->rxpdo.torque_offset    = 0;
-  state->rxpdo.profile_velocity = 0;
-  state->rxpdo.end_velocity     = 0;
-  state->rxpdo.profile_accel    = 0;
-  state->rxpdo.profile_decel    = 0;
+  state->rxpdo_nominal.torque_offset    = 0;
+  state->rxpdo_nominal.profile_velocity = 0;
+  state->rxpdo_nominal.end_velocity     = 0;
+  state->rxpdo_nominal.profile_accel    = 0;
+  state->rxpdo_nominal.profile_decel    = 0;
 
-  state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
+  state->rxpdo_common.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
 }
 
 jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {

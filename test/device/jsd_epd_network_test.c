@@ -94,13 +94,13 @@ void telemetry_data(void* self) {
   fprintf(file, "%i, ", epd_state->actual_position);
   fprintf(file, "%i, ", epd_state->actual_velocity);
   fprintf(file, "%lf, ", epd_state->actual_current);
-  fprintf(file, "%i, ", epd_state->cmd_position);
-  fprintf(file, "%i, ", epd_state->cmd_velocity);
-  fprintf(file, "%lf, ", epd_state->cmd_current);
+  fprintf(file, "%i, ", epd_state->nominal.cmd_position);
+  fprintf(file, "%i, ", epd_state->nominal.cmd_velocity);
+  fprintf(file, "%lf, ", epd_state->nominal.cmd_current);
   fprintf(file, "%lf, ", epd_state->cmd_max_current);
-  fprintf(file, "%i, ", epd_state->cmd_ff_position);
-  fprintf(file, "%i, ", epd_state->cmd_ff_velocity);
-  fprintf(file, "%lf, ", epd_state->cmd_ff_current);
+  fprintf(file, "%i, ", epd_state->nominal.cmd_ff_position);
+  fprintf(file, "%i, ", epd_state->nominal.cmd_ff_velocity);
+  fprintf(file, "%lf, ", epd_state->nominal.cmd_ff_current);
   fprintf(file, "%u, ", epd_state->actual_state_machine_state);
   fprintf(file, "%u, ", epd_state->actual_mode_of_operation);
   fprintf(file, "%u, ", epd_state->sto_engaged);
@@ -110,10 +110,10 @@ void telemetry_data(void* self) {
   fprintf(file, "%u, ", epd_state->servo_enabled);
   fprintf(file, "%u, ", epd_state->warning);
   fprintf(file, "%u, ", epd_state->target_reached);
-  fprintf(file, "%lf, ", epd_state->bus_voltage);
-  fprintf(file, "%lf, ", epd_state->analog_input_voltage);
+  fprintf(file, "%lf, ", epd_state->nominal.bus_voltage);
+  fprintf(file, "%lf, ", epd_state->nominal.analog_input_voltage);
   // Omitted digital inputs and digital output commands.
-  fprintf(file, "%f, ", epd_state->drive_temperature);
+  fprintf(file, "%f, ", epd_state->nominal.drive_temperature);
 
   // EL3602 data
   const jsd_el3602_state_t* el3602_state =
@@ -152,7 +152,7 @@ void print_info(void* self) {
       jsd_el2124_get_state(sds->jsd, el2124_slave_id);
   MSG("EPD_cmd_pos: %i, EPD_actual_pos: %i, EPD_actual_vel: %i, "
       "EPD_state_machine: %04x",
-      epd_state->cmd_position, epd_state->actual_position,
+      epd_state->nominal.cmd_position, epd_state->actual_position,
       epd_state->actual_velocity, epd_state->actual_state_machine_state);
   MSG("EL3602_Ch0: %f V, EL3602_Ch1: %f V", el3602_state->voltage[0],
       el3602_state->voltage[1]);
@@ -276,13 +276,14 @@ int main(int argc, char* argv[]) {
   snprintf(epd_config.name, JSD_NAME_LEN, "kukulkan");
   epd_config.configuration_active         = true;
   epd_config.product_code                 = JSD_EPD_PRODUCT_CODE_STD_FW;
-  epd_config.epd.max_motor_speed          = max_motor_speed;
-  epd_config.epd.loop_period_ms           = 1000 / loop_freq_hz;
-  epd_config.epd.torque_slope             = 1e7;
-  epd_config.epd.max_profile_accel        = 1e6;
-  epd_config.epd.max_profile_decel        = 1e7;
-  epd_config.epd.velocity_tracking_error  = 1e8;
-  epd_config.epd.position_tracking_error  = 1e9;
+  epd_config.epd.use_sil                         = false;
+  epd_config.epd.nominal.max_motor_speed         = max_motor_speed;
+  epd_config.epd.nominal.loop_period_ms          = 1000 / loop_freq_hz;
+  epd_config.epd.nominal.torque_slope            = 1e7;
+  epd_config.epd.nominal.max_profile_accel       = 1e6;
+  epd_config.epd.nominal.max_profile_decel       = 1e7;
+  epd_config.epd.nominal.velocity_tracking_error = 1e8;
+  epd_config.epd.nominal.position_tracking_error = 1e9;
   epd_config.epd.peak_current_limit       = peak_current;
   epd_config.epd.peak_current_time        = 3.0f;
   epd_config.epd.continuous_current_limit = continuous_current;
@@ -296,7 +297,7 @@ int main(int argc, char* argv[]) {
       epd_config.epd.low_position_limit;  // Disable position limits protection.
   epd_config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   epd_config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
-  epd_config.epd.smooth_factor        = 0;
+  epd_config.epd.nominal.smooth_factor = 0;
 
   jsd_set_slave_config(sds.jsd, epd_slave_id, epd_config);
 

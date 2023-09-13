@@ -77,17 +77,17 @@ void telemetry_data(void* self) {
   fprintf(file, "%i, ", state->actual_position);
   fprintf(file, "%i, ", state->actual_velocity);
   fprintf(file, "%lf, ", state->actual_current);
-  fprintf(file, "%i, ", state->cmd_position);
-  fprintf(file, "%i, ", state->cmd_velocity);
-  fprintf(file, "%lf, ", state->cmd_current);
+  fprintf(file, "%i, ", state->nominal.cmd_position);
+  fprintf(file, "%i, ", state->nominal.cmd_velocity);
+  fprintf(file, "%lf, ", state->nominal.cmd_current);
   fprintf(file, "%lf, ", state->cmd_max_current);
-  fprintf(file, "%i, ", state->cmd_ff_position);
-  fprintf(file, "%i, ", state->cmd_ff_velocity);
-  fprintf(file, "%lf, ", state->cmd_ff_current);
-  fprintf(file, "%u, ", state->cmd_prof_velocity);
-  fprintf(file, "%u, ", state->cmd_prof_end_velocity);
-  fprintf(file, "%u, ", state->cmd_prof_accel);
-  fprintf(file, "%u, ", state->cmd_prof_decel);
+  fprintf(file, "%i, ", state->nominal.cmd_ff_position);
+  fprintf(file, "%i, ", state->nominal.cmd_ff_velocity);
+  fprintf(file, "%lf, ", state->nominal.cmd_ff_current);
+  fprintf(file, "%u, ", state->nominal.cmd_prof_velocity);
+  fprintf(file, "%u, ", state->nominal.cmd_prof_end_velocity);
+  fprintf(file, "%u, ", state->nominal.cmd_prof_accel);
+  fprintf(file, "%u, ", state->nominal.cmd_prof_decel);
   fprintf(file, "%u, ", state->actual_state_machine_state);
   fprintf(file, "%u, ", state->actual_mode_of_operation);
   fprintf(file, "%u, ", state->sto_engaged);
@@ -97,10 +97,10 @@ void telemetry_data(void* self) {
   fprintf(file, "%u, ", state->servo_enabled);
   fprintf(file, "%u, ", state->warning);
   fprintf(file, "%u, ", state->target_reached);
-  fprintf(file, "%lf, ", state->bus_voltage);
-  fprintf(file, "%lf, ", state->analog_input_voltage);
+  fprintf(file, "%lf, ", state->nominal.bus_voltage);
+  fprintf(file, "%lf, ", state->nominal.analog_input_voltage);
   // Omitted digital inputs and digital output commands.
-  fprintf(file, "%f, ", state->drive_temperature);
+  fprintf(file, "%f, ", state->nominal.drive_temperature);
 
   fprintf(file, "\n");
   fflush(file);
@@ -208,13 +208,14 @@ int main(int argc, char* argv[]) {
   snprintf(config.name, JSD_NAME_LEN, "kukulkan");
   config.configuration_active         = true;
   config.product_code                 = JSD_EPD_PRODUCT_CODE_STD_FW;
-  config.epd.max_motor_speed          = max_motor_speed;
-  config.epd.loop_period_ms           = 1000 / loop_freq_hz;
-  config.epd.torque_slope             = 1e7;
-  config.epd.max_profile_accel        = 1e6;
-  config.epd.max_profile_decel        = 1e7;
-  config.epd.velocity_tracking_error  = 1e8;
-  config.epd.position_tracking_error  = 1e9;
+  config.epd.use_sil                         = false;
+  config.epd.nominal.max_motor_speed         = max_motor_speed;
+  config.epd.nominal.loop_period_ms          = 1000 / loop_freq_hz;
+  config.epd.nominal.torque_slope            = 1e7;
+  config.epd.nominal.max_profile_accel       = 1e6;
+  config.epd.nominal.max_profile_decel       = 1e7;
+  config.epd.nominal.velocity_tracking_error = 1e8;
+  config.epd.nominal.position_tracking_error = 1e9;
   config.epd.peak_current_limit       = peak_current;
   config.epd.peak_current_time        = 3.0f;
   config.epd.continuous_current_limit = continuous_current;
@@ -228,11 +229,11 @@ int main(int argc, char* argv[]) {
       config.epd.low_position_limit;  // Disable position limits protection.
   config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
-  config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode =
+  config.epd.nominal.smooth_factor = 0;
+  config.epd.nominal.ctrl_gain_scheduling_mode =
       JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
-  MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
+  MSG("Configuring %i as loop_period_ms", config.epd.nominal.loop_period_ms);
 
   jsd_set_slave_config(sds.jsd, slave_id, config);
 

@@ -52,7 +52,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id);
 int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
 
 // Helper functions for jsd_epd_PO2SO_config
-int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id);
+int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
+                               jsd_slave_config_t* config);
 int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
                               jsd_slave_config_t* config);
 int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
@@ -68,7 +69,8 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  */
-void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
+void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id,
+                                        jsd_slave_config_t* config);
 
 /**
  * @brief Helper function of jsd_epd_process to progress through the drive's
@@ -77,7 +79,8 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  */
-void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id);
+void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id,
+                                   jsd_slave_config_t* config);
 
 /**
  * @brief Helper function of jsd_epd_process to handle commands based on their

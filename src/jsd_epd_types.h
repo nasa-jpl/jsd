@@ -28,6 +28,10 @@ extern "C" {
 // TODO(dloret): Double check whether RESET_DERATE is still necessary.
 #define JSD_EPD_RESET_DERATE_SEC 1.0
 
+// Maximum number of SIL R1/R2 variables that can be mapped to RxPDO or TxPDO.
+#define JSD_EPD_SIL_R1_MAX_NUM 32
+#define JSD_EPD_SIL_R2_MAX_NUM 16
+
 /**
  * @brief Elmo Platinum Drive Mode of Operation
  */
@@ -103,12 +107,7 @@ typedef struct {
   };
 } jsd_epd_motion_command_t;
 
-/**
- * @brief Elmo Platinum Drive JSD Configuration
- */
 typedef struct {
-  // TODO(dloret): Verify that selected integer is appropriate for the type
-  // specified in command reference. Parameters set via SDO
   double
       max_motor_speed;  ///< Saturation value (cnts/s) of speed command to speed
                         ///< controller. Converted to 0x6080 using P_CA[18].
@@ -116,10 +115,6 @@ typedef struct {
                            ///< modes. 0x60C2.
   double torque_slope;  ///< A/s. Ignored by CS mode. Converted to 0x6087 using
                         ///< P_CL[1].
-
-  // Parameters set via Two-Letter-Command (TLC)
-  // IMPORTANT: Elmo alias objects are different between Gold and Platinum
-  // lines.
   // TODO(dloret): Consider removing max_profile_accel and max_profile_decel
   // in both Gold and Platinum drivers. AC[1] and DC[1] are only relevant at
   // power-up when their values are assigned to objects 0x6083 and 0x6084,
@@ -130,6 +125,33 @@ typedef struct {
   double max_profile_decel;         ///< P_DC[1]. Ignored by CS mode.
   double velocity_tracking_error;   ///< P_ER[2] cnts/s
   double position_tracking_error;   ///< P_ER[3] cnts
+  int32_t smooth_factor;             ///< SF[1] ms, [0, 2048*P_TS*P_HS/1000]
+  jsd_elmo_gain_scheduling_mode_t
+      ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
+                                  ///< set in the drive.
+} jsd_epd_config_nominal_t;
+
+typedef struct {
+  uint8_t inputs_r1_num;   ///< Number of R1 user parameters (32-bit integer) to
+                           ///< send data to the drive
+  uint8_t inputs_r2_num;   ///< Number of R2 user parameters (64-bit floating
+                           ///< point) to send data to the drive
+  uint8_t outputs_r1_num;  ///< Number of R1 user parameters (32-bit integer) to
+                           ///< retrieve data from the drive
+  uint8_t outputs_r2_num;  ///< Number of R2 user parameters (64-bit floating
+                           ///< point) to retrieve data from the drive
+} jsd_epd_config_sil_t;
+
+/**
+ * @brief Elmo Platinum Drive JSD Configuration
+ */
+typedef struct {
+  // TODO(dloret): Verify that selected integer is appropriate for the type
+  // specified in command reference. Parameters set via SDO
+
+  // Parameters set via Two-Letter-Command (TLC)
+  // IMPORTANT: Elmo alias objects are different between Gold and Platinum
+  // lines.
   float  peak_current_limit;        ///< P_PL[1] A
   float  peak_current_time;         ///< P_PL[2] s
   float  continuous_current_limit;  ///< P_CL[1] A, continuous current limit
@@ -151,25 +173,20 @@ typedef struct {
   // determines whether peak current limit is compared against the drive's
   // maximum current as in EGD. A potential option is to simply warn if PL[1] >
   // MC[1].
-  int32_t smooth_factor;  ///< SF[1] ms, [0, 2048*P_TS*P_HS/1000]
 
-  jsd_elmo_gain_scheduling_mode_t
-      ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
-                                  ///< set in the drive.
+  // SIL related data
+  bool use_sil;  ///< Whether to use custom SIL program
+
+  union {
+    jsd_epd_config_nominal_t nominal;
+    jsd_epd_config_sil_t     sil;
+  };
 } jsd_epd_config_t;
 
-/**
- * @brief Elmo Platinum Drive JSD State Data
- */
 typedef struct {
-  int32_t actual_position;  ///< Actual position, cnt
-  int32_t actual_velocity;  ///< Actual velocity, cnt/s
-  double  actual_current;   ///< Actual motor current, A
-
   int32_t cmd_position;     ///< Commanded position, cnt
   int32_t cmd_velocity;     ///< Commanded velocity, cnt/s
   double  cmd_current;      ///< Commanded motor current, A
-  double  cmd_max_current;  ///< Limit on current command, A
 
   int32_t cmd_ff_position;  ///< Commanded feed-forward position, cnt
   int32_t cmd_ff_velocity;  ///< Commanded feed-forward velocity, cnt/s
@@ -179,6 +196,37 @@ typedef struct {
   uint32_t cmd_prof_end_velocity;  ///< Commanded profile end velocity, cnt/s
   uint32_t cmd_prof_accel;         ///< Commanded profile acceleration, cnt/s/s
   uint32_t cmd_prof_decel;         ///< Commanded profile deceleration, cnt/s/s
+
+  bool setpoint_ack_rise;  ///< True on rising edge of bit 12 of statusword. In
+                           ///< Profiled Position mode, target_reached
+                           ///< corresponds to the most recent command only
+                           ///< after the first rising edge of the set-point
+                           ///< acknowledge bit after sending such command.
+
+  double   bus_voltage;           ///< Bus voltage, V
+  double   analog_input_voltage;  ///< Analog input 1, V
+  uint16_t analog_input_adc;      ///< Analog input 2, raw
+
+  uint8_t digital_inputs[JSD_EPD_NUM_DIGITAL_INPUTS];
+  uint8_t digital_output_cmd[JSD_EPD_NUM_DIGITAL_OUTPUTS];
+  float   drive_temperature;  ///< deg C
+} jsd_epd_state_nominal_t;
+
+typedef struct {
+  bool sil_initialized;  ///< Whether SIL is loaded and initialized.
+  bool sil_running;      ///< Whether SIL is running.
+  bool sil_faulted;      ///< Whether there is a SIL run time error.
+} jsd_epd_state_sil_t;
+
+/**
+ * @brief Elmo Platinum Drive JSD State Data
+ */
+typedef struct {
+  int32_t actual_position;  ///< Actual position, cnt
+  int32_t actual_velocity;  ///< Actual velocity, cnt/s
+  double  actual_current;   ///< Actual motor current, A
+
+  double cmd_max_current;  ///< Limit on current command, A
 
   jsd_elmo_state_machine_state_t actual_state_machine_state;
   jsd_epd_mode_of_operation_t   actual_mode_of_operation;
@@ -195,70 +243,82 @@ typedef struct {
                           ///< time to engage brake elapses.
   uint8_t warning;        ///< From statusword, bit 7
   uint8_t target_reached;  ///< From statusword, bit 10, mode dependent.
-  bool setpoint_ack_rise;  ///< True on rising edge of bit 12 of statusword. In
-                           ///< Profiled Position mode, target_reached
-                           ///< corresponds to the most recent command only
-                           ///< after the first rising edge of the set-point
-                           ///< acknowledge bit after sending such command.
   jsd_epd_fault_code_t fault_code;  ///< Fault based on Emergency error code.
   uint16_t emcy_error_code;  ///< Emergency error codes.
 
-  double  bus_voltage;           ///< Bus voltage, V
-  double  analog_input_voltage;  ///< Analog input 1, V
-  uint16_t analog_input_adc;      ///< Analog input 2, raw
-
-  uint8_t digital_inputs[JSD_EPD_NUM_DIGITAL_INPUTS];
-  uint8_t digital_output_cmd[JSD_EPD_NUM_DIGITAL_OUTPUTS];
-  float   drive_temperature;  ///< deg C
+  union {
+    jsd_epd_state_nominal_t nominal;
+    jsd_epd_state_sil_t     sil;
+  };
 } jsd_epd_state_t;
 
 /**
- * @brief TxPDO struct used to read device data in SOEM IOmap
+ * @brief TxPDO struct used to read device data common between nominal and SIL
+ * modes in SOEM IOmap
  *
  * Note: struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  int32_t actual_position;            ///< 0x6064
-  int32_t velocity_actual_value;      ///< 0x6069
-  int16_t current_actual_value;       ///< 0x6078
-  int8_t  mode_of_operation_display;  ///< 0x6061
+  uint16_t statusword;                 ///< 0x6041
+  uint32_t status_register_1;          ///< 0x3607:01
+  uint32_t status_register_2;          ///< 0x3607:02
+  int8_t   mode_of_operation_display;  ///< 0x6061. TODO(dloret): Confirm with
+                                     ///< Elmo whether mode of operation has any
+                                     ///< effect in SIL.
+  int32_t actual_position;        ///< 0x6064
+  int32_t velocity_actual_value;  ///< 0x6069
+  int16_t current_actual_value;   ///< 0x6078
+} jsd_epd_txpdo_data_common_t;
+
+/**
+ * @brief TxPDO struct used to read device data specific to nominal mode in SOEM
+ * IOmap
+ *
+ * Note: struct order matters and must be packed.
+ */
+typedef struct __attribute__((__packed__)) {
   uint32_t dc_link_circuit_voltage;  ///< 0x6079
   float    drive_temperature_deg_c;  ///< 0x3610
   uint32_t digital_inputs;           ///< 0x60FD
   int16_t  analog_input_1;           ///< 0x2205:01
   int16_t  analog_input_2;           ///< 0x2205:02
-  uint32_t status_register_1;        ///< 0x3607:01
-  uint32_t status_register_2;        ///< 0x3607:02
-  uint16_t statusword;               ///< 0x6041
-} jsd_epd_txpdo_data_t;
+} jsd_epd_txpdo_data_nominal_t;
 
 /**
- * @brief RxPDO struct used to set device command data in SOEM IOmap
+ * @brief RxPDO struct used to set device command data common between nominal
+ * and SIL modes in SOEM IOmap
  *
  * Note: struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  int32_t  target_position;    ///< 0x607A
-  int32_t  target_velocity;    ///< 0x60FF
-  int16_t  target_torque;      ///< 0x6071
-  int32_t  position_offset;    ///< 0x60B0
-  int32_t  velocity_offset;    ///< 0x60B1
-  int16_t  torque_offset;      ///< 0x60B2
-  int8_t   mode_of_operation;  ///< 0x6060
-  uint16_t max_current;        ///< 0x6073
-  // TODO(dloret): max_current
-  // - Might need to remove since it does not have an effect on PL.
-  // - EGD's Profile rxPDO maps max_current to 0x6072 (Max Torque) instead of
-  //   0x6073 (Max Current). But they should be equal in this case.
-  uint32_t digital_outputs;    ///< 0x60FE
-  uint16_t controlword;  ///< 0x6040. NOTE(dloret): bit arrangement is different
-                         ///< from Gold line.
-  uint32_t profile_velocity;  ///< 0x6081
-  uint32_t end_velocity;      ///< 0x6082
-  uint32_t profile_accel;     ///< 0x6083
-  uint32_t profile_decel;     ///< 0x6084
+  uint16_t controlword;  ///< 0x6040
+  uint16_t max_current;  ///< 0x6073. TODO(dloret): Decide whether this variable
+                         ///< should not be in the "common" classification.
+  int8_t
+      mode_of_operation;  ///< 0x6060. TODO(dloret): Confirm with Elmo whether
+                          ///< mode of operation has any effect in SIL.
+} jsd_epd_rxpdo_data_common_t;
+
+/**
+ * @brief RxPDO struct used to set device command data specific to nominal mode
+ * in SOEM IOmap
+ *
+ * Note: struct order matters and must be packed.
+ */
+typedef struct __attribute__((__packed__)) {
+  int32_t  target_position;        ///< 0x607A
+  int32_t  target_velocity;        ///< 0x60FF
+  int16_t  target_torque;          ///< 0x6071
+  int32_t  position_offset;        ///< 0x60B0
+  int32_t  velocity_offset;        ///< 0x60B1
+  int16_t  torque_offset;          ///< 0x60B2
+  uint32_t profile_velocity;       ///< 0x6081
+  uint32_t end_velocity;           ///< 0x6082
+  uint32_t profile_accel;          ///< 0x6083
+  uint32_t profile_decel;          ///< 0x6084
   int16_t  gain_scheduling_index;  ///< 0x36E0
-} jsd_epd_rxpdo_data_t;
+  uint32_t digital_outputs;        ///< 0x60FE
+} jsd_epd_rxpdo_data_nominal_t;
 
 /**
  * @brief Elmo Platinum Drive JSD private state data
@@ -270,8 +330,17 @@ typedef struct {
   jsd_epd_state_t pub;  ///< Public state used by client applications.
 
   // SOEM PDO data
-  jsd_epd_txpdo_data_t txpdo;  ///< Raw TxPDO data
-  jsd_epd_rxpdo_data_t rxpdo;  ///< Raw RxPDO data
+  // Data common between nominal and SIL modes
+  jsd_epd_rxpdo_data_common_t rxpdo_common;  ///< Raw RxPDO data
+  jsd_epd_txpdo_data_common_t txpdo_common;  ///< Raw TxPDO data
+  // Data specific to nominal mode
+  jsd_epd_rxpdo_data_nominal_t rxpdo_nominal;  ///< Raw RxPDO data
+  jsd_epd_txpdo_data_nominal_t txpdo_nominal;  ///< Raw TxPDO data
+  // Data specific to SIL mode
+  int32_t sil_inputs_r1[JSD_EPD_SIL_R1_MAX_NUM];   ///< 0x22F3
+  double  sil_inputs_r2[JSD_EPD_SIL_R2_MAX_NUM];   ///< 0x22F4
+  int32_t sil_outputs_r1[JSD_EPD_SIL_R1_MAX_NUM];  ///< 0x22F3
+  double  sil_outputs_r2[JSD_EPD_SIL_R2_MAX_NUM];  ///< 0x22F4
 
   uint32_t motor_rated_current;  ///< Set the same as continuous current limit
                                  ///< (CL[1]), mA
