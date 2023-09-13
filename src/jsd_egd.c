@@ -1245,7 +1245,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // STO drops us here
       // Handle reset
       if (state->new_reset) {
-        // Process the new reset command
         set_controlword(self, slave_id,
           JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
 
