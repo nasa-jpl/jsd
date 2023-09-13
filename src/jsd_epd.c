@@ -107,6 +107,9 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
 
   if ((now - self->slave_states[slave_id].epd.last_reset_time) >
       JSD_EPD_RESET_DERATE_SEC) {
+    // Flag below used to latch halt commands until we are in the OPERATION ENABLED state.
+    self->slave_states[slave_id].egd.enabling_operation = true;
+    
     self->slave_states[slave_id].epd.new_reset       = true;
     self->slave_states[slave_id].epd.last_reset_time = now;
 
@@ -909,7 +912,6 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       // Transition to READY TO SWITCH ON
       state->rxpdo.controlword = JSD_EPD_STATE_MACHINE_CONTROLWORD_SHUTDOWN;
-      state->new_halt_command = false;
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
       // Transition to SWITCHED ON
@@ -925,10 +927,10 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
         state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
         state->new_reset                   = false;
-        state->new_halt_command            = false;
       }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
+      state->enabling_operation  = false;
       state->pub.fault_code      = JSD_EPD_FAULT_OKAY;
       state->pub.emcy_error_code = 0;
 
@@ -1019,6 +1021,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       assert(0);
   }
   state->new_motion_command = false;
+  if (!state->enabling_operation) state->new_halt_command = false;
 }
 
 void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {

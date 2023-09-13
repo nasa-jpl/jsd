@@ -93,6 +93,10 @@ void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   double now = jsd_time_get_mono_time_sec();
   if ((now - self->slave_states[slave_id].egd.last_reset_time) >
       JSD_EGD_RESET_DERATE_SEC) {
+
+    // Flag below used to latch halt commands until we are in the OPERATION ENABLED state.
+    self->slave_states[slave_id].egd.enabling_operation = true;
+
     self->slave_states[slave_id].egd.new_reset       = true;
     self->slave_states[slave_id].egd.last_reset_time = now;
 
@@ -1230,7 +1234,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
     case JSD_ELMO_STATE_MACHINE_STATE_SWITCH_ON_DISABLED:
       set_controlword(self, slave_id,
                       JSD_EGD_STATE_MACHINE_CONTROLWORD_SHUTDOWN);
-      state->new_halt_command   = false; // Ensure that previous unhandled halts are ignored
       // to READY_TO_SWITCH_ON
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_READY_TO_SWITCH_ON:
@@ -1242,6 +1245,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // STO drops us here
       // Handle reset
       if (state->new_reset) {
+        // Process the new reset command
         set_controlword(self, slave_id,
           JSD_EGD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION);
 
@@ -1255,8 +1259,8 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
-
-      state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+      state->enabling_operation  = false;
+      state->pub.fault_code      = JSD_EGD_FAULT_OKAY;
       state->pub.emcy_error_code = 0;
 
       // Handle halt
@@ -1269,7 +1273,6 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->requested_mode_of_operation = JSD_EGD_MODE_OF_OPERATION_PROF_POS;
         set_mode_of_operation(self, slave_id,
                               state->requested_mode_of_operation);
-        state->new_halt_command   = false;
         break;
       }
 
@@ -1334,6 +1337,7 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   }
 
   state->new_motion_command = false;
+  if (!state->enabling_operation) state->new_halt_command = false;
 }
 
 void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
