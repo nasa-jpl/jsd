@@ -413,6 +413,7 @@ void jsd_epd_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
                                   uint16_t subindex, int32_t value,
                                   uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
   if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r1_num) ||
       (subindex >= 129 && subindex <= (128 + config->epd.sil.outputs_r1_num))) {
     ERROR("R1[%u] is already mapped to a PDO.", subindex);
@@ -426,6 +427,7 @@ void jsd_epd_async_sdo_set_sil_r2(jsd_t* self, uint16_t slave_id,
                                   uint16_t subindex, double value,
                                   uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
   if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r2_num) ||
       (subindex >= 65 && subindex <= (64 + config->epd.sil.outputs_r2_num))) {
     ERROR("R2[%u] is already mapped to a PDO.", subindex);
@@ -558,14 +560,8 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
         "R1 outputs: %d, R2 outputs: %d",
         slave_id, config->epd.sil.inputs_r1_num, config->epd.sil.inputs_r2_num,
         config->epd.sil.outputs_r1_num, config->epd.sil.outputs_r2_num);
-  } else if ((config->epd.sil.inputs_r1_num + config->epd.sil.inputs_r2_num +
-              config->epd.sil.outputs_r1_num + config->epd.sil.outputs_r2_num) >
-             0) {
-    ERROR(
-        "SIL inputs or outputs were requested through EPD[%d]'s configuration, "
-        "but use_sil parameter was set to false.",
-        slave_id);
-    return false;
+  } else {
+    MSG("EPD[%d] will be operated in nominal mode.", slave_id);
   }
 
   // The following disables Complete Access (CA) and was needed in Gold drives
@@ -827,6 +823,7 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
   uint16_t tpdo_mapping_elements_common[] = {
       0x0010, 0x6041,  // statusword
       0x0120, 0x3607,  // status_register_1
+      0x0220, 0x3607,  // status_register_2
       0x0008, 0x6061,  // mode_of_operation_display
       0x0020, 0x6064,  // actual_position
       0x0020, 0x6069,  // velocity_actual_value
@@ -915,7 +912,6 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
         0x0020, 0x60FD,  // digital_inputs
         0x0110, 0x2205,  // analog_input_1
         0x0210, 0x2205,  // analog_input_2
-        0x0220, 0x3607,  // status_register_2
     };
     int tpdo_mapping_elements_nominal_idx = 0;
     int tpdo_objects_unmapped_nominal =
