@@ -421,6 +421,7 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
 
   state->setpoint_ack                  = 0;
   state->last_setpoint_ack             = 0;
+  state->enabling_operation            = false;
 
   return true;
 }
@@ -849,8 +850,8 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
-      // TODO(dloret): Check if setting state->new_reset to false like in EGD
-      // code is actually needed. Commands are handled after reading functions.
+      state->enabling_operation = false; // we should not be carrying out reset currently
+      state->new_reset = false; // clear any potentially ongoing reset request
       state->fault_real_time = jsd_time_get_time_sec();
       state->fault_mono_time = jsd_time_get_mono_time_sec();
 
@@ -1021,7 +1022,9 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       assert(0);
   }
   state->new_motion_command = false;
-  if (!state->enabling_operation) state->new_halt_command = false;
+  if (!state->enabling_operation) {
+    state->new_halt_command = false;
+  }
 }
 
 void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
