@@ -664,8 +664,8 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
                       (config->epd.sil.inputs_r2_num * 8);
     if (rpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
       ERROR(
-          "Total size of RPDO mapped objects (%zu) must be less than the "
-          "corresponding PDO channel's limit (%d).",
+          "Total size of RPDO mapped objects (%zu bytes) must be less than the "
+          "corresponding PDO channel's limit (%d bytes).",
           rpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
       return 0;
     }
@@ -712,6 +712,12 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
         }
       }
 
+      for (unsigned int i = 0;
+           i < JSD_EPD_ARRAY_SIZE(rpdo_mapping_parameter_record); ++i) {
+        MSG_DEBUG("rpdo_mapping_parameter_record[%d] = %X", i,
+                  rpdo_mapping_parameter_record[i]);
+      }
+
       if (!jsd_sdo_set_ca_param_blocking(
               ecx_context, slave_id,
               rpdo_mapping_parameters[rpdo_mapping_parameters_idx], 0x00,
@@ -747,8 +753,8 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
                       sizeof(jsd_epd_rxpdo_data_nominal_t);
     if (rpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
       ERROR(
-          "Total size of RPDO mapped objects (%zu) must be less than the "
-          "corresponding PDO channel's limit (%d).",
+          "Total size of RPDO mapped objects (%zu bytes) must be less than the "
+          "corresponding PDO channel's limit (%d bytes).",
           rpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
       return 0;
     }
@@ -806,6 +812,9 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
   for (int i = 1; i <= rpdo_mapping_parameters_idx; ++i) {
     rxpdo_assign_array[i] = rpdo_mapping_parameters[i - 1];
   }
+  for (unsigned int i = 0; i < JSD_EPD_ARRAY_SIZE(rxpdo_assign_array); ++i) {
+    MSG_DEBUG("rxpdo_assign_array[%d] = %x", i, rxpdo_assign_array[i]);
+  }
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
                                      sizeof(rxpdo_assign_array),
                                      &rxpdo_assign_array)) {
@@ -846,8 +855,8 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
                       (config->epd.sil.outputs_r2_num * 8);
     if (tpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
       ERROR(
-          "Total size of TPDO mapped objects (%zu) must be less than the "
-          "corresponding PDO channel's limit (%d).",
+          "Total size of TPDO mapped objects (%zu bytes) must be less than the "
+          "corresponding PDO channel's limit (%d bytes).",
           tpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
       return 0;
     }
@@ -881,17 +890,23 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
           --tpdo_objects_unmapped_common;
         } else if (sil_outputs_r1_unmapped > 0) {
           tpdo_mapping_parameter_record[entry_start_idx] =
-              0x8020 + 0x0100 * sil_outputs_r1_subindex;
+              0x0020 + 0x0100 * sil_outputs_r1_subindex;
           tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
           ++sil_outputs_r1_subindex;
           --sil_outputs_r1_unmapped;
         } else if (sil_outputs_r2_unmapped > 0) {
           tpdo_mapping_parameter_record[entry_start_idx] =
-              0x4040 + 0x0100 * sil_outputs_r2_subindex;
+              0x0040 + 0x0100 * sil_outputs_r2_subindex;
           tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
           ++sil_outputs_r2_subindex;
           --sil_outputs_r2_unmapped;
         }
+      }
+
+      for (unsigned int i = 0;
+           i < JSD_EPD_ARRAY_SIZE(tpdo_mapping_parameter_record); ++i) {
+        MSG_DEBUG("tpdo_mapping_parameter_record[%d] = %X", i,
+                  tpdo_mapping_parameter_record[i]);
       }
 
       if (!jsd_sdo_set_ca_param_blocking(
@@ -922,8 +937,8 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
                       sizeof(jsd_epd_txpdo_data_nominal_t);
     if (tpdo_total_size > JSD_EPD_MAX_BYTES_PDO_CHANNEL) {
       ERROR(
-          "Total size of TPDO mapped objects (%zu) must be less than the "
-          "corresponding PDO channel's limit (%d).",
+          "Total size of TPDO mapped objects (%zu bytes) must be less than the "
+          "corresponding PDO channel's limit (%d bytes).",
           tpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
       return 0;
     }
@@ -980,6 +995,9 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
   txpdo_assign_array[0] = tpdo_mapping_parameters_idx;
   for (int i = 1; i <= tpdo_mapping_parameters_idx; ++i) {
     txpdo_assign_array[i] = tpdo_mapping_parameters[i - 1];
+  }
+  for (unsigned int i = 0; i < JSD_EPD_ARRAY_SIZE(txpdo_assign_array); ++i) {
+    MSG_DEBUG("txpdo_assign_array[%d] = %x", i, txpdo_assign_array[i]);
   }
   if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
                                      sizeof(txpdo_assign_array),
