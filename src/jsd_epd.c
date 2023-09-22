@@ -437,6 +437,32 @@ void jsd_epd_async_sdo_set_sil_r2(jsd_t* self, uint16_t slave_id,
                           &value, app_id);
 }
 
+void jsd_epd_async_sdo_get_sil_r1(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, uint16_t app_id) {
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r1_num) ||
+      (subindex >= 129 && subindex <= (128 + config->epd.sil.outputs_r1_num))) {
+    ERROR("R1[%u] is already mapped to a PDO.", subindex);
+    return;
+  }
+  jsd_sdo_get_param_async(self, slave_id, 0x22F3, subindex, JSD_SDO_DATA_I32,
+                          app_id);
+}
+
+void jsd_epd_async_sdo_get_sil_r2(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, uint16_t app_id) {
+  jsd_slave_config_t* config = &self->slave_configs[slave_id];
+  assert(config->epd.use_sil);
+  if ((subindex >= 1 && subindex <= config->epd.sil.inputs_r2_num) ||
+      (subindex >= 65 && subindex <= (64 + config->epd.sil.outputs_r2_num))) {
+    ERROR("R2[%u] is already mapped to a PDO.", subindex);
+    return;
+  }
+  jsd_sdo_get_param_async(self, slave_id, 0x22F4, subindex, JSD_SDO_DATA_DOUBLE,
+                          app_id);
+}
+
 void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
                                           double position, uint16_t app_id) {
   jsd_sdo_set_param_async(self, slave_id, jsd_epd_lc_to_do("PX"), 1,

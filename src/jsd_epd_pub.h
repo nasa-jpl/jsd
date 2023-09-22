@@ -321,8 +321,8 @@ double jsd_epd_get_sil_output_r2(jsd_t* self, uint16_t slave_id,
  * @brief Sets the value of the specified entry in SIL's R1 array.
  *
  * Entries R1[1 + inputs_r1_num] - R1[128] and R1[129 + outputs_r1_num] -
- * R1[256] can be set via SDO, where inputs_r1_num and outputs_r1_num are the
- * corresponding parameters of the Elmo Platinum Drive JSD configuration .
+ * R1[256] can be accessed via SDO, where inputs_r1_num and outputs_r1_num are
+ * the corresponding parameters of the Elmo Platinum Drive JSD configuration .
  *
  * Real-time safe as long as SDO thread holds the mutex to retrieve the SDO for
  * a deterministic amount of time. SDO is sent asynchronously in SDO thread.
@@ -343,10 +343,10 @@ void jsd_epd_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
                                   uint16_t app_id);
 
 /**
- * @brief Sets the value of the specified entry in SIL's R1 array.
+ * @brief Sets the value of the specified entry in SIL's R2 array.
  *
  * Entries R2[1 + inputs_r2_num] - R2[64] and R2[65 + outputs_r2_num] - R2[128]
- * can be set via SDO, where inputs_r2_num and outputs_r2_num are the
+ * can be accessed via SDO, where inputs_r2_num and outputs_r2_num are the
  * corresponding parameters of the Elmo Platinum Drive JSD configuration .
  *
  * Real-time safe as long as SDO thread holds the mutex to retrieve the SDO for
@@ -366,6 +366,52 @@ void jsd_epd_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
 void jsd_epd_async_sdo_set_sil_r2(jsd_t* self, uint16_t slave_id,
                                   uint16_t subindex, double value,
                                   uint16_t app_id);
+
+/**
+ * @brief Gets the value of the specified entry in SIL's R2 array.
+ *
+ * Entries R1[1 + inputs_r1_num] - R1[128] and R1[129 + outputs_r1_num] -
+ * R1[256] can be accessed via SDO, where inputs_r1_num and outputs_r1_num are
+ * the corresponding parameters of the Elmo Platinum Drive JSD configuration .
+ *
+ * Real-time safe as long as SDO thread holds the mutex to retrieve the SDO for
+ * a deterministic amount of time. SDO is sent asynchronously in SDO thread.
+ *
+ * It is strongly recommended the application checks the result of the SDO-set
+ * operation. Use the response queue contained in the jsd_t context to check for
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param subindex Subindex in the R2 array
+ * @param app_id Application-provided ID for response tracking
+ */
+void jsd_epd_async_sdo_get_sil_r1(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, uint16_t app_id);
+
+/**
+ * @brief Gets the value of the specified entry in SIL's R2 array.
+ *
+ * Entries R2[1 + inputs_r2_num] - R2[64] and R2[65 + outputs_r2_num] - R2[128]
+ * can be accessed via SDO, where inputs_r2_num and outputs_r2_num are the
+ * corresponding parameters of the Elmo Platinum Drive JSD configuration .
+ *
+ * Real-time safe as long as SDO thread holds the mutex to retrieve the SDO for
+ * a deterministic amount of time. SDO is sent asynchronously in SDO thread.
+ *
+ * It is strongly recommended the application checks the result of the SDO-set
+ * operation. Use the response queue contained in the jsd_t context to check for
+ * the response and use the request data fields (such as the slave_id or app_id)
+ * to verify result and handle SDO-set failures.
+ *
+ * @param self Pointer to JSD context
+ * @param slave_id Slave ID of EPD device
+ * @param subindex Subindex in the R2 array
+ * @param app_id Application-provided ID for response tracking
+ */
+void jsd_epd_async_sdo_get_sil_r2(jsd_t* self, uint16_t slave_id,
+                                  uint16_t subindex, uint16_t app_id);
 
 // TODO(dloret): think about how to handle informational printing (e.g.
 // jsd_*_mode_of_operation_to_string, jsd_*_state_machine_to_string,
