@@ -22,6 +22,7 @@ extern "C" {
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
+#include "jsd/jsd_el6001_types.h"
 #include "jsd/jsd_epd_types.h"
 #include "jsd/jsd_ild1900_types.h"
 #include "jsd/jsd_jed0101_types.h"
@@ -49,6 +50,7 @@ typedef struct {
     jsd_el3318_config_t  el3318;
     jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
+    jsd_el6001_config_t  el6001;
     jsd_ild1900_config_t ild1900;
     jsd_epd_config_t     epd;
   };
@@ -73,6 +75,7 @@ typedef struct {
     jsd_el3318_state_t      el3318;
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
+    jsd_el6001_private_state_t      el6001;
     jsd_ild1900_state_t     ild1900;
     jsd_epd_private_state_t epd;
   };

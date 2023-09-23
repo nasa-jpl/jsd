@@ -22,6 +22,7 @@ add_library(jsd-lib STATIC
     jsd_el3318.c
     jsd_el3162.c
     jsd_el4102.c
+    jsd_el6001.c
     jsd_ild1900.c
     jsd_epd.c
     )
@@ -35,8 +36,8 @@ target_include_directories(
     )
 
 find_package(Threads REQUIRED)
-target_link_libraries(jsd-lib
-    PUBLIC soem
+target_link_libraries(jsd-lib    
+    PUBLIC soem m
     PRIVATE Threads::Threads
     PRIVATE rt
     )
