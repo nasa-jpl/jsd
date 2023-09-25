@@ -32,7 +32,7 @@ extern "C" {
 typedef struct {
   bool     configuration_active;
   uint32_t product_code;
-  char     name[JSD_NAME_LEN];
+  char     name[JSD_NAME_LEN + 1];
   union {
     jsd_el1008_config_t  el1008;
     jsd_el3602_config_t  el3602;
@@ -134,7 +134,7 @@ typedef struct {
   jsd_sdo_req_t   buffer[JSD_SDO_REQ_CIRQ_LEN];
   uint16_t        r;
   uint16_t        w;
-  char            name[JSD_NAME_LEN];
+  char            name[JSD_NAME_LEN + 1];
   pthread_mutex_t mutex;
 } jsd_sdo_req_cirq_t;
 

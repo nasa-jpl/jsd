@@ -204,7 +204,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   // Initialize the error queues used between threads
   for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
-    char qname[JSD_NAME_LEN];
+    char qname[JSD_NAME_LEN + 1];
     snprintf(qname, JSD_NAME_LEN, "Slave %d error cirq", sid);
     jsd_error_cirq_init(&self->slave_errors[sid], qname);
   }
@@ -348,7 +348,7 @@ char* jsd_ec_state_to_string(ec_state state) {
       return "EC_STATE_ACK/ERROR";
       break;
     default: {
-      char str[JSD_NAME_LEN];
+      char str[JSD_NAME_LEN + 1];
       snprintf(str, JSD_NAME_LEN, "Bad EC_STATE: 0x%x", state);
       return strdup(str);
       break;
