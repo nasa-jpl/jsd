@@ -12,7 +12,7 @@ void jsd_error_cirq_init(jsd_error_cirq_t* self, const char* name){
   self->w     = 0;
   self->mutex = (pthread_mutex_t)PTHREAD_MUTEX_INITIALIZER;
 
-  strncpy(self->name, name, JSD_NAME_LEN);
+  strncpy(self->name, name, JSD_NAME_LEN - 1);
 }
 
 // non-locking
