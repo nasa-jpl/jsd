@@ -20,6 +20,8 @@
 #include "jsd/jsd_el3602.h"
 #include "jsd/jsd_el4102.h"
 #include "jsd/jsd_epd.h"
+#include "jsd/jsd_epd_common.h"
+#include "jsd/jsd_epd_sil.h"
 #include "jsd/jsd_ild1900.h"
 #include "jsd/jsd_jed0101.h"
 #include "jsd/jsd_jed0200.h"

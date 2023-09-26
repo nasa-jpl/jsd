@@ -7,26 +7,6 @@ extern "C" {
 
 #include "jsd/jsd_epd_pub.h"
 
-#define JSD_EPD_STATE_MACHINE_STATE_BITMASK (uint16_t)0x6F
-
-/**
- * @brief Bit patterns in the Controlword to trigger transitions in the EPD's
- * state machine
- *
- * Relevant bits in the Controlword are 0, 1, 2, 3, and 7. See Platinum
- * Communication and Interpreters section 4.7.37.
- */
-typedef enum {
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_SHUTDOWN                   = 0x06,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_SWITCH_ON                  = 0x07,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_SWITCH_ON_ENABLE_OPERATION = 0x08,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_DISABLE_VOLTAGE            = 0x00,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_QUICK_STOP                 = 0x02,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_DISABLE_OPERATION          = 0x07,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_ENABLE_OPERATION           = 0x0F,
-  JSD_EPD_STATE_MACHINE_CONTROLWORD_FAULT_RESET                = 0x80,
-} jsd_epd_state_machine_controlword_t;
-
 // TODO(dloret): Consider making the data related to DS-402 common between the
 // EGD and EPD drivers:
 // - JSD_*_STATE_MACHINE_STATE_BITMASK
@@ -95,17 +75,6 @@ void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id);
-
-jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
-
-/**
- * @brief Utility function to check whether a product code is compatible with
- * EPD.
- *
- * @param product_code The product code to be checked
- * @return True if the product code is compatible, false otherwise.
- */
-bool jsd_epd_product_code_is_compatible(uint32_t product_code);
 
 #ifdef __cplusplus
 }
