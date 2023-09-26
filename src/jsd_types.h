@@ -11,9 +11,9 @@ extern "C" {
 #include "ethercat.h"
 #include "jsd/jsd_ati_fts_types.h"
 #include "jsd/jsd_egd_types.h"
+#include "jsd/jsd_el1008_types.h"
 #include "jsd/jsd_el2124_types.h"
 #include "jsd/jsd_el2809_types.h"
-#include "jsd/jsd_el1008_types.h"
 #include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
@@ -22,7 +22,9 @@ extern "C" {
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
+#include "jsd/jsd_epd_sil_types.h"
 #include "jsd/jsd_epd_types.h"
+#include "jsd/jsd_error_cirq.h"
 #include "jsd/jsd_ild1900_types.h"
 #include "jsd/jsd_jed0101_types.h"
 #include "jsd/jsd_jed0200_types.h"
@@ -71,6 +73,7 @@ typedef struct {
     jsd_el4102_config_t  el4102;
     jsd_ild1900_config_t ild1900;
     jsd_epd_config_t     epd;
+    jsd_epd_sil_config_t epd_sil;
   };
   bool PO2SO_success;  // reserved for internal use
 
@@ -95,6 +98,7 @@ typedef struct {
     jsd_el4102_state_t      el4102;
     jsd_ild1900_state_t     ild1900;
     jsd_epd_private_state_t epd;
+    jsd_epd_sil_private_state_t epd_sil;
   };
 
   uint16_t num_async_sdo_requests; // reserved
