@@ -10,6 +10,7 @@
 #include "jsd/jsd_egd.h"
 #include "jsd/jsd_el1008.h"
 #include "jsd/jsd_el2124.h"
+#include "jsd/jsd_el2809.h"
 #include "jsd/jsd_el3104.h"
 #include "jsd/jsd_el3162.h"
 #include "jsd/jsd_el3202.h"
@@ -446,6 +447,10 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     }
     case JSD_EL2124_PRODUCT_CODE: {
       return jsd_el2124_init(self, slave_id);
+      break;
+    }
+    case JSD_EL2809_PRODUCT_CODE: {
+      return jsd_el2809_init(self, slave_id);
       break;
     }
     case JSD_EL3356_PRODUCT_CODE: {

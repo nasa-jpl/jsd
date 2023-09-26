@@ -174,7 +174,11 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
   assert(self);
   assert(jsd_epd_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
-  assert(index > 0 && index <= JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  if (index <= 0 || index > JSD_EPD_NUM_DIGITAL_OUTPUTS) {
+    ERROR("The provided digital output index %d is out of range [1,%d]",
+          index, JSD_EPD_NUM_DIGITAL_OUTPUTS);
+    return;
+  }
 
   jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
   if (output > 0) {
