@@ -95,7 +95,7 @@ int main(int argc, char const* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "bigfoot");
   my_config.configuration_active = true;
-  my_config.device_type          = JSD_DEVICE_TYPE_EL2124;
+  my_config.driver_type          = JSD_DRIVER_TYPE_EL2124;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

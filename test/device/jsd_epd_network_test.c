@@ -275,7 +275,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(epd_config.name, JSD_NAME_LEN, "kukulkan");
   epd_config.configuration_active         = true;
-  epd_config.device_type                  = JSD_DEVICE_TYPE_EPD;
+  epd_config.driver_type                  = JSD_DRIVER_TYPE_EPD;
   epd_config.epd.max_motor_speed          = max_motor_speed;
   epd_config.epd.loop_period_ms           = 1000 / loop_freq_hz;
   epd_config.epd.torque_slope             = 1e7;
@@ -306,7 +306,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(el3602_config.name, JSD_NAME_LEN, "unicorn");
   el3602_config.configuration_active = true;
-  el3602_config.device_type          = JSD_DEVICE_TYPE_EL3602;
+  el3602_config.driver_type          = JSD_DRIVER_TYPE_EL3602;
   el3602_config.el3602.range[0]      = JSD_EL3602_RANGE_10V;
   el3602_config.el3602.range[1]      = JSD_EL3602_RANGE_10V;
   el3602_config.el3602.filter[0]     = JSD_BECKHOFF_FILTER_30000HZ;
@@ -320,7 +320,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(el2124_config.name, JSD_NAME_LEN, "bigfoot");
   el2124_config.configuration_active = true;
-  el2124_config.device_type          = JSD_DEVICE_TYPE_EL2124;
+  el2124_config.driver_type          = JSD_DRIVER_TYPE_EL2124;
 
   jsd_set_slave_config(sds.jsd, el2124_slave_id, el2124_config);
 

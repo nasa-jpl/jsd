@@ -18,7 +18,7 @@ int main() {
 
   snprintf(my_config.name, JSD_NAME_LEN, "my_el3602_device");
   my_config.configuration_active = true;
-  my_config.device_type          = JSD_DEVICE_TYPE_EL3602;
+  my_config.driver_type          = JSD_DRIVER_TYPE_EL3602;
 
   jsd_set_slave_config(jsd, slave_id, my_config);
 

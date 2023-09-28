@@ -85,7 +85,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "my_ati_fts");
   my_config.configuration_active = true;
-  my_config.device_type          = JSD_DEVICE_TYPE_ATI_FTS;
+  my_config.driver_type          = JSD_DRIVER_TYPE_ATI_FTS;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

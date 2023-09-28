@@ -117,14 +117,14 @@ int main(int argc, char* argv[]) {
   slave_config.el3602.filter[1] = JSD_BECKHOFF_FILTER_30000HZ;
   snprintf(slave_config.name, JSD_NAME_LEN, "unicorn");
   slave_config.configuration_active = true;
-  slave_config.device_type          = JSD_DEVICE_TYPE_EL3602;
+  slave_config.driver_type          = JSD_DRIVER_TYPE_EL3602;
 
   jsd_set_slave_config(sds.jsd, el3602_slave_id, slave_config);
 
   jsd_slave_config_t slave_config2   = {0};
   slave_config2.configuration_active = true;
   snprintf(slave_config2.name, JSD_NAME_LEN, "bigfoot");
-  slave_config2.device_type = JSD_DEVICE_TYPE_EL2124;
+  slave_config2.driver_type = JSD_DRIVER_TYPE_EL2124;
 
   jsd_set_slave_config(sds.jsd, el2124_slave_id, slave_config2);
 

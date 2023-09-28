@@ -26,9 +26,9 @@ char* jsd_ec_state_to_string(ec_state state);
  */
 bool jsd_init_all_devices(jsd_t* self);
 
-// Helper function to check whether a device type is compatible with the
+// Helper function to check whether a driver type is compatible with the
 // product code of an actual device.
-bool jsd_device_is_compatible_with_product_code(jsd_device_type_t device_type,
+bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
                                                 uint32_t          product_code);
 
 /**

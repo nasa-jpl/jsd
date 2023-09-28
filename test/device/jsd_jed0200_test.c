@@ -118,7 +118,7 @@ int main(int argc, char const* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "bigfoot");
   my_config.configuration_active = true;
-  my_config.device_type              = JSD_DEVICE_TYPE_JED0200;
+  my_config.driver_type              = JSD_DRIVER_TYPE_JED0200;
   my_config.jed0200.initial_cmd      = 0;
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
   sds_run(&sds, ifname, "/tmp/jsd_jed0200.csv");
