@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "unicorn");
   my_config.configuration_active = true;
-  my_config.product_code         = JSD_EL1008_PRODUCT_CODE;
+  my_config.device_type          = JSD_DEVICE_TYPE_EL1008;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

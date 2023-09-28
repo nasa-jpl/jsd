@@ -486,15 +486,12 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     case JSD_DEVICE_TYPE_EGD:
       return jsd_egd_init(self, slave_id);
       break;
-    }
-    case JSD_DEVICE_TYPE_EL1008: {
+    case JSD_DEVICE_TYPE_EL1008:
       return jsd_el1008_init(self, slave_id);
       break;
-    }
-    case JSD_DEVICE_TYPE_EL2809: {
+    case JSD_DEVICE_TYPE_EL2809:
       return jsd_el2809_init(self, slave_id);
       break;
-    }
     case JSD_DEVICE_TYPE_EL2124:
       return jsd_el2124_init(self, slave_id);
       break;
