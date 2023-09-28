@@ -93,6 +93,10 @@ void jsd_egd_reset(jsd_t* self, uint16_t slave_id) {
   double now = jsd_time_get_mono_time_sec();
   if ((now - self->slave_states[slave_id].egd.last_reset_time) >
       JSD_EGD_RESET_DERATE_SEC) {
+
+    // Flag below used to latch halt commands until we are in the OPERATION ENABLED state.
+    self->slave_states[slave_id].egd.enabling_operation = true;
+
     self->slave_states[slave_id].egd.new_reset       = true;
     self->slave_states[slave_id].egd.last_reset_time = now;
 
@@ -604,6 +608,8 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
 
   state->pub.fault_code = JSD_EGD_FAULT_OKAY;
   state->pub.emcy_error_code = 0;
+
+  state->enabling_operation = false;
 
   return true;
 }
@@ -1154,6 +1160,7 @@ void jsd_egd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
       jsd_sdo_signal_emcy_check(self);
+      state->enabling_operation = false; // we should not be carrying out reset currently
       state->new_reset = false; // clear any potentially ongoing reset request
       state->fault_real_time = jsd_time_get_time_sec();
       state->fault_mono_time = jsd_time_get_mono_time_sec();
@@ -1259,8 +1266,8 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       }
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_OPERATION_ENABLED:
-
-      state->pub.fault_code = JSD_EGD_FAULT_OKAY;
+      state->enabling_operation  = false;
+      state->pub.fault_code      = JSD_EGD_FAULT_OKAY;
       state->pub.emcy_error_code = 0;
 
       // Handle halt
@@ -1337,7 +1344,9 @@ void jsd_egd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   }
 
   state->new_motion_command = false;
-  state->new_halt_command   = false;
+  if (!state->enabling_operation) {
+    state->new_halt_command = false;
+  }
 }
 
 void jsd_egd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {

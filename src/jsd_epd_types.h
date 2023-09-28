@@ -277,6 +277,7 @@ typedef struct {
                                  ///< (CL[1]), mA
 
   // User input
+  bool                        enabling_operation;
   bool                        new_reset;
   bool                        new_halt_command;
   bool                        new_motion_command;
