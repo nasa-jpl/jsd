@@ -267,7 +267,7 @@ jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error) {
   return fault_code;
 }
 
-bool jsd_epd_product_code_is_compatible(uint32_t product_code) {
+bool jsd_epd_product_code_is_compatible_impl(uint32_t product_code) {
   return (product_code == JSD_EPD_PRODUCT_CODE_STD_FW) ||
          (product_code == JSD_EPD_PRODUCT_CODE_SAFETY_FW);
 }

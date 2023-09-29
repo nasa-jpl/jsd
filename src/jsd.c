@@ -20,7 +20,6 @@
 #include "jsd/jsd_el3602.h"
 #include "jsd/jsd_el4102.h"
 #include "jsd/jsd_epd.h"
-#include "jsd/jsd_epd_common.h"
 #include "jsd/jsd_epd_sil.h"
 #include "jsd/jsd_ild1900.h"
 #include "jsd/jsd_jed0101.h"
@@ -504,6 +503,9 @@ bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
     case JSD_DRIVER_TYPE_EPD:
       is_compatible = jsd_epd_product_code_is_compatible(product_code);
       break;
+    case JSD_DRIVER_TYPE_EPD_SIL:
+      is_compatible = jsd_epd_sil_product_code_is_compatible(product_code);
+      break;
     default:
       ERROR("Invalid driver type (%i)", driver_type);
       assert(false);
@@ -567,6 +569,9 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_DRIVER_TYPE_EPD:
       return jsd_epd_init(self, slave_id);
+      break;
+    case JSD_DRIVER_TYPE_EPD_SIL:
+      return jsd_epd_sil_init(self, slave_id);
       break;
     default:
       ERROR("Invalid driver type: %u", driver_type);

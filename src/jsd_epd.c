@@ -1081,3 +1081,7 @@ void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
 
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
 }
+
+bool jsd_epd_product_code_is_compatible(uint32_t product_code) {
+  return jsd_epd_product_code_is_compatible_impl(product_code);
+}

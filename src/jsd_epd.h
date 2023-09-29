@@ -76,6 +76,14 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id);
 void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id);
 
+/**
+ * @brief Checks whether a product code is compatible with EPD-driver
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_epd_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

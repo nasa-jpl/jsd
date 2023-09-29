@@ -30,14 +30,14 @@ uint16_t jsd_epd_sil_lc_to_do(char letter_command[2]) {
 const jsd_epd_sil_state_t* jsd_epd_sil_get_state(jsd_t*   self,
                                                  uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   return &self->slave_states[slave_id].epd_sil.pub;
 }
 
 void jsd_epd_sil_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
@@ -65,7 +65,7 @@ void jsd_epd_sil_read(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_sil_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
@@ -93,7 +93,7 @@ void jsd_epd_sil_process(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_sil_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   double now = jsd_time_get_mono_time_sec();
@@ -118,7 +118,7 @@ void jsd_epd_sil_reset(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_sil_clear_errors(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   self->slave_states[slave_id].epd_sil.pub.fault_code      = JSD_EPD_FAULT_OKAY;
@@ -127,7 +127,7 @@ void jsd_epd_sil_clear_errors(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_sil_halt(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   self->slave_states[slave_id].epd_sil.new_halt_command = true;
@@ -136,7 +136,7 @@ void jsd_epd_sil_halt(jsd_t* self, uint16_t slave_id) {
 void jsd_epd_sil_set_peak_current(jsd_t* self, uint16_t slave_id,
                                   double peak_current) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_sil_private_state_t* state = &self->slave_states[slave_id].epd_sil;
@@ -148,7 +148,7 @@ void jsd_epd_sil_set_peak_current(jsd_t* self, uint16_t slave_id,
 void jsd_epd_sil_set_sil_r1_input(jsd_t* self, uint16_t slave_id,
                                   uint16_t subindex, int32_t value) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 1 && subindex <= config->epd_sil.sil_r1_inputs_num);
@@ -159,7 +159,7 @@ void jsd_epd_sil_set_sil_r1_input(jsd_t* self, uint16_t slave_id,
 void jsd_epd_sil_set_sil_r2_input(jsd_t* self, uint16_t slave_id,
                                   uint16_t subindex, double value) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 1 && subindex <= config->epd_sil.sil_r2_inputs_num);
@@ -170,7 +170,7 @@ void jsd_epd_sil_set_sil_r2_input(jsd_t* self, uint16_t slave_id,
 int32_t jsd_epd_sil_get_sil_r1_input(jsd_t* self, uint16_t slave_id,
                                      uint16_t subindex) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 1 && subindex <= config->epd_sil.sil_r1_inputs_num);
@@ -181,7 +181,7 @@ int32_t jsd_epd_sil_get_sil_r1_input(jsd_t* self, uint16_t slave_id,
 double jsd_epd_sil_get_sil_r2_input(jsd_t* self, uint16_t slave_id,
                                     uint16_t subindex) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 1 && subindex <= config->epd_sil.sil_r2_inputs_num);
@@ -192,7 +192,7 @@ double jsd_epd_sil_get_sil_r2_input(jsd_t* self, uint16_t slave_id,
 int32_t jsd_epd_sil_get_sil_r1_output(jsd_t* self, uint16_t slave_id,
                                       uint16_t subindex) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 129 &&
@@ -204,7 +204,7 @@ int32_t jsd_epd_sil_get_sil_r1_output(jsd_t* self, uint16_t slave_id,
 double jsd_epd_sil_get_sil_r2_output(jsd_t* self, uint16_t slave_id,
                                      uint16_t subindex) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   assert(subindex >= 65 &&
@@ -285,7 +285,7 @@ void jsd_epd_sil_async_sdo_set_ctrl_gain_scheduling_mode(
                                                        app_id);
 }
 
-const char* jsd_sil_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
+const char* jsd_epd_sil_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
   return jsd_epd_fault_code_to_string_impl(fault_code);
 }
 
@@ -295,7 +295,7 @@ const char* jsd_sil_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
 
 bool jsd_epd_sil_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
 
@@ -339,7 +339,7 @@ bool jsd_epd_sil_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_epd_sil_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       ecx_context->slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
@@ -776,7 +776,7 @@ int jsd_epd_sil_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
 void jsd_epd_sil_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_sil_private_state_t* state = &self->slave_states[slave_id].epd_sil;
@@ -843,7 +843,7 @@ void jsd_epd_sil_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
 void jsd_epd_sil_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_epd_sil_private_state_t* state = &self->slave_states[slave_id].epd_sil;
@@ -968,4 +968,8 @@ void jsd_epd_sil_process_state_machine(jsd_t* self, uint16_t slave_id) {
       assert(0);
   }
   state->new_halt_command = false;
+}
+
+bool jsd_epd_sil_product_code_is_compatible(uint32_t product_code) {
+  return jsd_epd_product_code_is_compatible_impl(product_code);
 }

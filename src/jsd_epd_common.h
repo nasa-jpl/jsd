@@ -30,6 +30,14 @@ typedef enum {
 } jsd_epd_state_machine_controlword_t;
 
 /**
+ * @brief Converts error code in SOEM's ec_errort to jsd_epd_fault_code_t label
+ *
+ * @param error SOEM's ec_errort instance
+ * @return jsd_epd_fault_code_t enumeration label
+ */
+jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
+
+/**
  * @brief Converts Elmo letter command to the associated SDO index
  *
  * @param letter_command Elmo command in capital characters (e.g. "PX")
@@ -107,20 +115,12 @@ void jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode_impl(
 const char* jsd_epd_fault_code_to_string_impl(jsd_epd_fault_code_t fault_code);
 
 /**
- * @brief Converts error code in SOEM's ec_errort to jsd_epd_fault_code_t label
- *
- * @param error SOEM's ec_errort instance
- * @return jsd_epd_fault_code_t enumeration label
- */
-jsd_epd_fault_code_t jsd_epd_get_fault_code_from_ec_error(ec_errort error);
-
-/**
  * @brief Checks whether a product code is compatible with EPD drivers
  *
  * @param product_code The product code to be checked
  * @return True if the product code is compatible, false otherwise.
  */
-bool jsd_epd_product_code_is_compatible(uint32_t product_code);
+bool jsd_epd_product_code_is_compatible_impl(uint32_t product_code);
 
 #ifdef __cplusplus
 }
