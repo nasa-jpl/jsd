@@ -49,6 +49,7 @@ typedef enum {
   JSD_DRIVER_TYPE_EL4102,
   JSD_DRIVER_TYPE_ILD1900,
   JSD_DRIVER_TYPE_EPD,
+  JSD_DRIVER_TYPE_EPD_SIL,
 } jsd_driver_type_t;
 
 typedef struct {
