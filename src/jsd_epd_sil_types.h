@@ -133,11 +133,15 @@ typedef struct {
   jsd_epd_sil_rxpdo_data_t default_rxpdo;  ///< Raw RxPDO data mapped by default
   jsd_epd_sil_txpdo_data_t default_txpdo;  ///< Raw TxPDO data mapped by default
   // Arrays to hold SIL variables mapped to RxPDO
-  int32_t sil_r1_inputs[JSD_EPD_SIL_R1_MAX_NUM];  ///< 0x22F3
-  double  sil_r2_inputs[JSD_EPD_SIL_R2_MAX_NUM];  ///< 0x22F4
+  int32_t
+      sil_r1_inputs[JSD_EPD_SIL_R1_MAX_NUM];  ///< 0x22F3 starting at subindex 1
+  double
+      sil_r2_inputs[JSD_EPD_SIL_R2_MAX_NUM];  ///< 0x22F4 starting at subindex 1
   // Arrays to hold SIL variables mapped to TxPDO
-  int32_t sil_r1_outputs[JSD_EPD_SIL_R1_MAX_NUM];  ///< 0x22F3
-  double  sil_r2_outputs[JSD_EPD_SIL_R2_MAX_NUM];  ///< 0x22F4
+  int32_t sil_r1_outputs[JSD_EPD_SIL_R1_MAX_NUM];  ///< 0x22F3 starting at
+                                                   ///< subindex 129
+  double sil_r2_outputs[JSD_EPD_SIL_R2_MAX_NUM];   ///< 0x22F4 starting at
+                                                   ///< subindex 65
 
   uint32_t motor_rated_current;  ///< Set the same as continuous current limit
                                  ///< (CL[1]), mA
