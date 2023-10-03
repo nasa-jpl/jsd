@@ -13,6 +13,10 @@
 
 #define JSD_EPD_SIL_MAX_OBJS_PER_PDO_MAPPING_PARAMETER (8)
 
+// Subindex offsets for SIL R1/R2 outputs.
+#define JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET (129)
+#define JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET (65)
+
 // WARNING: Only use this macro on raw arrays. Do not use it on array function
 // parameters or pointers.
 #define JSD_EPD_SIL_ARRAY_SIZE(array) (sizeof((array)) / sizeof((array)[0]))
@@ -195,10 +199,13 @@ int32_t jsd_epd_sil_get_sil_r1_output(jsd_t* self, uint16_t slave_id,
   assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  assert(subindex >= 129 &&
-         subindex <= (128 + config->epd_sil.sil_r1_outputs_num));
+  assert(subindex >= JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET &&
+         subindex <= ((JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                      config->epd_sil.sil_r1_outputs_num));
 
-  return self->slave_states[slave_id].epd_sil.sil_r1_outputs[subindex - 129];
+  return self->slave_states[slave_id]
+      .epd_sil
+      .sil_r1_outputs[subindex - JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET];
 }
 
 double jsd_epd_sil_get_sil_r2_output(jsd_t* self, uint16_t slave_id,
@@ -207,10 +214,13 @@ double jsd_epd_sil_get_sil_r2_output(jsd_t* self, uint16_t slave_id,
   assert(jsd_epd_sil_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
-  assert(subindex >= 65 &&
-         subindex <= (64 + config->epd_sil.sil_r2_outputs_num));
+  assert(subindex >= JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET &&
+         subindex <= ((JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                      config->epd_sil.sil_r2_outputs_num));
 
-  return self->slave_states[slave_id].epd_sil.sil_r2_outputs[subindex - 65];
+  return self->slave_states[slave_id]
+      .epd_sil
+      .sil_r2_outputs[subindex - JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET];
 }
 
 void jsd_epd_sil_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
@@ -218,8 +228,9 @@ void jsd_epd_sil_async_sdo_set_sil_r1(jsd_t* self, uint16_t slave_id,
                                       uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   if ((subindex >= 1 && subindex <= config->epd_sil.sil_r1_inputs_num) ||
-      (subindex >= 129 &&
-       subindex <= (128 + config->epd_sil.sil_r1_outputs_num))) {
+      (subindex >= JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET &&
+       subindex <= ((JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                    config->epd_sil.sil_r1_outputs_num))) {
     ERROR("R1[%u] is already mapped to a PDO.", subindex);
     return;
   }
@@ -232,8 +243,9 @@ void jsd_epd_sil_async_sdo_set_sil_r2(jsd_t* self, uint16_t slave_id,
                                       uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   if ((subindex >= 1 && subindex <= config->epd_sil.sil_r2_inputs_num) ||
-      (subindex >= 65 &&
-       subindex <= (64 + config->epd_sil.sil_r2_outputs_num))) {
+      (subindex >= JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET &&
+       subindex <= ((JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                    config->epd_sil.sil_r2_outputs_num))) {
     ERROR("R2[%u] is already mapped to a PDO.", subindex);
     return;
   }
@@ -245,8 +257,9 @@ void jsd_epd_sil_async_sdo_get_sil_r1(jsd_t* self, uint16_t slave_id,
                                       uint16_t subindex, uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   if ((subindex >= 1 && subindex <= config->epd_sil.sil_r1_inputs_num) ||
-      (subindex >= 129 &&
-       subindex <= (128 + config->epd_sil.sil_r1_outputs_num))) {
+      (subindex >= JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET &&
+       subindex <= ((JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                    config->epd_sil.sil_r1_outputs_num))) {
     ERROR("R1[%u] is already mapped to a PDO.", subindex);
     return;
   }
@@ -258,8 +271,9 @@ void jsd_epd_sil_async_sdo_get_sil_r2(jsd_t* self, uint16_t slave_id,
                                       uint16_t subindex, uint16_t app_id) {
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
   if ((subindex >= 1 && subindex <= config->epd_sil.sil_r2_inputs_num) ||
-      (subindex >= 65 &&
-       subindex <= (64 + config->epd_sil.sil_r2_outputs_num))) {
+      (subindex >= JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET &&
+       subindex <= ((JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET - 1) +
+                    config->epd_sil.sil_r2_outputs_num))) {
     ERROR("R2[%u] is already mapped to a PDO.", subindex);
     return;
   }
@@ -375,23 +389,16 @@ int jsd_epd_sil_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
 
   // RxPDO related variables
   uint16_t rpdo_mapping_parameters[]       = {0x1600, 0x1601, 0x1602, 0x1603};
-  int      rpdo_mapping_parameters_idx     = 0;
   uint16_t rpdo_default_mapping_elements[] = {
       0x0010, 0x6040,  // controlword
       0x0010, 0x6073,  // max_current
       0x0008, 0x6060,  // mode_of_operation
   };
-  int rpdo_default_mapping_elements_idx = 0;
-  int rpdo_default_objects_unmapped =
+  int rpdo_default_variables_num =
       JSD_EPD_SIL_ARRAY_SIZE(rpdo_default_mapping_elements) / 2;
-  int sil_r1_inputs_unmapped = config->epd_sil.sil_r1_inputs_num;
-  int sil_r1_inputs_subindex = 1;
-  int sil_r2_inputs_unmapped = config->epd_sil.sil_r2_inputs_num;
-  int sil_r2_inputs_subindex = 1;
 
   // TxPDO related variables
   uint16_t tpdo_mapping_parameters[]       = {0x1A00, 0x1A01, 0x1A02, 0x1A03};
-  int      tpdo_mapping_parameters_idx     = 0;
   uint16_t tpdo_default_mapping_elements[] = {
       0x0010, 0x6041,  // statusword
       0x0120, 0x3607,  // status_register_1
@@ -401,13 +408,8 @@ int jsd_epd_sil_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
       0x0020, 0x6069,  // velocity_actual_value
       0x0010, 0x6078,  // current_actual_value
   };
-  int tpdo_default_mapping_elements_idx = 0;
-  int tpdo_default_objects_unmapped =
+  int tpdo_default_variables_num =
       JSD_EPD_SIL_ARRAY_SIZE(tpdo_default_mapping_elements) / 2;
-  int sil_r1_outputs_unmapped = config->epd_sil.sil_r1_outputs_num;
-  int sil_r1_outputs_subindex = 129;
-  int sil_r2_outputs_unmapped = config->epd_sil.sil_r2_outputs_num;
-  int sil_r2_outputs_subindex = 65;
 
   // Check for errors before attempting any PDO mapping
 
@@ -422,7 +424,7 @@ int jsd_epd_sil_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
         rpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
     return 0;
   }
-  size_t rpdo_total_objects = rpdo_default_objects_unmapped +
+  size_t rpdo_total_objects = rpdo_default_variables_num +
                               config->epd_sil.sil_r1_inputs_num +
                               config->epd_sil.sil_r2_inputs_num;
   size_t rpdo_total_objects_limit =
@@ -447,7 +449,7 @@ int jsd_epd_sil_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
         tpdo_total_size, JSD_EPD_MAX_BYTES_PDO_CHANNEL);
     return 0;
   }
-  size_t tpdo_total_objects = tpdo_default_objects_unmapped +
+  size_t tpdo_total_objects = tpdo_default_variables_num +
                               config->epd_sil.sil_r1_outputs_num +
                               config->epd_sil.sil_r2_outputs_num;
   size_t tpdo_total_objects_limit =
@@ -461,145 +463,145 @@ int jsd_epd_sil_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
-  //////////////// RxPDO Mapping //////////////////////////
-
-  // Set RPDO mapping parameter object
-  while ((rpdo_default_objects_unmapped + sil_r1_inputs_unmapped +
-          sil_r2_inputs_unmapped) > 0) {
-    int objects_mapped =
-        jsd_epd_sil_min(JSD_EPD_SIL_MAX_OBJS_PER_PDO_MAPPING_PARAMETER,
-                        rpdo_default_objects_unmapped + sil_r1_inputs_unmapped +
-                            sil_r2_inputs_unmapped);
-    uint16_t rpdo_mapping_parameter_record[objects_mapped * 2 + 1];
-    rpdo_mapping_parameter_record[0] = objects_mapped;
-
-    for (int i = 0; i < objects_mapped; ++i) {
-      int entry_start_idx = (i * 2) + 1;
-      if (rpdo_default_objects_unmapped > 0) {
-        rpdo_mapping_parameter_record[entry_start_idx] =
-            rpdo_default_mapping_elements[rpdo_default_mapping_elements_idx];
-        rpdo_mapping_parameter_record[entry_start_idx + 1] =
-            rpdo_default_mapping_elements[++rpdo_default_mapping_elements_idx];
-        ++rpdo_default_mapping_elements_idx;
-        --rpdo_default_objects_unmapped;
-      } else if (sil_r1_inputs_unmapped > 0) {
-        rpdo_mapping_parameter_record[entry_start_idx] =
-            0x0020 + 0x0100 * sil_r1_inputs_subindex;
-        rpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
-        ++sil_r1_inputs_subindex;
-        --sil_r1_inputs_unmapped;
-      } else if (sil_r2_inputs_unmapped > 0) {
-        rpdo_mapping_parameter_record[entry_start_idx] =
-            0x0040 + 0x0100 * sil_r2_inputs_subindex;
-        rpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
-        ++sil_r2_inputs_subindex;
-        --sil_r2_inputs_unmapped;
-      }
-    }
-
-    for (unsigned int i = 0;
-         i < JSD_EPD_SIL_ARRAY_SIZE(rpdo_mapping_parameter_record); ++i) {
-      MSG_DEBUG("rpdo_mapping_parameter_record[%d] = %X", i,
-                rpdo_mapping_parameter_record[i]);
-    }
-
-    if (!jsd_sdo_set_ca_param_blocking(
-            ecx_context, slave_id,
-            rpdo_mapping_parameters[rpdo_mapping_parameters_idx], 0x00,
-            sizeof(rpdo_mapping_parameter_record),
-            &rpdo_mapping_parameter_record)) {
-      return 0;
-    }
-
-    ++rpdo_mapping_parameters_idx;
-  }
-
-  // Set RxPDO assign object
-  uint16_t rxpdo_assign_array[1 + rpdo_mapping_parameters_idx];
-  rxpdo_assign_array[0] = rpdo_mapping_parameters_idx;
-  for (int i = 1; i <= rpdo_mapping_parameters_idx; ++i) {
-    rxpdo_assign_array[i] = rpdo_mapping_parameters[i - 1];
-  }
-  for (unsigned int i = 0; i < JSD_EPD_SIL_ARRAY_SIZE(rxpdo_assign_array);
-       ++i) {
-    MSG_DEBUG("rxpdo_assign_array[%d] = %x", i, rxpdo_assign_array[i]);
-  }
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C12, 0x00,
-                                     sizeof(rxpdo_assign_array),
-                                     &rxpdo_assign_array)) {
+  // Perform RxPDO Mapping
+  if (jsd_epd_config_PDO_mapping_helper(
+          ecx_context, slave_id, rpdo_mapping_parameters,
+          rpdo_default_mapping_elements, rpdo_default_variables_num,
+          config->epd_sil.sil_r1_inputs_num, config->epd_sil.sil_r2_inputs_num,
+          true) == 0) {
+    ERROR("RxPDO mapping failed.");
     return 0;
   }
   MSG_DEBUG("RxPDO size: %zu Bytes", rpdo_total_size);
 
-  //////////////// TxPDO Mapping //////////////////////////
+  // Perform TxPDO Mapping
+  if (jsd_epd_config_PDO_mapping_helper(
+          ecx_context, slave_id, tpdo_mapping_parameters,
+          tpdo_default_mapping_elements, tpdo_default_variables_num,
+          config->epd_sil.sil_r1_outputs_num,
+          config->epd_sil.sil_r2_outputs_num, false) == 0) {
+    ERROR("TxPDO mapping failed.");
+    return 0;
+  }
+  MSG_DEBUG("TxPDO size: %zu Bytes", tpdo_total_size);
 
-  // Set TPDO mapping parameter object
-  while ((tpdo_default_objects_unmapped + sil_r1_outputs_unmapped +
-          sil_r2_outputs_unmapped) > 0) {
-    int objects_mapped =
-        jsd_epd_sil_min(JSD_EPD_SIL_MAX_OBJS_PER_PDO_MAPPING_PARAMETER,
-                        tpdo_default_objects_unmapped +
-                            sil_r1_outputs_unmapped + sil_r2_outputs_unmapped);
-    uint16_t tpdo_mapping_parameter_record[objects_mapped * 2 + 1];
-    tpdo_mapping_parameter_record[0] = objects_mapped;
+  return 1;
+}
 
+int jsd_epd_config_PDO_mapping_helper(ecx_contextt* ecx_context,
+                                      uint16_t      slave_id,
+                                      uint16_t      pdo_mapping_parameters[],
+                                      uint16_t pdo_default_mapping_elements[],
+                                      int      pdo_default_variables_num,
+                                      int      sil_r1_variables_num,
+                                      int sil_r2_variables_num, bool is_rxpdo) {
+  // Index variables to iterate through the function parameter arrays
+  int pdo_mapping_parameters_idx       = 0;
+  int pdo_default_mapping_elements_idx = 0;
+  // The 'unmapped' suffix refers to variables yet to be mapped by this
+  // function.
+  int pdo_default_variables_unmapped = pdo_default_variables_num;
+  int sil_r1_variables_unmapped      = sil_r1_variables_num;
+  int sil_r2_variables_unmapped      = sil_r2_variables_num;
+  // By convention, R1 variables start at subindex 1 for RxPDO channel (SIL
+  // inputs), and subindex 129 for TxPDO channel (SIL outputs).
+  int sil_r1_variables_subindex =
+      is_rxpdo ? 1 : JSD_EPD_SIL_R1_OUTPUTS_SUBINDEX_OFFSET;
+  // By convention, R2 variables start at subindex 1 for RxPDO channel (SIL
+  // inputs), and subindex 65 for TxPDO channel (SIL outputs).
+  int sil_r2_variables_subindex =
+      is_rxpdo ? 1 : JSD_EPD_SIL_R2_OUTPUTS_SUBINDEX_OFFSET;
+
+  ////////// Set the PDO mapping parameter objects //////////
+
+  // Each iteration of the while loop creates the mapping parameter record for
+  // one of the mapping parameters contained in pdo_mapping_parameters.
+  while ((pdo_default_variables_unmapped + sil_r1_variables_unmapped +
+          sil_r2_variables_unmapped) > 0) {
+    // Objects to be mapped in the record of the current loop iteration
+    int objects_mapped = jsd_epd_sil_min(
+        JSD_EPD_SIL_MAX_OBJS_PER_PDO_MAPPING_PARAMETER,
+        pdo_default_variables_unmapped + sil_r1_variables_unmapped +
+            sil_r2_variables_unmapped);
+    // Allocate the array to contain the record. The structure of the record is
+    // described in sections 5.5 and 5.6 of the Platinum Administrative Guide.
+    // The first array entry is the total number of variables mapped in the
+    // record. The following array entries correspond to the mapped variables.
+    // Each variable spans two entries. The first entry of the pair encodes the
+    // size and object subindex of the variable. The second entry corresponds to
+    // the object index of the variable.
+    uint16_t pdo_mapping_parameter_record[objects_mapped * 2 + 1];
+    pdo_mapping_parameter_record[0] = objects_mapped;
+
+    // Each iteration of the for loop fills in the mapping record with the
+    // entries that correspond to one variable (two entries).
     for (int i = 0; i < objects_mapped; ++i) {
       int entry_start_idx = (i * 2) + 1;
-      if (tpdo_default_objects_unmapped > 0) {
-        tpdo_mapping_parameter_record[entry_start_idx] =
-            tpdo_default_mapping_elements[tpdo_default_mapping_elements_idx];
-        tpdo_mapping_parameter_record[entry_start_idx + 1] =
-            tpdo_default_mapping_elements[++tpdo_default_mapping_elements_idx];
-        ++tpdo_default_mapping_elements_idx;
-        --tpdo_default_objects_unmapped;
-      } else if (sil_r1_outputs_unmapped > 0) {
-        tpdo_mapping_parameter_record[entry_start_idx] =
-            0x0020 + 0x0100 * sil_r1_outputs_subindex;
-        tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
-        ++sil_r1_outputs_subindex;
-        --sil_r1_outputs_unmapped;
-      } else if (sil_r2_outputs_unmapped > 0) {
-        tpdo_mapping_parameter_record[entry_start_idx] =
-            0x0040 + 0x0100 * sil_r2_outputs_subindex;
-        tpdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
-        ++sil_r2_outputs_subindex;
-        --sil_r2_outputs_unmapped;
+      // Default variables are entered first, then R1 variables, and finally R2
+      // variables.
+      if (pdo_default_variables_unmapped > 0) {
+        pdo_mapping_parameter_record[entry_start_idx] =
+            pdo_default_mapping_elements[pdo_default_mapping_elements_idx];
+        pdo_mapping_parameter_record[entry_start_idx + 1] =
+            pdo_default_mapping_elements[++pdo_default_mapping_elements_idx];
+        ++pdo_default_mapping_elements_idx;
+        --pdo_default_variables_unmapped;
+      } else if (sil_r1_variables_unmapped > 0) {
+        // R1 variables are 32-bit integers (0x0020).
+        pdo_mapping_parameter_record[entry_start_idx] =
+            0x0020 + 0x0100 * sil_r1_variables_subindex;
+        // Dictionary object 0x22F3 corresponds to R1 variables.
+        pdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F3;
+        ++sil_r1_variables_subindex;
+        --sil_r1_variables_unmapped;
+      } else if (sil_r2_variables_unmapped > 0) {
+        // R2 variables are 64-bit floating point numbers (0x0040).
+        pdo_mapping_parameter_record[entry_start_idx] =
+            0x0040 + 0x0100 * sil_r2_variables_subindex;
+        // Dictionary object 0x22F4 corresponds to R2 variables.
+        pdo_mapping_parameter_record[entry_start_idx + 1] = 0x22F4;
+        ++sil_r2_variables_subindex;
+        --sil_r2_variables_unmapped;
       }
     }
 
     for (unsigned int i = 0;
-         i < JSD_EPD_SIL_ARRAY_SIZE(tpdo_mapping_parameter_record); ++i) {
-      MSG_DEBUG("tpdo_mapping_parameter_record[%d] = %X", i,
-                tpdo_mapping_parameter_record[i]);
+         i < JSD_EPD_SIL_ARRAY_SIZE(pdo_mapping_parameter_record); ++i) {
+      MSG_DEBUG("pdo_mapping_parameter_record[%d] = %X", i,
+                pdo_mapping_parameter_record[i]);
     }
 
+    // Associate the just created record to the mapping parameter of the current
+    // iteration
     if (!jsd_sdo_set_ca_param_blocking(
             ecx_context, slave_id,
-            tpdo_mapping_parameters[tpdo_mapping_parameters_idx], 0x00,
-            sizeof(tpdo_mapping_parameter_record),
-            &tpdo_mapping_parameter_record)) {
+            pdo_mapping_parameters[pdo_mapping_parameters_idx], 0x00,
+            sizeof(pdo_mapping_parameter_record),
+            &pdo_mapping_parameter_record)) {
       return 0;
     }
 
-    ++tpdo_mapping_parameters_idx;
+    ++pdo_mapping_parameters_idx;
   }
 
-  // Set TxPDO assign object
-  uint16_t txpdo_assign_array[1 + tpdo_mapping_parameters_idx];
-  txpdo_assign_array[0] = tpdo_mapping_parameters_idx;
-  for (int i = 1; i <= tpdo_mapping_parameters_idx; ++i) {
-    txpdo_assign_array[i] = tpdo_mapping_parameters[i - 1];
+  ////////// Set PDO assign object //////////
+
+  // After the while loop, pdo_mapping_parameters_idx corresponds to the total
+  // number of mapping parameters set.
+  uint16_t pdo_assign_array[1 + pdo_mapping_parameters_idx];
+  pdo_assign_array[0] = pdo_mapping_parameters_idx;
+  for (int i = 1; i <= pdo_mapping_parameters_idx; ++i) {
+    pdo_assign_array[i] = pdo_mapping_parameters[i - 1];
   }
-  for (unsigned int i = 0; i < JSD_EPD_SIL_ARRAY_SIZE(txpdo_assign_array);
-       ++i) {
-    MSG_DEBUG("txpdo_assign_array[%d] = %x", i, txpdo_assign_array[i]);
+  for (unsigned int i = 0; i < JSD_EPD_SIL_ARRAY_SIZE(pdo_assign_array); ++i) {
+    MSG_DEBUG("pdo_assign_array[%d] = %x", i, pdo_assign_array[i]);
   }
-  if (!jsd_sdo_set_ca_param_blocking(ecx_context, slave_id, 0x1C13, 0x00,
-                                     sizeof(txpdo_assign_array),
-                                     &txpdo_assign_array)) {
+  uint16_t pdo_assign_object_index = is_rxpdo ? 0x1C12 : 0x1C13;
+  if (!jsd_sdo_set_ca_param_blocking(
+          ecx_context, slave_id, pdo_assign_object_index, 0x00,
+          sizeof(pdo_assign_array), &pdo_assign_array)) {
     return 0;
   }
-  MSG_DEBUG("TxPDO size: %zu Bytes", tpdo_total_size);
 
   return 1;
 }
