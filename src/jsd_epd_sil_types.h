@@ -51,8 +51,17 @@ typedef struct {
                               ///< point) to send data to the drive
   uint8_t sil_r1_outputs_num;  ///< Number of R1 user parameters (32-bit
                                ///< integer) to retrieve data from the drive
-  uint8_t
-      sil_r2_outputs_num;  ///< Number of R2 user parameters (64-bit floating
+  uint8_t sil_r2_outputs_num;  ///< Number of R2 user parameters (64-bit
+                               ///< floating) to retrieve data from the drive
+
+  // Optional function pointer to be called during the EtherCAT state machine
+  // transition from Pre-Operational to Safe-Operational to perform
+  // user-specific configuration. Set to NULL if not used
+  int (*PO2SO_config_user_callback)(ecx_contextt* ecx_context,
+                                    uint16_t slave_id, void* user_data);
+  // Optional pointer to user-provided structure to be passed to
+  // PO2SO_config_user_callback. Set to NULL if not used.
+  void* PO2SO_config_user_data;
 } jsd_epd_sil_config_t;
 
 /**
