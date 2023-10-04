@@ -1,11 +1,11 @@
-#ifndef JSD_EPD_H
-#define JSD_EPD_H
+#ifndef JSD_EPD_NOMINAL_H
+#define JSD_EPD_NOMINAL_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include "jsd/jsd_epd_pub.h"
+#include "jsd/jsd_epd_nominal_pub.h"
 
 // TODO(dloret): Consider making the data related to DS-402 common between the
 // EGD and EPD drivers:
@@ -19,7 +19,7 @@ extern "C" {
  * @param slave_id Slave ID of EPD device
  * @return true on success, false on failure
  */
-bool jsd_epd_init(jsd_t* self, uint16_t slave_id);
+bool jsd_epd_nominal_init(jsd_t* self, uint16_t slave_id);
 
 /**
  * @brief Configuration function called by SOEM upon a PreOp to SafeOp state
@@ -29,14 +29,17 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id);
  * @param slave_id Slave ID of EPD device
  * @return 1 on success, 0 on failure
  */
-int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
+int jsd_epd_nominal_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id);
 
 // Helper functions for jsd_epd_PO2SO_config
-int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id);
-int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                              jsd_slave_config_t* config);
-int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                             jsd_slave_config_t* config);
+int jsd_epd_nominal_config_PDO_mapping(ecx_contextt* ecx_context,
+                                       uint16_t      slave_id);
+int jsd_epd_nominal_config_COE_params(ecx_contextt*       ecx_context,
+                                      uint16_t            slave_id,
+                                      jsd_slave_config_t* config);
+int jsd_epd_nominal_config_LC_params(ecx_contextt*       ecx_context,
+                                     uint16_t            slave_id,
+                                     jsd_slave_config_t* config);
 
 // TODO(dloret): Removed helper function jsd_epd_read_PDO_data because it is
 // effectively two lines. Unclear right now of whether a write helper is needed
@@ -48,7 +51,7 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  */
-void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
 
 /**
  * @brief Helper function of jsd_epd_process to progress through the drive's
@@ -57,7 +60,7 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id);
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  */
-void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_process_state_machine(jsd_t* self, uint16_t slave_id);
 
 /**
  * @brief Helper function of jsd_epd_process to handle commands based on their
@@ -66,23 +69,24 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id);
  * @param self Pointer to JSD context
  * @param slave_id Slave ID of EPD device
  */
-void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_process_mode_of_operation(jsd_t* self, uint16_t slave_id);
 
 // Helper functions to handle the different types of motion commands
-void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id);
-void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id);
-void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
-void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id);
-void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id);
-void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id);
+void jsd_epd_nominal_mode_of_op_handle_prof_torque(jsd_t*   self,
+                                                   uint16_t slave_id);
 
 /**
- * @brief Checks whether a product code is compatible with EPD-driver
+ * @brief Checks whether a product code is compatible with EPD-nominal driver
  *
  * @param product_code The product code to be checked
  * @return True if the product code is compatible, false otherwise.
  */
-bool jsd_epd_product_code_is_compatible(uint32_t product_code);
+bool jsd_epd_nominal_product_code_is_compatible(uint32_t product_code);
 
 #ifdef __cplusplus
 }

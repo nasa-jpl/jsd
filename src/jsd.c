@@ -19,7 +19,7 @@
 #include "jsd/jsd_el3356.h"
 #include "jsd/jsd_el3602.h"
 #include "jsd/jsd_el4102.h"
-#include "jsd/jsd_epd.h"
+#include "jsd/jsd_epd_nominal.h"
 #include "jsd/jsd_epd_sil.h"
 #include "jsd/jsd_ild1900.h"
 #include "jsd/jsd_jed0101.h"
@@ -403,8 +403,12 @@ bool jsd_init_all_devices(jsd_t* self) {
     // EGDs nor EPDs have the name field populated.
     if (driver_type == JSD_DRIVER_TYPE_EGD) {
       SUCCESS("\tslave[%u] Elmo Gold Drive - Configured", slave_idx);
-    } else if (driver_type == JSD_DRIVER_TYPE_EPD) {
-      SUCCESS("\tslave[%u] Elmo Platinum Drive - Configured", slave_idx);
+    } else if (driver_type == JSD_DRIVER_TYPE_EPD_NOMINAL) {
+      SUCCESS("\tslave[%u] Elmo Platinum Drive in Nominal mode - Configured",
+              slave_idx);
+    } else if (driver_type == JSD_DRIVER_TYPE_EPD_SIL) {
+      SUCCESS("\tslave[%u] Elmo Platinum Drive in SIL mode - Configured",
+              slave_idx);
     } else {
       SUCCESS("\tslave[%u] %s - Configured", slave_idx, slave->name);
     }
@@ -459,8 +463,8 @@ bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
     case JSD_DRIVER_TYPE_ILD1900:
       is_compatible = jsd_ild1900_product_code_is_compatible(product_code);
       break;
-    case JSD_DRIVER_TYPE_EPD:
-      is_compatible = jsd_epd_product_code_is_compatible(product_code);
+    case JSD_DRIVER_TYPE_EPD_NOMINAL:
+      is_compatible = jsd_epd_nominal_product_code_is_compatible(product_code);
       break;
     case JSD_DRIVER_TYPE_EPD_SIL:
       is_compatible = jsd_epd_sil_product_code_is_compatible(product_code);
@@ -526,8 +530,8 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
     case JSD_DRIVER_TYPE_ILD1900:
       return jsd_ild1900_init(self, slave_id);
       break;
-    case JSD_DRIVER_TYPE_EPD:
-      return jsd_epd_init(self, slave_id);
+    case JSD_DRIVER_TYPE_EPD_NOMINAL:
+      return jsd_epd_nominal_init(self, slave_id);
       break;
     case JSD_DRIVER_TYPE_EPD_SIL:
       return jsd_epd_sil_init(self, slave_id);

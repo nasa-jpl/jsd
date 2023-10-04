@@ -126,40 +126,40 @@ if(BUILD_JSD_TESTS)
             jsd_test_utils.c)
     target_link_libraries(jsd_ild1900_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_csp_sine_test
-            device/jsd_epd_csp_sine_test.c
+    add_executable(jsd_epd_nominal_csp_sine_test
+            device/jsd_epd_nominal_csp_sine_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_csp_sine_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_csp_sine_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_csv_sine_test
-            device/jsd_epd_csv_sine_test.c
+    add_executable(jsd_epd_nominal_csv_sine_test
+            device/jsd_epd_nominal_csv_sine_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_csv_sine_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_csv_sine_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_cst_test
-            device/jsd_epd_cst_test.c
+    add_executable(jsd_epd_nominal_cst_test
+            device/jsd_epd_nominal_cst_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_cst_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_cst_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_prof_pos_test
-            device/jsd_epd_prof_pos_test.c
+    add_executable(jsd_epd_nominal_prof_pos_test
+            device/jsd_epd_nominal_prof_pos_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_prof_pos_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_prof_pos_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_prof_vel_test
-            device/jsd_epd_prof_vel_test.c
+    add_executable(jsd_epd_nominal_prof_vel_test
+            device/jsd_epd_nominal_prof_vel_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_prof_vel_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_prof_vel_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_prof_torque_test
-            device/jsd_epd_prof_torque_test.c
+    add_executable(jsd_epd_nominal_prof_torque_test
+            device/jsd_epd_nominal_prof_torque_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_prof_torque_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_prof_torque_test ${jsd_test_libs})
 
-    add_executable(jsd_epd_network_test
-            device/jsd_epd_network_test.c
+    add_executable(jsd_epd_nominal_network_test
+            device/jsd_epd_nominal_network_test.c
             jsd_test_utils.c)
-    target_link_libraries(jsd_epd_network_test ${jsd_test_libs})
+    target_link_libraries(jsd_epd_nominal_network_test ${jsd_test_libs})
 
     add_executable(jsd_epd_sil_test
             device/jsd_epd_sil_test.c

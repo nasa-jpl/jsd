@@ -115,7 +115,7 @@ void jsd_epd_sil_reset(jsd_t* self, uint16_t slave_id) {
   } else {
     // TODO(dloret): Remove printing to not affect real-time guarantees.
     WARNING(
-        "EPD SIL Reset Derate Protection feature is preventing reset, ignoring "
+        "EPD-SIL Reset Derate Protection feature is preventing reset, ignoring "
         "request");
   }
 }

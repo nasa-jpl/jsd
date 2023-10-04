@@ -4,7 +4,7 @@
 
 #include "jsd/jsd_el2124_pub.h"
 #include "jsd/jsd_el3602_pub.h"
-#include "jsd/jsd_epd_pub.h"
+#include "jsd/jsd_epd_nominal_pub.h"
 #include "jsd/jsd_time.h"
 #include "jsd_test_utils.h"
 
@@ -90,7 +90,8 @@ void telemetry_data(void* self) {
   single_device_server_t* sds = (single_device_server_t*)self;
 
   // EPD data
-  const jsd_epd_state_t* epd_state = jsd_epd_get_state(sds->jsd, epd_slave_id);
+  const jsd_epd_nominal_state_t* epd_state =
+      jsd_epd_nominal_get_state(sds->jsd, epd_slave_id);
   fprintf(file, "%i, ", epd_state->actual_position);
   fprintf(file, "%i, ", epd_state->actual_velocity);
   fprintf(file, "%lf, ", epd_state->actual_current);
@@ -145,7 +146,8 @@ void print_info(void* self) {
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
-  const jsd_epd_state_t* epd_state = jsd_epd_get_state(sds->jsd, epd_slave_id);
+  const jsd_epd_nominal_state_t* epd_state =
+      jsd_epd_nominal_get_state(sds->jsd, epd_slave_id);
   const jsd_el3602_state_t* el3602_state =
       jsd_el3602_get_state(sds->jsd, el3602_slave_id);
   const jsd_el2124_state_t* el2124_state =
@@ -165,7 +167,7 @@ void extract_data(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
-  jsd_epd_process(sds->jsd, epd_slave_id);
+  jsd_epd_nominal_process(sds->jsd, epd_slave_id);
   jsd_el2124_process(sds->jsd, el2124_slave_id);
   jsd_el3602_read(sds->jsd, el3602_slave_id);
 }
@@ -192,8 +194,9 @@ void command(void* self) {
   ++iter;
 
   // Command EPD
-  jsd_epd_read(sds->jsd, epd_slave_id);
-  const jsd_epd_state_t* state = jsd_epd_get_state(sds->jsd, epd_slave_id);
+  jsd_epd_nominal_read(sds->jsd, epd_slave_id);
+  const jsd_epd_nominal_state_t* state =
+      jsd_epd_nominal_get_state(sds->jsd, epd_slave_id);
 
   // Wait 2 seconds after server starts to issue first reset.
   if ((now_s - server_startup_s) < 2.0) {
@@ -203,7 +206,7 @@ void command(void* self) {
   // Reset whenever not in OPERATION ENABLED state.
   if (!state->servo_enabled) {
     MSG("Sending reset.");
-    jsd_epd_reset(sds->jsd, epd_slave_id);
+    jsd_epd_nominal_reset(sds->jsd, epd_slave_id);
     return;
   }
 
@@ -223,17 +226,18 @@ void command(void* self) {
   csp.velocity_offset             = amplitude * w * cos(w * t);
   csp.torque_offset_amps          = 0.0;
 
-  jsd_epd_set_motion_command_csp(sds->jsd, epd_slave_id, csp);
+  jsd_epd_nominal_set_motion_command_csp(sds->jsd, epd_slave_id, csp);
 }
 
 int main(int argc, char* argv[]) {
   if (argc != 11) {
     ERROR("Expecting exactly 10 arguments");
-    MSG("Usage: jsd_epd_csp_sine_test <ifname> <epd_slave_index> "
+    MSG("Usage: jsd_epd_nominal_csp_sine_test <ifname> <epd_slave_index> "
         "<el3602_slave_index> <el2124_slave_index> <loop_freq_hz> "
         "<amplitude> <sine_freq> <peak_current_amps> <continuous_current_amps> "
         "<max_motor_speed> ");
-    MSG("Example: $ jsd_epd_network_test eth0 4 2 3 100 25000 0.25 1.0 0.5 "
+    MSG("Example: $ jsd_epd_nominal_network_test eth0 4 2 3 100 25000 0.25 1.0 "
+        "0.5 "
         "500000.0");
     return 0;
   }
@@ -274,29 +278,31 @@ int main(int argc, char* argv[]) {
   jsd_slave_config_t epd_config = {0};
 
   snprintf(epd_config.name, JSD_NAME_LEN, "kukulkan");
-  epd_config.configuration_active         = true;
-  epd_config.driver_type                  = JSD_DRIVER_TYPE_EPD;
-  epd_config.epd.max_motor_speed          = max_motor_speed;
-  epd_config.epd.loop_period_ms           = 1000 / loop_freq_hz;
-  epd_config.epd.torque_slope             = 1e7;
-  epd_config.epd.max_profile_accel        = 1e6;
-  epd_config.epd.max_profile_decel        = 1e7;
-  epd_config.epd.velocity_tracking_error  = 1e8;
-  epd_config.epd.position_tracking_error  = 1e9;
-  epd_config.epd.peak_current_limit       = peak_current;
-  epd_config.epd.peak_current_time        = 3.0f;
-  epd_config.epd.continuous_current_limit = continuous_current;
-  epd_config.epd.motor_stuck_current_level_pct =
+  epd_config.configuration_active                 = true;
+  epd_config.driver_type                          = JSD_DRIVER_TYPE_EPD_NOMINAL;
+  epd_config.epd_nominal.max_motor_speed          = max_motor_speed;
+  epd_config.epd_nominal.loop_period_ms           = 1000 / loop_freq_hz;
+  epd_config.epd_nominal.torque_slope             = 1e7;
+  epd_config.epd_nominal.max_profile_accel        = 1e6;
+  epd_config.epd_nominal.max_profile_decel        = 1e7;
+  epd_config.epd_nominal.velocity_tracking_error  = 1e8;
+  epd_config.epd_nominal.position_tracking_error  = 1e9;
+  epd_config.epd_nominal.peak_current_limit       = peak_current;
+  epd_config.epd_nominal.peak_current_time        = 3.0f;
+  epd_config.epd_nominal.continuous_current_limit = continuous_current;
+  epd_config.epd_nominal.motor_stuck_current_level_pct =
       0.0f;  // Disable motor stuck protection.
-  epd_config.epd.motor_stuck_velocity_threshold = 0.0f;
-  epd_config.epd.motor_stuck_timeout            = 0.0f;
-  epd_config.epd.over_speed_threshold = 0.0;  // Disable over speed protection.
-  epd_config.epd.low_position_limit   = 0.0;
-  epd_config.epd.high_position_limit =
-      epd_config.epd.low_position_limit;  // Disable position limits protection.
-  epd_config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
-  epd_config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
-  epd_config.epd.smooth_factor        = 0;
+  epd_config.epd_nominal.motor_stuck_velocity_threshold = 0.0f;
+  epd_config.epd_nominal.motor_stuck_timeout            = 0.0f;
+  epd_config.epd_nominal.over_speed_threshold =
+      0.0;  // Disable over speed protection.
+  epd_config.epd_nominal.low_position_limit = 0.0;
+  epd_config.epd_nominal.high_position_limit =
+      epd_config.epd_nominal
+          .low_position_limit;  // Disable position limits protection.
+  epd_config.epd_nominal.brake_engage_msec    = BRAKE_TIME_MSEC;
+  epd_config.epd_nominal.brake_disengage_msec = BRAKE_TIME_MSEC;
+  epd_config.epd_nominal.smooth_factor        = 0;
 
   jsd_set_slave_config(sds.jsd, epd_slave_id, epd_config);
 
@@ -326,7 +332,7 @@ int main(int argc, char* argv[]) {
 
   server_startup_s = jsd_time_get_mono_time_sec();
 
-  sds_run(&sds, ifname, "/tmp/jsd_epd_network_test.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_epd_nominal_network_test.csv");
 
   return 0;
 }
