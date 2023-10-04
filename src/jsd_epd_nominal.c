@@ -1,4 +1,4 @@
-#include "jsd/jsd_epd.h"
+#include "jsd/jsd_epd_nominal.h"
 
 #include <assert.h>
 #include <string.h>
@@ -9,67 +9,69 @@
 #include "jsd/jsd_epd_common.h"
 #include "jsd/jsd_sdo.h"
 
-#define JSD_EPD_MAX_ERROR_POPS_PER_CYCLE (5)
+#define JSD_EPD_NOMINAL_MAX_ERROR_POPS_PER_CYCLE (5)
 
 /****************************************************
  * Public functions
  ****************************************************/
 
-uint16_t jsd_epd_lc_to_do(char letter_command[2]) {
+uint16_t jsd_epd_nominal_lc_to_do(char letter_command[2]) {
   return jsd_epd_lc_to_do_impl(letter_command);
 }
 
-const jsd_epd_state_t* jsd_epd_get_state(jsd_t* self, uint16_t slave_id) {
+const jsd_epd_nominal_state_t* jsd_epd_nominal_get_state(jsd_t*   self,
+                                                         uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
-  return &self->slave_states[slave_id].epd.pub;
+  return &self->slave_states[slave_id].epd_nominal.pub;
 }
 
-void jsd_epd_read(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   // Copy TxPDO data from SOEM's IOmap
-  assert(sizeof(jsd_epd_txpdo_data_t) ==
+  assert(sizeof(jsd_epd_nominal_txpdo_data_t) ==
          self->ecx_context.slavelist[slave_id].Ibytes);
-  memcpy(&self->slave_states[slave_id].epd.txpdo,
+  memcpy(&self->slave_states[slave_id].epd_nominal.txpdo,
          self->ecx_context.slavelist[slave_id].inputs,
          self->ecx_context.slavelist[slave_id].Ibytes);
 
-  jsd_epd_update_state_from_PDO_data(self, slave_id);
+  jsd_epd_nominal_update_state_from_PDO_data(self, slave_id);
 }
 
-void jsd_epd_process(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_process(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_process_state_machine(self, slave_id);
+  jsd_epd_nominal_process_state_machine(self, slave_id);
 
   // Copy RxPDO data into SOEM's IOmap
-  assert(sizeof(jsd_epd_rxpdo_data_t) ==
+  assert(sizeof(jsd_epd_nominal_rxpdo_data_t) ==
          self->ecx_context.slavelist[slave_id].Obytes);
   memcpy(self->ecx_context.slavelist[slave_id].outputs,
-         &self->slave_states[slave_id].epd.rxpdo,
+         &self->slave_states[slave_id].epd_nominal.rxpdo,
          self->ecx_context.slavelist[slave_id].Obytes);
 }
 
-void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_reset(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   double now = jsd_time_get_mono_time_sec();
 
-  if ((now - self->slave_states[slave_id].epd.last_reset_time) >
+  if ((now - self->slave_states[slave_id].epd_nominal.last_reset_time) >
       JSD_EPD_RESET_DERATE_SEC) {
-    // Flag below used to latch halt commands until we are in the OPERATION ENABLED state.
-    self->slave_states[slave_id].epd.enabling_operation = true;
-    
-    self->slave_states[slave_id].epd.new_reset       = true;
-    self->slave_states[slave_id].epd.last_reset_time = now;
+    // Flag below used to latch halt commands until we are in the OPERATION
+    // ENABLED state.
+    self->slave_states[slave_id].epd_nominal.enabling_operation = true;
+
+    self->slave_states[slave_id].epd_nominal.new_reset       = true;
+    self->slave_states[slave_id].epd_nominal.last_reset_time = now;
 
     // TODO(dloret): EGD code clears fault_code/emcy_error_code here. However,
     // the clearing is also done when entering the OPERATION_ENABLED state. It
@@ -79,33 +81,34 @@ void jsd_epd_reset(jsd_t* self, uint16_t slave_id) {
   } else {
     // TODO(dloret): Remove printing to not affect real-time guarantees.
     WARNING(
-        "EPD Reset Derate Protection feature is preventing reset, ignoring "
+        "EPD-Nominal Reset Derate Protection feature is preventing reset, "
+        "ignoring "
         "request");
   }
 }
 
-void jsd_epd_clear_errors(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_clear_errors(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  self->slave_states[slave_id].epd.pub.fault_code      = JSD_EPD_FAULT_OKAY;
-  self->slave_states[slave_id].epd.pub.emcy_error_code = 0;
+  self->slave_states[slave_id].epd_nominal.pub.fault_code = JSD_EPD_FAULT_OKAY;
+  self->slave_states[slave_id].epd_nominal.pub.emcy_error_code = 0;
 }
 
-void jsd_epd_halt(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_halt(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  self->slave_states[slave_id].epd.new_halt_command = true;
+  self->slave_states[slave_id].epd_nominal.new_halt_command = true;
 }
 
-void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
-                                       bool     lsb_byte,
-                                       uint16_t gain_scheduling_index) {
+void jsd_epd_nominal_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
+                                               bool     lsb_byte,
+                                               uint16_t gain_scheduling_index) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
   if (gain_scheduling_index < 1 || gain_scheduling_index > 63) {
@@ -114,8 +117,9 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
     return;
   }
 
-  jsd_epd_private_state_t* state   = &self->slave_states[slave_id].epd;
-  uint16_t                 bitmask = 0x00FF;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  uint16_t bitmask = 0x00FF;
   if (lsb_byte) {
     state->rxpdo.gain_scheduling_index =
         (state->rxpdo.gain_scheduling_index & (bitmask << 8)) |
@@ -127,18 +131,19 @@ void jsd_epd_set_gain_scheduling_index(jsd_t* self, uint16_t slave_id,
   }
 }
 
-void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
-                                uint8_t output) {
+void jsd_epd_nominal_set_digital_output(jsd_t* self, uint16_t slave_id,
+                                        uint8_t index, uint8_t output) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
-  if (index <= 0 || index > JSD_EPD_NUM_DIGITAL_OUTPUTS) {
-    ERROR("The provided digital output index %d is out of range [1,%d]",
-          index, JSD_EPD_NUM_DIGITAL_OUTPUTS);
+  if (index <= 0 || index > JSD_EPD_NOMINAL_NUM_DIGITAL_OUTPUTS) {
+    ERROR("The provided digital output index %d is out of range [1,%d]", index,
+          JSD_EPD_NOMINAL_NUM_DIGITAL_OUTPUTS);
     return;
   }
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   if (output > 0) {
     state->rxpdo.digital_outputs |= (0x01 << (15 + index));
   } else {
@@ -146,113 +151,123 @@ void jsd_epd_set_digital_output(jsd_t* self, uint16_t slave_id, uint8_t index,
   }
 }
 
-void jsd_epd_set_peak_current(jsd_t* self, uint16_t slave_id,
-                              double peak_current) {
+void jsd_epd_nominal_set_peak_current(jsd_t* self, uint16_t slave_id,
+                                      double peak_current) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
 
   state->rxpdo.max_current = peak_current * 1e6 / state->motor_rated_current;
 }
 
-void jsd_epd_set_motion_command_csp(
+void jsd_epd_nominal_set_motion_command_csp(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_csp_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
   state->motion_command.csp          = motion_command;
 }
 
-void jsd_epd_set_motion_command_csv(
+void jsd_epd_nominal_set_motion_command_csv(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_csv_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
   state->motion_command.csv          = motion_command;
 }
 
-void jsd_epd_set_motion_command_cst(
+void jsd_epd_nominal_set_motion_command_cst(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_cst_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CST;
   state->motion_command.cst          = motion_command;
 }
 
-void jsd_epd_set_motion_command_prof_pos(
+void jsd_epd_nominal_set_motion_command_prof_pos(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_pos_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
   state->motion_command.prof_pos     = motion_command;
 }
 
-void jsd_epd_set_motion_command_prof_vel(
+void jsd_epd_nominal_set_motion_command_prof_vel(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_vel_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
   state->motion_command.prof_vel     = motion_command;
 }
 
-void jsd_epd_set_motion_command_prof_torque(
+void jsd_epd_nominal_set_motion_command_prof_torque(
     jsd_t* self, uint16_t slave_id,
     jsd_elmo_motion_command_prof_torque_t motion_command) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state     = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->new_motion_command          = true;
   state->requested_mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
   state->motion_command.prof_torque  = motion_command;
 }
 
-void jsd_epd_async_sdo_set_drive_position(jsd_t* self, uint16_t slave_id,
-                                          double position, uint16_t app_id) {
+void jsd_epd_nominal_async_sdo_set_drive_position(jsd_t*   self,
+                                                  uint16_t slave_id,
+                                                  double   position,
+                                                  uint16_t app_id) {
   jsd_epd_async_sdo_set_drive_position_impl(self, slave_id, position, app_id);
 }
 
-void jsd_epd_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
-                                     int16_t mode, uint16_t app_id) {
+void jsd_epd_nominal_async_sdo_set_unit_mode(jsd_t* self, uint16_t slave_id,
+                                             int16_t mode, uint16_t app_id) {
   jsd_epd_async_sdo_set_unit_mode_impl(self, slave_id, mode, app_id);
 }
 
-void jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode(
+void jsd_epd_nominal_async_sdo_set_ctrl_gain_scheduling_mode(
     jsd_t* self, uint16_t slave_id, jsd_elmo_gain_scheduling_mode_t mode,
     uint16_t app_id) {
   jsd_epd_async_sdo_set_ctrl_gain_scheduling_mode_impl(self, slave_id, mode,
                                                        app_id);
 }
 
-const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
+const char* jsd_epd_nominal_fault_code_to_string(
+    jsd_epd_fault_code_t fault_code) {
   return jsd_epd_fault_code_to_string_impl(fault_code);
 }
 
@@ -260,13 +275,13 @@ const char* jsd_epd_fault_code_to_string(jsd_epd_fault_code_t fault_code) {
  * Private functions
  ****************************************************/
 
-bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
+bool jsd_epd_nominal_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man == JSD_ELMO_VENDOR_ID);
-  assert(sizeof(jsd_epd_txpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
-  assert(sizeof(jsd_epd_rxpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+  assert(sizeof(jsd_epd_nominal_txpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
+  assert(sizeof(jsd_epd_nominal_rxpdo_data_t) <= JSD_EPD_MAX_BYTES_PDO_CHANNEL);
 
   ec_slavet* slave = &self->ecx_context.slavelist[slave_id];
 
@@ -279,36 +294,39 @@ bool jsd_epd_init(jsd_t* self, uint16_t slave_id) {
   // drives.
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
-  slave->PO2SOconfigx = jsd_epd_PO2SO_config;
+  slave->PO2SOconfigx = jsd_epd_nominal_PO2SO_config;
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
   state->requested_mode_of_operation      = JSD_EPD_MODE_OF_OPERATION_DISABLED;
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;
-  state->last_reset_time         = 0;
+  state->last_reset_time                  = 0;
 
-  MSG_DEBUG("TxPDO size: %zu Bytes", sizeof(jsd_epd_txpdo_data_t));
-  MSG_DEBUG("RxPDO size: %zu Bytes", sizeof(jsd_epd_rxpdo_data_t));
+  MSG_DEBUG("TxPDO size: %zu Bytes", sizeof(jsd_epd_nominal_txpdo_data_t));
+  MSG_DEBUG("RxPDO size: %zu Bytes", sizeof(jsd_epd_nominal_rxpdo_data_t));
 
-  state->motor_rated_current = config->epd.continuous_current_limit * 1000;
+  state->motor_rated_current =
+      config->epd_nominal.continuous_current_limit * 1000;
   if (state->motor_rated_current == 0) {
-    ERROR("continuous_current_limit not set on EPD[%d]", slave_id);
+    ERROR("continuous_current_limit not set on EPD-Nominal[%d]", slave_id);
     return false;
   }
-  jsd_epd_set_peak_current(self, slave_id, config->epd.peak_current_limit);
+  jsd_epd_nominal_set_peak_current(self, slave_id,
+                                   config->epd_nominal.peak_current_limit);
 
   state->pub.fault_code      = JSD_EPD_FAULT_OKAY;
   state->pub.emcy_error_code = 0;
 
-  state->setpoint_ack                  = 0;
-  state->last_setpoint_ack             = 0;
-  state->enabling_operation            = false;
+  state->setpoint_ack       = 0;
+  state->last_setpoint_ack  = 0;
+  state->enabling_operation = false;
 
   return true;
 }
 
-int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
+int jsd_epd_nominal_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       ecx_context->slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
@@ -317,29 +335,31 @@ int jsd_epd_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
       (jsd_slave_config_t*)ecx_context->userdata;
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  if (!jsd_epd_config_PDO_mapping(ecx_context, slave_id)) {
-    ERROR("Failed to map PDO parameters on EPD slave %u", slave_id);
+  if (!jsd_epd_nominal_config_PDO_mapping(ecx_context, slave_id)) {
+    ERROR("Failed to map PDO parameters on EPD-Nominal slave %u", slave_id);
     return 0;
   }
 
-  if (!jsd_epd_config_COE_params(ecx_context, slave_id, config)) {
-    ERROR("Failed to set COE parameters on EPD slave %u", slave_id);
+  if (!jsd_epd_nominal_config_COE_params(ecx_context, slave_id, config)) {
+    ERROR("Failed to set COE parameters on EPD-Nominal slave %u", slave_id);
     return 0;
   }
 
-  if (!jsd_epd_config_LC_params(ecx_context, slave_id, config)) {
-    ERROR("Failed to set LC parameters on EPD slave %u", slave_id);
+  if (!jsd_epd_nominal_config_LC_params(ecx_context, slave_id, config)) {
+    ERROR("Failed to set LC parameters on EPD-Nominal slave %u", slave_id);
     return 0;
   }
 
   config->PO2SO_success = true;
-  SUCCESS("EPD[%d] drive parameters successfully configured and verified",
-          slave_id);
+  SUCCESS(
+      "EPD-Nominal[%d] drive parameters successfully configured and verified",
+      slave_id);
   return 1;
 }
 
-int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
-  MSG_DEBUG("Attempting to map custom EPD PDOs...");
+int jsd_epd_nominal_config_PDO_mapping(ecx_contextt* ecx_context,
+                                       uint16_t      slave_id) {
+  MSG_DEBUG("Attempting to map custom EPD-Nominal PDOs...");
 
   //////////////// RxPDO Mapping //////////////////////////
   uint16_t map_output_pdos_1602[] = {
@@ -424,8 +444,9 @@ int jsd_epd_config_PDO_mapping(ecx_contextt* ecx_context, uint16_t slave_id) {
   return 1;
 }
 
-int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                              jsd_slave_config_t* config) {
+int jsd_epd_nominal_config_COE_params(ecx_contextt*       ecx_context,
+                                      uint16_t            slave_id,
+                                      jsd_slave_config_t* config) {
   // TODO(dloret): original code checks that PROF_POS mode is supported. I might
   // want to switch to JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE as default mode to
   // avoid this.
@@ -450,7 +471,7 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
   // Set interpolation time period.
   // Drive actually supports microseconds.
-  uint8_t loop_period_ms = config->epd.loop_period_ms;
+  uint8_t loop_period_ms = config->epd_nominal.loop_period_ms;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60C2, 1,
                                   JSD_SDO_DATA_U8, &loop_period_ms)) {
     return 0;
@@ -475,14 +496,16 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   }
 
   // Set motor rated current equal to the continuous current limit parameter
-  uint32_t motor_rated_current = config->epd.continuous_current_limit * 1000.0;
+  uint32_t motor_rated_current =
+      config->epd_nominal.continuous_current_limit * 1000.0;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6075, 0,
                                   JSD_SDO_DATA_U32, &motor_rated_current)) {
     return 0;
   }
 
   // Set torque slope for profile torque commands
-  uint32_t torque_slope = config->epd.torque_slope * 1e6 / motor_rated_current;
+  uint32_t torque_slope =
+      config->epd_nominal.torque_slope * 1e6 / motor_rated_current;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6087, 0,
                                   JSD_SDO_DATA_U32, &torque_slope)) {
     return 0;
@@ -492,22 +515,26 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   // First, get feedback counts per electrical cycle (e.g. encoder counts per
   // revolution) because the maximum motor speed parameter expects rpm units.
   int64_t ca_18;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CA"),
-                                  18, JSD_SDO_DATA_I64, &ca_18)) {
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                  jsd_epd_nominal_lc_to_do("CA"), 18,
+                                  JSD_SDO_DATA_I64, &ca_18)) {
     return 0;
   }
-  MSG("EPD[%d] read CA[18] = %ld counts per revolution", slave_id, ca_18);
+  MSG("EPD-Nominal[%d] read CA[18] = %ld counts per revolution", slave_id,
+      ca_18);
   // Express maximum motor speed in rpm units.
-  if (config->epd.max_motor_speed < 0.0) {
+  if (config->epd_nominal.max_motor_speed < 0.0) {
     ERROR(
-        "EPD[%d] failed to set maximum motor speed (%lf). The parameter must "
+        "EPD-Nominal[%d] failed to set maximum motor speed (%lf). The "
+        "parameter must "
         "not be negative.",
-        slave_id, config->epd.max_motor_speed);
+        slave_id, config->epd_nominal.max_motor_speed);
     return 0;
   }
   uint32_t max_motor_speed_rpm =
-      (uint32_t)(config->epd.max_motor_speed / ca_18 * 60.0);
-  MSG("EPD[%d] max_motor_speed_rpm = %u", slave_id, max_motor_speed_rpm);
+      (uint32_t)(config->epd_nominal.max_motor_speed / ca_18 * 60.0);
+  MSG("EPD-Nominal[%d] max_motor_speed_rpm = %u", slave_id,
+      max_motor_speed_rpm);
   // Finally, set the maximum motor speed object.
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x6080, 0,
                                   JSD_SDO_DATA_U32, &max_motor_speed_rpm)) {
@@ -517,112 +544,116 @@ int jsd_epd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
   return 1;
 }
 
-int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
-                             jsd_slave_config_t* config) {
+int jsd_epd_nominal_config_LC_params(ecx_contextt*       ecx_context,
+                                     uint16_t            slave_id,
+                                     jsd_slave_config_t* config) {
   // TODO(dloret): Verify the types of the corresponding data objects
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("AC"),
-                                  1, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.max_profile_accel)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("AC"), 1,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.max_profile_accel)) {
     // TODO(dloret): EGD code warns about a minimum permissible profile
     // acceleration. Not sure if this applies to Platinum.
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("DC"),
-                                  1, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.max_profile_decel)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
-                                  2, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.velocity_tracking_error)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("ER"),
-                                  3, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.position_tracking_error)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("PL"),
-                                  2, JSD_SDO_DATA_FLOAT,
-                                  &config->epd.peak_current_time)) {
-    return 0;
-  }
-
-  // Note that the maximum current limit is also mapped to the RxPDO.
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("PL"),
-                                  1, JSD_SDO_DATA_FLOAT,
-                                  &config->epd.peak_current_limit)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CL"),
-                                  1, JSD_SDO_DATA_FLOAT,
-                                  &config->epd.continuous_current_limit)) {
-    return 0;
-  }
-
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CL"),
-                                  2, JSD_SDO_DATA_FLOAT,
-                                  &config->epd.motor_stuck_current_level_pct)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("DC"), 1,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.max_profile_decel)) {
     return 0;
   }
 
   if (!jsd_sdo_set_param_blocking(
-          ecx_context, slave_id, jsd_epd_lc_to_do("CL"), 3, JSD_SDO_DATA_FLOAT,
-          &config->epd.motor_stuck_velocity_threshold)) {
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("ER"), 2,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.velocity_tracking_error)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CL"),
-                                  4, JSD_SDO_DATA_FLOAT,
-                                  &config->epd.motor_stuck_timeout)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("ER"), 3,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.position_tracking_error)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("HL"),
-                                  2, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.over_speed_threshold)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("PL"), 2,
+          JSD_SDO_DATA_FLOAT, &config->epd_nominal.peak_current_time)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("LL"),
-                                  3, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.low_position_limit)) {
+  // Note that the maximum current limit is also mapped to the RxPDO.
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("PL"), 1,
+          JSD_SDO_DATA_FLOAT, &config->epd_nominal.peak_current_limit)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("HL"),
-                                  3, JSD_SDO_DATA_DOUBLE,
-                                  &config->epd.high_position_limit)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("CL"), 1,
+          JSD_SDO_DATA_FLOAT, &config->epd_nominal.continuous_current_limit)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("BP"),
-                                  1, JSD_SDO_DATA_I16,
-                                  &config->epd.brake_engage_msec)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("CL"), 2,
+          JSD_SDO_DATA_FLOAT,
+          &config->epd_nominal.motor_stuck_current_level_pct)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("BP"),
-                                  2, JSD_SDO_DATA_I16,
-                                  &config->epd.brake_disengage_msec)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("CL"), 3,
+          JSD_SDO_DATA_FLOAT,
+          &config->epd_nominal.motor_stuck_velocity_threshold)) {
     return 0;
   }
 
-  int64_t ctrl_gs_mode_i64 = config->epd.ctrl_gain_scheduling_mode;
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("CL"), 4,
+          JSD_SDO_DATA_FLOAT, &config->epd_nominal.motor_stuck_timeout)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("HL"), 2,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.over_speed_threshold)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("LL"), 3,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.low_position_limit)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("HL"), 3,
+          JSD_SDO_DATA_DOUBLE, &config->epd_nominal.high_position_limit)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("BP"), 1,
+          JSD_SDO_DATA_I16, &config->epd_nominal.brake_engage_msec)) {
+    return 0;
+  }
+
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("BP"), 2,
+          JSD_SDO_DATA_I16, &config->epd_nominal.brake_disengage_msec)) {
+    return 0;
+  }
+
+  int64_t ctrl_gs_mode_i64 = config->epd_nominal.ctrl_gain_scheduling_mode;
   if (ctrl_gs_mode_i64 != JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED &&
-      !jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("GS"),
-                                  2, JSD_SDO_DATA_I64, &ctrl_gs_mode_i64)) {
+      !jsd_sdo_set_param_blocking(ecx_context, slave_id,
+                                  jsd_epd_nominal_lc_to_do("GS"), 2,
+                                  JSD_SDO_DATA_I64, &ctrl_gs_mode_i64)) {
     return 0;
   }
 
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("SF"),
-                                  1, JSD_SDO_DATA_I64,
-                                  &config->epd.smooth_factor)) {
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_nominal_lc_to_do("SF"), 1,
+          JSD_SDO_DATA_I64, &config->epd_nominal.smooth_factor)) {
     return 0;
   }
 
@@ -630,64 +661,77 @@ int jsd_epd_config_LC_params(ecx_contextt* ecx_context, uint16_t slave_id,
 
   // Verify checksum from the drive matches checksum recorded in configuration
   uint64_t crc = 0;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("CZ"),
-                                  1, JSD_SDO_DATA_U64, &crc)) {
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                  jsd_epd_nominal_lc_to_do("CZ"), 1,
+                                  JSD_SDO_DATA_U64, &crc)) {
     return 0;
   }
-  MSG("EPD[%d] CRC = %lu", slave_id, crc);
-  if (config->epd.crc == 0) {
-    MSG("EPD[%d] drive parameter CRC check overridden", slave_id);
+  MSG("EPD-Nominal[%d] CRC = %lu", slave_id, crc);
+  if (config->epd_nominal.crc == 0) {
+    MSG("EPD-Nominal[%d] drive parameter CRC check overridden", slave_id);
   } else {
-    if (crc != config->epd.crc) {
-      ERROR("EPD[%d] CRC mismatch - YAML value: %u, actual drive value: %lu",
-            slave_id, config->epd.crc, crc);
+    if (crc != config->epd_nominal.crc) {
+      ERROR(
+          "EPD-Nominal[%d] CRC mismatch - YAML value: %u, actual drive value: "
+          "%lu",
+          slave_id, config->epd_nominal.crc, crc);
       return 0;
     }
   }
 
   // Verify current limits
   float drive_max_current = 0;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("MC"),
-                                  1, JSD_SDO_DATA_FLOAT, &drive_max_current)) {
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                  jsd_epd_nominal_lc_to_do("MC"), 1,
+                                  JSD_SDO_DATA_FLOAT, &drive_max_current)) {
     return 0;
   }
-  MSG("EPD[%d] Drive Maximum Current is %f A", slave_id, drive_max_current);
+  MSG("EPD-Nominal[%d] Drive Maximum Current is %f A", slave_id,
+      drive_max_current);
 
-  if (config->epd.peak_current_limit > drive_max_current) {
+  if (config->epd_nominal.peak_current_limit > drive_max_current) {
     // TODO(dloret): Check if the drive can even allow to set PL[1] if it is
     // greater than MC[1]. PL[1] is set above.
-    ERROR("EPD[%d] Peak Current (%f) cannot exceed Drive Maximum Current (%f)",
-          slave_id, config->epd.peak_current_limit, drive_max_current);
+    ERROR(
+        "EPD-Nominal[%d] Peak Current (%f) cannot exceed Drive Maximum Current "
+        "(%f)",
+        slave_id, config->epd_nominal.peak_current_limit, drive_max_current);
     return 0;
   }
 
-  if (config->epd.continuous_current_limit > config->epd.peak_current_limit) {
+  if (config->epd_nominal.continuous_current_limit >
+      config->epd_nominal.peak_current_limit) {
     // TODO(dloret): this would actually disable CL[1] and is valid. Investigate
     // what is the implication of disabling CL[1].
-    ERROR("EPD[%d] Continous Current (%f) should not exceed Peak Current (%f)",
-          slave_id, config->epd.continuous_current_limit,
-          config->epd.peak_current_limit);
+    ERROR(
+        "EPD-Nominal[%d] Continous Current (%f) should not exceed Peak Current "
+        "(%f)",
+        slave_id, config->epd_nominal.continuous_current_limit,
+        config->epd_nominal.peak_current_limit);
     return 0;
   }
 
   // Display highest allowed control loop (UM[1]=1 -> current control loop,
   // UM[1]=2 -> velocity control loop, UM[1]=5 -> position control loop).
   int16_t um = 0;
-  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id, jsd_epd_lc_to_do("UM"),
-                                  1, JSD_SDO_DATA_I16, &um)) {
+  if (!jsd_sdo_get_param_blocking(ecx_context, slave_id,
+                                  jsd_epd_nominal_lc_to_do("UM"), 1,
+                                  JSD_SDO_DATA_I16, &um)) {
     return 0;
   }
-  MSG("EPD[%d] UM[1] = %d", slave_id, um);
+  MSG("EPD-Nominal[%d] UM[1] = %d", slave_id, um);
 
   return 1;
 }
 
-void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_update_state_from_PDO_data(jsd_t*   self,
+                                                uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
 
   state->last_state_machine_state = state->pub.actual_state_machine_state;
   state->last_setpoint_ack        = state->setpoint_ack;
@@ -723,15 +767,17 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   // TODO(dloret): EGD code prints a change of state here.
   if (state->pub.actual_state_machine_state !=
       state->last_state_machine_state) {
-    MSG("EPD[%d] actual State Machine State changed to %s (0x%x)", slave_id,
+    MSG("EPD-Nominal[%d] actual State Machine State changed to %s (0x%x)",
+        slave_id,
         jsd_elmo_state_machine_state_to_string(
             state->pub.actual_state_machine_state),
         state->pub.actual_state_machine_state);
 
     if (state->pub.actual_state_machine_state ==
         JSD_ELMO_STATE_MACHINE_STATE_FAULT) {
-      state->enabling_operation = false; // we should not be carrying out reset currently
-      state->new_reset = false; // clear any potentially ongoing reset request
+      state->enabling_operation =
+          false;  // we should not be carrying out reset currently
+      state->new_reset = false;  // clear any potentially ongoing reset request
       state->fault_real_time = jsd_time_get_time_sec();
       state->fault_mono_time = jsd_time_get_mono_time_sec();
 
@@ -760,7 +806,7 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
 
   // Digital inputs
   state->interlock = state->txpdo.digital_inputs >> 3 & 0x01;
-  for (int i = 0; i < JSD_EPD_NUM_DIGITAL_INPUTS; ++i) {
+  for (int i = 0; i < JSD_EPD_NOMINAL_NUM_DIGITAL_INPUTS; ++i) {
     state->pub.digital_inputs[i] =
         state->txpdo.digital_inputs >> (16 + i) & 0x01;
   }
@@ -778,12 +824,13 @@ void jsd_epd_update_state_from_PDO_data(jsd_t* self, uint16_t slave_id) {
   state->pub.drive_temperature = state->txpdo.drive_temperature_deg_c;
 }
 
-void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_process_state_machine(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
 
   switch (state->pub.actual_state_machine_state) {
     case JSD_ELMO_STATE_MACHINE_STATE_NOT_READY_TO_SWITCH_ON:
@@ -829,7 +876,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
         state->rxpdo.mode_of_operation     = state->requested_mode_of_operation;
         break;
       }
-      jsd_epd_process_mode_of_operation(self, slave_id);
+      jsd_epd_nominal_process_mode_of_operation(self, slave_id);
       break;
     case JSD_ELMO_STATE_MACHINE_STATE_QUICK_STOP_ACTIVE:
       // No-op. Since the Quick Stop Option Code (0x605A) is set to 2, the drive
@@ -855,7 +902,7 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       // TODO(dloret): Might want to use the non-mutex interface of
       // jsd_error_cirq and incorporate a dedicated mutex for access to the
       // queue here and in the error handling (e.g. pushing errors).
-      while (num_error_pops < JSD_EPD_MAX_ERROR_POPS_PER_CYCLE &&
+      while (num_error_pops < JSD_EPD_NOMINAL_MAX_ERROR_POPS_PER_CYCLE &&
              jsd_error_cirq_pop(error_cirq, &error)) {
         if (ectime_to_sec(error.Time) > state->fault_real_time) {
           // Might want to handle other types of errors too in the future.
@@ -864,9 +911,9 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
             state->pub.fault_code = jsd_epd_get_fault_code_from_ec_error(error);
 
             // TODO(dloret): Remove printing to not affect real-time guarantees.
-            ERROR("EPD[%d] EMCY code: 0x%X, fault description: %s", error.Slave,
-                  state->pub.emcy_error_code,
-                  jsd_epd_fault_code_to_string(state->pub.fault_code));
+            ERROR("EPD-Nominal[%d] EMCY code: 0x%X, fault description: %s",
+                  error.Slave, state->pub.emcy_error_code,
+                  jsd_epd_nominal_fault_code_to_string(state->pub.fault_code));
 
             // Transition to SWITCHED ON DISABLED
             state->rxpdo.controlword =
@@ -883,8 +930,9 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       if (!error_found &&
           jsd_time_get_mono_time_sec() > (1.0 + state->fault_mono_time)) {
         // TODO(dloret): Remove printing to not affect real-time guarantees.
-        WARNING("EPD[%d] in FAULT state but new EMCY code has not arrived",
-                slave_id);
+        WARNING(
+            "EPD-Nominal[%d] in FAULT state but new EMCY code has not arrived",
+            slave_id);
 
         state->pub.emcy_error_code = 0xFFFF;
         state->pub.fault_code      = JSD_EPD_FAULT_UNKNOWN;
@@ -896,7 +944,8 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
       break;
     default:
       ERROR(
-          "EPD[%d] Unknown state machine state: 0x%x. This should never "
+          "EPD-Nominal[%d] Unknown state machine state: 0x%x. This should "
+          "never "
           "happen. Exiting.",
           slave_id, state->pub.actual_state_machine_state);
       assert(0);
@@ -907,12 +956,13 @@ void jsd_epd_process_state_machine(jsd_t* self, uint16_t slave_id) {
   }
 }
 
-void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
+void jsd_epd_nominal_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(jsd_epd_product_code_is_compatible(
+  assert(jsd_epd_nominal_product_code_is_compatible(
       self->ecx_context.slavelist[slave_id].eep_id));
 
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
 
   state->last_requested_mode_of_operation = state->requested_mode_of_operation;
 
@@ -920,26 +970,27 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
     case JSD_EPD_MODE_OF_OPERATION_DISABLED:
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_POS:
-      jsd_epd_mode_of_op_handle_prof_pos(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_prof_pos(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_VEL:
-      jsd_epd_mode_of_op_handle_prof_vel(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_prof_vel(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE:
-      jsd_epd_mode_of_op_handle_prof_torque(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_prof_torque(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CSP:
-      jsd_epd_mode_of_op_handle_csp(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_csp(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CSV:
-      jsd_epd_mode_of_op_handle_csv(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_csv(self, slave_id);
       break;
     case JSD_EPD_MODE_OF_OPERATION_CST:
-      jsd_epd_mode_of_op_handle_cst(self, slave_id);
+      jsd_epd_nominal_mode_of_op_handle_cst(self, slave_id);
       break;
     default:
       ERROR(
-          "EPD[%d] Mode of operation: 0x%x not implemented. This should never "
+          "EPD-Nominal[%d] Mode of operation: 0x%x not implemented. This "
+          "should never "
           "happen. Exiting.",
           slave_id, state->requested_mode_of_operation);
       assert(0);
@@ -951,9 +1002,10 @@ void jsd_epd_process_mode_of_operation(jsd_t* self, uint16_t slave_id) {
 // operation does not transition in that cycle, the current motion could be
 // abruptly interrupted.
 
-void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position = cmd.csp.target_position;
   state->rxpdo.position_offset = cmd.csp.position_offset;
@@ -970,9 +1022,10 @@ void jsd_epd_mode_of_op_handle_csp(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSP;
 }
 
-void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position = 0;
   state->rxpdo.position_offset = 0;
@@ -989,9 +1042,10 @@ void jsd_epd_mode_of_op_handle_csv(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CSV;
 }
 
-void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position = 0;
   state->rxpdo.position_offset = 0;
@@ -1009,9 +1063,11 @@ void jsd_epd_mode_of_op_handle_cst(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_CST;
 }
 
-void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_prof_pos(jsd_t*   self,
+                                                uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position  = cmd.prof_pos.target_position;
   state->rxpdo.position_offset  = 0;
@@ -1045,9 +1101,11 @@ void jsd_epd_mode_of_op_handle_prof_pos(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_POS;
 }
 
-void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_prof_vel(jsd_t*   self,
+                                                uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position  = 0;
   state->rxpdo.position_offset  = 0;
@@ -1063,9 +1121,11 @@ void jsd_epd_mode_of_op_handle_prof_vel(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_VEL;
 }
 
-void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
-  jsd_epd_private_state_t* state = &self->slave_states[slave_id].epd;
-  jsd_epd_motion_command_t cmd   = state->motion_command;
+void jsd_epd_nominal_mode_of_op_handle_prof_torque(jsd_t*   self,
+                                                   uint16_t slave_id) {
+  jsd_epd_nominal_private_state_t* state =
+      &self->slave_states[slave_id].epd_nominal;
+  jsd_epd_nominal_motion_command_t cmd = state->motion_command;
 
   state->rxpdo.target_position = 0;
   state->rxpdo.position_offset = 0;
@@ -1082,6 +1142,6 @@ void jsd_epd_mode_of_op_handle_prof_torque(jsd_t* self, uint16_t slave_id) {
   state->rxpdo.mode_of_operation = JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE;
 }
 
-bool jsd_epd_product_code_is_compatible(uint32_t product_code) {
+bool jsd_epd_nominal_product_code_is_compatible(uint32_t product_code) {
   return jsd_epd_product_code_is_compatible_impl(product_code);
 }
