@@ -13,10 +13,60 @@ uint8_t      slave_id;
 double       server_startup_s;
 double       amplitude;
 double       sine_freq;
-uint8_t      enable_velocity_offset;
-int32_t      loop_freq_hz;
 
 int16_t BRAKE_TIME_MSEC = 100;
+
+typedef struct {
+  int32_t loop_freq_hz;
+  double  velocity_tracking_error;
+  double  position_tracking_error;
+  double  low_position_limit;
+  double  high_position_limit;
+} jsd_sil_csp_sine_test_config_t;
+
+jsd_sil_csp_sine_test_config_t custom_config_test_data;
+
+int custom_config_test_callback(ecx_contextt* ecx_context, uint16_t slave_id,
+                                void* test_data_ptr) {
+  jsd_sil_csp_sine_test_config_t* test_data =
+      (jsd_sil_csp_sine_test_config_t*)test_data_ptr;
+
+  // Set interpolation time period.
+  uint8_t loop_period_ms = 1000 / test_data->loop_freq_hz;
+  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x60C2, 1,
+                                  JSD_SDO_DATA_U8, &loop_period_ms)) {
+    ERROR("Could not set loop period.");
+    return 0;
+  }
+  // Set tracking error parameters.
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_sil_lc_to_do("ER"), 2,
+          JSD_SDO_DATA_DOUBLE, &test_data->velocity_tracking_error)) {
+    ERROR("Could not set velocity tracking error.");
+    return 0;
+  }
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_sil_lc_to_do("ER"), 3,
+          JSD_SDO_DATA_DOUBLE, &test_data->position_tracking_error)) {
+    ERROR("Could not set position tracking error.");
+    return 0;
+  }
+  // Set position limits protection parameters.
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_sil_lc_to_do("LL"), 3,
+          JSD_SDO_DATA_DOUBLE, &test_data->low_position_limit)) {
+    ERROR("Could not set low position limit.");
+    return 0;
+  }
+  if (!jsd_sdo_set_param_blocking(
+          ecx_context, slave_id, jsd_epd_sil_lc_to_do("HL"), 3,
+          JSD_SDO_DATA_DOUBLE, &test_data->high_position_limit)) {
+    ERROR("Could not set high position limit.");
+    return 0;
+  }
+
+  return 1;
+}
 
 void telemetry_header() {
   if (!file) {
@@ -101,8 +151,6 @@ void command(void* self) {
   static int32_t pos_offset                  = 0;
   static double  motion_startup_s            = 0.0;
   static bool    first_motion_cmd            = true;
-  static bool    motion_config_sent          = false;
-  static size_t  motion_config_req_processed = 0;
 
   single_device_server_t* sds = (single_device_server_t*)self;
 
@@ -110,110 +158,6 @@ void command(void* self) {
 
   jsd_epd_sil_read(sds->jsd, slave_id);
   const jsd_epd_sil_state_t* state = jsd_epd_sil_get_state(sds->jsd, slave_id);
-
-  if (!motion_config_sent) {
-    // Set interpolation time period.
-    uint8_t loop_period_ms = 1000 / loop_freq_hz;
-    if (!jsd_sdo_set_param_async(sds->jsd, slave_id, 0x60C2, 1, JSD_SDO_DATA_U8,
-                                 &loop_period_ms, 0)) {
-      ERROR("Could not send asynchronous request to set loop period.");
-      assert(false);
-    }
-    // Set velocity tracking error.
-    double velocity_tracking_error = 1e8;
-    if (!jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_epd_sil_lc_to_do("ER"),
-                                 2, JSD_SDO_DATA_DOUBLE,
-                                 &velocity_tracking_error, 1)) {
-      ERROR(
-          "Could not send asynchronous request to set velocity tracking "
-          "error.");
-      assert(false);
-    }
-    // Set position tracking error.
-    double position_tracking_error = 1e9;
-    if (!jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_epd_sil_lc_to_do("ER"),
-                                 3, JSD_SDO_DATA_DOUBLE,
-                                 &position_tracking_error, 2)) {
-      ERROR(
-          "Could not send asynchronous request to set position tracking "
-          "error.");
-      assert(false);
-    }
-    // Disable position limits protection.
-    double low_position_limit = 0.0;
-    if (!jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_epd_sil_lc_to_do("LL"),
-                                 3, JSD_SDO_DATA_DOUBLE, &low_position_limit,
-                                 3)) {
-      ERROR("Could not send asynchronous request to set low position limit.");
-      assert(false);
-    }
-    double high_position_limit = 0.0;
-    if (!jsd_sdo_set_param_async(sds->jsd, slave_id, jsd_epd_sil_lc_to_do("HL"),
-                                 3, JSD_SDO_DATA_DOUBLE, &high_position_limit,
-                                 4)) {
-      ERROR("Could not send asynchronous request to set high position limit.");
-      assert(false);
-    }
-
-    motion_config_sent = true;
-    return;
-  }
-
-  if (motion_config_req_processed != 5) {
-    jsd_sdo_req_t response;
-    while (jsd_sdo_pop_response_queue(sds->jsd, &response)) {
-      switch (response.app_id) {
-        case 0:
-          if (!response.success) {
-            ERROR("Could not set loop period through asynchronous SDO.");
-            assert(false);
-          } else {
-            ++motion_config_req_processed;
-          }
-          break;
-        case 1:
-          if (!response.success) {
-            ERROR("Could not set velocity tracking through asynchronous SDO.");
-            assert(false);
-          } else {
-            ++motion_config_req_processed;
-          }
-          break;
-        case 2:
-          if (!response.success) {
-            ERROR(
-                "Could not set position tracking error through asynchronous "
-                "SDO.");
-            assert(false);
-          } else {
-            ++motion_config_req_processed;
-          }
-          break;
-        case 3:
-          if (!response.success) {
-            ERROR("Could not set low position limit through asynchronous SDO.");
-            assert(false);
-          } else {
-            ++motion_config_req_processed;
-          }
-          break;
-        case 4:
-          if (!response.success) {
-            ERROR(
-                "Could not set high position limit through asynchronous SDO.");
-            assert(false);
-          } else {
-            ++motion_config_req_processed;
-          }
-          break;
-        default:
-          MSG_DEBUG(
-              "Received an SDO response that does not correspond to the motion "
-              "configuration parameters.");
-      }
-    }
-    return;
-  }
 
   // Wait 2 seconds after server starts to issue first reset.
   if ((now_s - server_startup_s) < 2.0) {
@@ -254,7 +198,7 @@ int main(int argc, char* argv[]) {
 
   char* ifname             = strdup(argv[1]);
   slave_id                 = atoi(argv[2]);
-  loop_freq_hz             = atoi(argv[3]);
+  int32_t loop_freq_hz     = atoi(argv[3]);
   amplitude                = atof(argv[4]);
   sine_freq                = atof(argv[5]);
   float peak_current       = atof(argv[6]);
@@ -293,6 +237,15 @@ int main(int argc, char* argv[]) {
   config.epd_sil.brake_engage_msec    = BRAKE_TIME_MSEC;
   config.epd_sil.brake_disengage_msec = BRAKE_TIME_MSEC;
   config.epd_sil.sil_r2_inputs_num    = 1;
+
+  custom_config_test_data.loop_freq_hz            = loop_freq_hz;
+  custom_config_test_data.velocity_tracking_error = 1e8;
+  custom_config_test_data.position_tracking_error = 1e9;
+  // Disable position limits protection.
+  custom_config_test_data.low_position_limit  = 0.0;
+  custom_config_test_data.high_position_limit = 0.0;
+  config.epd_sil.PO2SO_config_user_data       = &custom_config_test_data;
+  config.epd_sil.PO2SO_config_user_callback   = &custom_config_test_callback;
 
   jsd_set_slave_config(sds.jsd, slave_id, config);
 

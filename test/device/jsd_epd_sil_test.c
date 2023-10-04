@@ -317,6 +317,8 @@ int main(int argc, char* argv[]) {
   config.epd_sil.sil_r2_inputs_num    = 3;
   config.epd_sil.sil_r1_outputs_num   = 6;
   config.epd_sil.sil_r2_outputs_num   = 5;
+  config.epd_sil.PO2SO_config_user_callback = NULL;
+  config.epd_sil.PO2SO_config_user_data     = NULL;
 
   jsd_set_slave_config(sds.jsd, slave_id, config);
 

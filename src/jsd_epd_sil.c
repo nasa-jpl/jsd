@@ -377,6 +377,14 @@ int jsd_epd_sil_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     return 0;
   }
 
+  if (config->epd_sil.PO2SO_config_user_callback &&
+      !(*config->epd_sil.PO2SO_config_user_callback)(
+          ecx_context, slave_id, config->epd_sil.PO2SO_config_user_data)) {
+    ERROR("Failed to set user-specific parameters on EPD-SIL slave %u",
+          slave_id);
+    return 0;
+  }
+
   config->PO2SO_success = true;
   SUCCESS("EPD-SIL[%d] drive parameters successfully configured and verified",
           slave_id);
