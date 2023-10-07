@@ -88,7 +88,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "unicorn");
   my_config.configuration_active = true;
-  my_config.product_code         = JSD_EL3104_PRODUCT_CODE;
+  my_config.driver_type          = JSD_DRIVER_TYPE_EL3104;
 
   jsd_set_slave_config(sds.jsd, slave_id, my_config);
 

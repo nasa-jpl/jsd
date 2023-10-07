@@ -29,9 +29,29 @@ extern "C" {
 
 #include "jsd/jsd_error_cirq.h"
 
+typedef enum {
+  JSD_DRIVER_TYPE_ATI_FTS = 0,
+  JSD_DRIVER_TYPE_EGD,
+  JSD_DRIVER_TYPE_EL1008,
+  JSD_DRIVER_TYPE_EL2124,
+  JSD_DRIVER_TYPE_EL2809,
+  JSD_DRIVER_TYPE_EL3104,
+  JSD_DRIVER_TYPE_EL3162,
+  JSD_DRIVER_TYPE_EL3202,
+  JSD_DRIVER_TYPE_EL3208,
+  JSD_DRIVER_TYPE_EL3318,
+  JSD_DRIVER_TYPE_EL3356,
+  JSD_DRIVER_TYPE_EL3602,
+  JSD_DRIVER_TYPE_EL4102,
+  JSD_DRIVER_TYPE_EPD,
+  JSD_DRIVER_TYPE_ILD1900,
+  JSD_DRIVER_TYPE_JED0101,
+  JSD_DRIVER_TYPE_JED0200,
+} jsd_driver_type_t;
+
 typedef struct {
   bool     configuration_active;
-  uint32_t product_code;
+  jsd_driver_type_t driver_type;
   char     name[JSD_NAME_LEN];
   union {
     jsd_el1008_config_t  el1008;

@@ -327,6 +327,10 @@ void jsd_set_manual_recovery(jsd_t* self) {
   self->attempt_manual_recovery = 1;
 }
 
+/****************************************************
+ * Private functions
+ ****************************************************/
+
 char* jsd_ec_state_to_string(ec_state state) {
   switch (state) {
     case EC_STATE_NONE:
@@ -356,9 +360,46 @@ char* jsd_ec_state_to_string(ec_state state) {
   }
 }
 
-/****************************************************
- * Private functions
- ****************************************************/
+const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
+  switch (driver_type) {
+    case JSD_DRIVER_TYPE_ATI_FTS:
+      return "JSD_DRIVER_TYPE_ATI_FTS";
+    case JSD_DRIVER_TYPE_EGD:
+      return "JSD_DRIVER_TYPE_EGD";
+    case JSD_DRIVER_TYPE_EL1008:
+      return "JSD_DRIVER_TYPE_EL1008";
+    case JSD_DRIVER_TYPE_EL2124:
+      return "JSD_DRIVER_TYPE_EL2124";
+    case JSD_DRIVER_TYPE_EL2809:
+      return "JSD_DRIVER_TYPE_EL2809";
+    case JSD_DRIVER_TYPE_EL3104:
+      return "JSD_DRIVER_TYPE_EL3104";
+    case JSD_DRIVER_TYPE_EL3162:
+      return "JSD_DRIVER_TYPE_EL3162";
+    case JSD_DRIVER_TYPE_EL3202:
+      return "JSD_DRIVER_TYPE_EL3202";
+    case JSD_DRIVER_TYPE_EL3208:
+      return "JSD_DRIVER_TYPE_EL3208";
+    case JSD_DRIVER_TYPE_EL3318:
+      return "JSD_DRIVER_TYPE_EL3318";
+    case JSD_DRIVER_TYPE_EL3356:
+      return "JSD_DRIVER_TYPE_EL3356";
+    case JSD_DRIVER_TYPE_EL3602:
+      return "JSD_DRIVER_TYPE_EL3602";
+    case JSD_DRIVER_TYPE_EL4102:
+      return "JSD_DRIVER_TYPE_EL4102";
+    case JSD_DRIVER_TYPE_EPD:
+      return "JSD_DRIVER_TYPE_EPD";
+    case JSD_DRIVER_TYPE_ILD1900:
+      return "JSD_DRIVER_TYPE_ILD1900";
+    case JSD_DRIVER_TYPE_JED0101:
+      return "JSD_DRIVER_TYPE_JED0101";
+    case JSD_DRIVER_TYPE_JED0200:
+      return "JSD_DRIVER_TYPE_JED0200";
+    default:
+      return "Unknown Driver Type";
+  }
+}
 
 bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
@@ -382,10 +423,13 @@ bool jsd_init_all_devices(jsd_t* self) {
     }
 
     // Check the user-provided product code
-    if (!jsd_product_codes_match(self->slave_configs[slave_idx].product_code,
-                                 slave->eep_id)) {
-      ERROR("User product code (%u) does not match device product code (%u)",
-            self->slave_configs[slave_idx].product_code, slave->eep_id);
+    jsd_driver_type_t driver_type = self->slave_configs[slave_idx].driver_type;
+    if (!jsd_driver_is_compatible_with_product_code(driver_type,
+                                                    slave->eep_id)) {
+      ERROR(
+          "User-specified driver type (%s) is incompatible with the device's "
+          "product code (%u).",
+          jsd_driver_type_to_string(driver_type), slave->eep_id);
       ERROR("Not configuring this device, check your configuration!");
       return false;
     }
@@ -397,9 +441,9 @@ bool jsd_init_all_devices(jsd_t* self) {
     }
 
     // EGDs nor EPDs have the name field populated.
-    if (slave->eep_id == JSD_EGD_PRODUCT_CODE) {
+    if (driver_type == JSD_DRIVER_TYPE_EGD) {
       SUCCESS("\tslave[%u] Elmo Gold Drive - Configured", slave_idx);
-    } else if (jsd_epd_product_code_is_compatible(slave->eep_id)) {
+    } else if (driver_type == JSD_DRIVER_TYPE_EPD) {
       SUCCESS("\tslave[%u] Elmo Platinum Drive - Configured", slave_idx);
     } else {
       SUCCESS("\tslave[%u] %s - Configured", slave_idx, slave->name);
@@ -409,93 +453,121 @@ bool jsd_init_all_devices(jsd_t* self) {
   return true;
 }
 
-bool jsd_product_codes_match(uint32_t user_product_code,
-                             uint32_t device_product_code) {
-  if (jsd_epd_product_code_is_compatible(user_product_code)) {
-    return jsd_epd_product_code_is_compatible(device_product_code);
-  } else {
-    return user_product_code == device_product_code;
+bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
+                                                uint32_t product_code) {
+  bool is_compatible = false;
+  switch (driver_type) {
+    case JSD_DRIVER_TYPE_EL3602:
+      is_compatible = jsd_el3602_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3208:
+      is_compatible = jsd_el3208_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL2124:
+      is_compatible = jsd_el2124_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EGD:
+      is_compatible = jsd_egd_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3356:
+      is_compatible = jsd_el3356_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_JED0101:
+      is_compatible = jsd_jed0101_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_JED0200:
+      is_compatible = jsd_jed0200_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_ATI_FTS:
+      is_compatible = jsd_ati_fts_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3104:
+      is_compatible = jsd_el3104_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3202:
+      is_compatible = jsd_el3202_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3318:
+      is_compatible = jsd_el3318_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL3162:
+      is_compatible = jsd_el3162_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL4102:
+      is_compatible = jsd_el4102_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_ILD1900:
+      is_compatible = jsd_ild1900_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EPD:
+      is_compatible = jsd_epd_product_code_is_compatible(product_code);
+      break;
+    default:
+      ERROR("Invalid driver type (%i)", driver_type);
+      assert(false);
   }
+  return is_compatible;
 }
 
 bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
   assert(self);
 
-  ec_slavet* slaves = self->ecx_context.slavelist;
-  ec_slavet* slave  = &slaves[slave_id];
+  jsd_driver_type_t driver_type = self->slave_configs[slave_id].driver_type;
 
-  switch (slave->eep_id) {
-    case JSD_EL3602_PRODUCT_CODE: {
+  switch (driver_type) {
+    case JSD_DRIVER_TYPE_EL3602:
       return jsd_el3602_init(self, slave_id);
       break;
-    }
-    case JSD_EL3208_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL3208:
       return jsd_el3208_init(self, slave_id);
       break;
-    }
-    case JSD_EL3202_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL3202:
       return jsd_el3202_init(self, slave_id);
       break;
-    }
-    case JSD_EGD_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EGD:
       return jsd_egd_init(self, slave_id);
       break;
-    }
-    case JSD_EL1008_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL1008:
       return jsd_el1008_init(self, slave_id);
       break;
-    }
-    case JSD_EL2124_PRODUCT_CODE: {
-      return jsd_el2124_init(self, slave_id);
-      break;
-    }
-    case JSD_EL2809_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL2809:
       return jsd_el2809_init(self, slave_id);
       break;
-    }
-    case JSD_EL3356_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL2124:
+      return jsd_el2124_init(self, slave_id);
+      break;
+    case JSD_DRIVER_TYPE_EL3356:
       return jsd_el3356_init(self, slave_id);
       break;
-    }
-    case JSD_JED0101_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_JED0101:
       return jsd_jed0101_init(self, slave_id);
       break;
-    }
-    case JSD_JED0200_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_JED0200:
       return jsd_jed0200_init(self, slave_id);
       break;
-    }
-    case JSD_ATI_FTS_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_ATI_FTS:
       return jsd_ati_fts_init(self, slave_id);
       break;
-    }
-    case JSD_EL3104_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL3104:
       return jsd_el3104_init(self, slave_id);
       break;
-    }
-    case JSD_EL3318_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL3318:
       return jsd_el3318_init(self, slave_id);
       break;
-    }
-    case JSD_EL3162_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL3162:
       return jsd_el3162_init(self, slave_id);
       break;
-    }
-    case JSD_EL4102_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_EL4102:
       return jsd_el4102_init(self, slave_id);
       break;
-    }
-    case JSD_ILD1900_PRODUCT_CODE: {
+    case JSD_DRIVER_TYPE_ILD1900:
       return jsd_ild1900_init(self, slave_id);
       break;
-    }
-    case JSD_EPD_PRODUCT_CODE_STD_FW:
-    case JSD_EPD_PRODUCT_CODE_SAFETY_FW: {
+    case JSD_DRIVER_TYPE_EPD:
       return jsd_epd_init(self, slave_id);
       break;
-    }
     default:
-      ERROR("Bad Product Code: %u", slave->eep_id);
+      ERROR("Invalid driver type: %u", driver_type);
       return false;
   }
 

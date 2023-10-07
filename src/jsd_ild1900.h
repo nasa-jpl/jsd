@@ -48,6 +48,14 @@ bool jsd_ild1900_config_COE_mapping(ecx_contextt*       ecx_context,
                                     uint16_t            slave_id,
                                     jsd_slave_config_t* config);
 
+/**
+ * @brief Checks whether a product code is compatible with ILD1900.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_ild1900_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

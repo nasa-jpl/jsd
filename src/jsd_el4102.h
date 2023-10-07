@@ -32,6 +32,14 @@ typedef struct __attribute__((__packed__)) {
  */
 bool jsd_el4102_init(jsd_t* self, uint16_t slave_id);
 
+/**
+ * @brief Checks whether a product code is compatible with EL4102.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_el4102_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "la chupacabra");
   my_config.configuration_active              = true;
-  my_config.product_code                      = JSD_EGD_PRODUCT_CODE;
+  my_config.driver_type                       = JSD_DRIVER_TYPE_EGD;
   my_config.egd.drive_cmd_mode                = JSD_EGD_DRIVE_CMD_MODE_PROFILED;
   my_config.egd.max_motor_speed               = max_motor_speed;
   my_config.egd.loop_period_ms                = 1000 / loop_freq_hz;

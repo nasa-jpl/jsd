@@ -48,6 +48,14 @@ double jsd_el3202_output_from_config(int16_t              adc_value,
                                      jsd_el3202_config_t* config,
                                      uint16_t             channel);
 
+/**
+ * @brief Checks whether a product code is compatible with EL3202.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_el3202_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

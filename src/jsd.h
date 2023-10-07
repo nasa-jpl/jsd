@@ -17,6 +17,13 @@ extern "C" {
 char* jsd_ec_state_to_string(ec_state state);
 
 /**
+ * @brief Converts jsd_driver_type_t label to string
+ *
+ * @return string representation of enumeration label
+ */
+const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type);
+
+/**
  * @brief Registers all device configs used by
  * SOEM during the EtherCat PreOp to SafeOp transition and any initial device
  * setup.
@@ -26,11 +33,10 @@ char* jsd_ec_state_to_string(ec_state state);
  */
 bool jsd_init_all_devices(jsd_t* self);
 
-// Helper function to check whether the product code of a device matches the
-// product code specified by the user or a compatible code of the corresponding
-// device-type family (e.g. Platinum's product codes).
-bool jsd_product_codes_match(uint32_t user_product_code,
-                             uint32_t device_product_code);
+// Helper function to check whether a driver type is compatible with the
+// product code of an actual device.
+bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
+                                                uint32_t          product_code);
 
 /**
  * @brief Initializes single device

@@ -83,7 +83,7 @@ int main(int argc, char* argv[]) {
 
   snprintf(my_config.name, JSD_NAME_LEN, "huehueteotl");
   my_config.configuration_active     = true;
-  my_config.product_code             = JSD_ILD1900_PRODUCT_CODE;
+  my_config.driver_type              = JSD_DRIVER_TYPE_ILD1900;
   my_config.ild1900.model            = JSD_ILD1900_MODEL_100;
   my_config.ild1900.measuring_rate   = 250.0;
   my_config.ild1900.averaging_type   = JSD_ILD1900_AVERAGING_MOVING;
