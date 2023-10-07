@@ -17,6 +17,13 @@ extern "C" {
 char* jsd_ec_state_to_string(ec_state state);
 
 /**
+ * @brief Converts jsd_driver_type_t label to string
+ *
+ * @return string representation of enumeration label
+ */
+const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type);
+
+/**
  * @brief Registers all device configs used by
  * SOEM during the EtherCat PreOp to SafeOp transition and any initial device
  * setup.

@@ -327,6 +327,10 @@ void jsd_set_manual_recovery(jsd_t* self) {
   self->attempt_manual_recovery = 1;
 }
 
+/****************************************************
+ * Private functions
+ ****************************************************/
+
 char* jsd_ec_state_to_string(ec_state state) {
   switch (state) {
     case EC_STATE_NONE:
@@ -356,9 +360,46 @@ char* jsd_ec_state_to_string(ec_state state) {
   }
 }
 
-/****************************************************
- * Private functions
- ****************************************************/
+const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
+  switch (driver_type) {
+    case JSD_DRIVER_TYPE_ATI_FTS:
+      return "JSD_DRIVER_TYPE_ATI_FTS";
+    case JSD_DRIVER_TYPE_EGD:
+      return "JSD_DRIVER_TYPE_EGD";
+    case JSD_DRIVER_TYPE_EL1008:
+      return "JSD_DRIVER_TYPE_EL1008";
+    case JSD_DRIVER_TYPE_EL2124:
+      return "JSD_DRIVER_TYPE_EL2124";
+    case JSD_DRIVER_TYPE_EL2809:
+      return "JSD_DRIVER_TYPE_EL2809";
+    case JSD_DRIVER_TYPE_EL3104:
+      return "JSD_DRIVER_TYPE_EL3104";
+    case JSD_DRIVER_TYPE_EL3162:
+      return "JSD_DRIVER_TYPE_EL3162";
+    case JSD_DRIVER_TYPE_EL3202:
+      return "JSD_DRIVER_TYPE_EL3202";
+    case JSD_DRIVER_TYPE_EL3208:
+      return "JSD_DRIVER_TYPE_EL3208";
+    case JSD_DRIVER_TYPE_EL3318:
+      return "JSD_DRIVER_TYPE_EL3318";
+    case JSD_DRIVER_TYPE_EL3356:
+      return "JSD_DRIVER_TYPE_EL3356";
+    case JSD_DRIVER_TYPE_EL3602:
+      return "JSD_DRIVER_TYPE_EL3602";
+    case JSD_DRIVER_TYPE_EL4102:
+      return "JSD_DRIVER_TYPE_EL4102";
+    case JSD_DRIVER_TYPE_EPD:
+      return "JSD_DRIVER_TYPE_EPD";
+    case JSD_DRIVER_TYPE_ILD1900:
+      return "JSD_DRIVER_TYPE_ILD1900";
+    case JSD_DRIVER_TYPE_JED0101:
+      return "JSD_DRIVER_TYPE_JED0101";
+    case JSD_DRIVER_TYPE_JED0200:
+      return "JSD_DRIVER_TYPE_JED0200";
+    default:
+      return "Unknown Driver Type";
+  }
+}
 
 bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
@@ -386,9 +427,9 @@ bool jsd_init_all_devices(jsd_t* self) {
     if (!jsd_driver_is_compatible_with_product_code(driver_type,
                                                     slave->eep_id)) {
       ERROR(
-          "User-specified driver type (%u) is incompatible with the device's "
+          "User-specified driver type (%s) is incompatible with the device's "
           "product code (%u).",
-          driver_type, slave->eep_id);
+          jsd_driver_type_to_string(driver_type), slave->eep_id);
       ERROR("Not configuring this device, check your configuration!");
       return false;
     }
