@@ -389,8 +389,10 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
       return "JSD_DRIVER_TYPE_EL3602";
     case JSD_DRIVER_TYPE_EL4102:
       return "JSD_DRIVER_TYPE_EL4102";
-    case JSD_DRIVER_TYPE_EPD:
-      return "JSD_DRIVER_TYPE_EPD";
+    case JSD_DRIVER_TYPE_EPD_NOMINAL:
+      return "JSD_DRIVER_TYPE_EPD_NOMINAL";
+    case JSD_DRIVER_TYPE_EPD_SIL:
+      return "JSD_DRIVER_TYPE_EPD_SIL";
     case JSD_DRIVER_TYPE_ILD1900:
       return "JSD_DRIVER_TYPE_ILD1900";
     case JSD_DRIVER_TYPE_JED0101:
