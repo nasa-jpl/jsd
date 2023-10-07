@@ -1,5 +1,5 @@
-#ifndef JSD_EPD_TYPES_H
-#define JSD_EPD_TYPES_H
+#ifndef JSD_EPD_NOMINAL_TYPES_H
+#define JSD_EPD_NOMINAL_TYPES_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -7,14 +7,7 @@ extern "C" {
 
 #include "jsd/jsd_common_device_types.h"
 #include "jsd/jsd_elmo_common_types.h"
-
-// Currently JSD does not support the Functional Safety capability offered by
-// some Platinum drive models. Such drives can still be run with this driver,
-// but they will behave as the standard non-Safety drives.
-// Product code of Platinum drives that use the standard non-Safety firmware
-#define JSD_EPD_PRODUCT_CODE_STD_FW (uint32_t)0x00100002
-// Product code of Platinum drives that use the Safety firmware (FSOE, Safe I/O)
-#define JSD_EPD_PRODUCT_CODE_SAFETY_FW (uint32_t)0x01100002
+#include "jsd/jsd_epd_common_types.h"
 
 // TODO(dloret): Consider making the types related to DS-402 common between the
 // EGD and EPD drivers:
@@ -22,72 +15,8 @@ extern "C" {
 // - jsd_*_mode_of_operation_t
 
 // NOTE: Used numbers specified in DS-402
-#define JSD_EPD_NUM_DIGITAL_OUTPUTS 6
-#define JSD_EPD_NUM_DIGITAL_INPUTS 16
-
-// TODO(dloret): Double check whether RESET_DERATE is still necessary.
-#define JSD_EPD_RESET_DERATE_SEC 1.0
-
-/**
- * @brief Elmo Platinum Drive Mode of Operation
- */
-typedef enum {
-  JSD_EPD_MODE_OF_OPERATION_DISABLED =
-      0,  // TODO(dloret): might want to remove this if we no longer need a
-          // drive command mode.
-  JSD_EPD_MODE_OF_OPERATION_PROF_POS    = 1,
-  JSD_EPD_MODE_OF_OPERATION_PROF_VEL    = 3,
-  JSD_EPD_MODE_OF_OPERATION_PROF_TORQUE = 4,
-  JSD_EPD_MODE_OF_OPERATION_CSP         = 8,
-  JSD_EPD_MODE_OF_OPERATION_CSV         = 9,
-  JSD_EPD_MODE_OF_OPERATION_CST         = 10
-} jsd_epd_mode_of_operation_t;
-
-/**
- * @brief Elmo Platinum Drive Fault Code
- *
- * See Platinum Administrator Guide, chapter 7
- */
-typedef enum {
-  // Make integers different from jsd_egd_fault_code_t so that fault codes are
-  // easier to process in Fastcat
-  JSD_EPD_FAULT_OKAY = 100,
-  JSD_EPD_FAULT_SHORT_PROTECTION,
-  JSD_EPD_FAULT_UNDER_VOLTAGE,
-  JSD_EPD_FAULT_LOSS_OF_PHASE,
-  JSD_EPD_FAULT_OVER_VOLTAGE,
-  JSD_EPD_FAULT_MOTOR_OVER_TEMPERATURE,
-  JSD_EPD_FAULT_DRIVE_OVER_TEMPERATURE,
-  JSD_EPD_FAULT_GANTRY_YAW_ERROR_LIMIT_EXCEEDED,
-  JSD_EPD_FAULT_EXTERNAL_INHIBIT_TRIGGERED,
-  JSD_EPD_FAULT_ADDITIONAL_ABORT_ACTIVE,
-  JSD_EPD_FAULT_VECTOR_ABORT,
-  JSD_EPD_FAULT_RPDO_FAILED,
-  JSD_EPD_FAULT_MOTOR_STUCK,
-  JSD_EPD_FAULT_FEEDBACK_ERROR,
-  JSD_EPD_FAULT_HALL_MAIN_FEEDBACK_MISMATCH,
-  JSD_EPD_FAULT_HALL_BAD_CHANGE,
-  JSD_EPD_FAULT_COMMUTATION_PROCESS_FAIL,
-  JSD_EPD_FAULT_CAN_MESSAGE_LOST,
-  JSD_EPD_FAULT_SYNC_OR_FRAME_LOSS,
-  JSD_EPD_FAULT_RECOVERED_FROM_BUS_OFF,
-  JSD_EPD_FAULT_ACCESS_NON_CONFIGURED_RPDO,
-  JSD_EPD_FAULT_INCORRECT_RPDO_LENGTH,
-  JSD_EPD_FAULT_PEAK_CURRENT_EXCEEDED,
-  JSD_EPD_FAULT_SPEED_TRACKING_ERROR,
-  JSD_EPD_FAULT_SPEED_LIMIT_EXCEEDED,
-  JSD_EPD_FAULT_POSITION_TRACKING_ERROR,
-  JSD_EPD_FAULT_POSITION_LIMIT_EXCEEDED,
-  JSD_EPD_FAULT_CAN_INTERPOLATED_MODE_EMERGENCY,
-  JSD_EPD_FAULT_CANNOT_START_MOTOR,
-  JSD_EPD_FAULT_STO_ENGAGED,
-  JSD_EPD_FAULT_MOTOR_DISABLE_COMMAND,
-  JSD_EPD_FAULT_KINEMATICS_ERROR,
-  JSD_EPD_FAULT_GANTRY_MASTER_ERROR,
-  JSD_EPD_FAULT_GANTRY_SLAVE_DISABLED,
-  JSD_EPD_FAULT_GANTRY_ATTACHED_SLAVE_FAULT,
-  JSD_EPD_FAULT_UNKNOWN
-} jsd_epd_fault_code_t;
+#define JSD_EPD_NOMINAL_NUM_DIGITAL_OUTPUTS 6
+#define JSD_EPD_NOMINAL_NUM_DIGITAL_INPUTS 16
 
 /**
  * @brief Union of all motion commands
@@ -101,7 +30,7 @@ typedef struct {
     jsd_elmo_motion_command_prof_vel_t    prof_vel;
     jsd_elmo_motion_command_prof_torque_t prof_torque;
   };
-} jsd_epd_motion_command_t;
+} jsd_epd_nominal_motion_command_t;
 
 /**
  * @brief Elmo Platinum Drive JSD Configuration
@@ -156,7 +85,7 @@ typedef struct {
   jsd_elmo_gain_scheduling_mode_t
       ctrl_gain_scheduling_mode;  ///< P_GS[2]. Set to -1 to use mode currently
                                   ///< set in the drive.
-} jsd_epd_config_t;
+} jsd_epd_nominal_config_t;
 
 /**
  * @brief Elmo Platinum Drive JSD State Data
@@ -181,7 +110,7 @@ typedef struct {
   uint32_t cmd_prof_decel;         ///< Commanded profile deceleration, cnt/s/s
 
   jsd_elmo_state_machine_state_t actual_state_machine_state;
-  jsd_epd_mode_of_operation_t   actual_mode_of_operation;
+  jsd_epd_mode_of_operation_t    actual_mode_of_operation;
 
   uint8_t sto_engaged;    ///< Safe Torque Off (EStop) status
   uint8_t hall_state;     ///< 3 Hall channels (ABC) in first 3 bits.
@@ -201,16 +130,16 @@ typedef struct {
                            ///< after the first rising edge of the set-point
                            ///< acknowledge bit after sending such command.
   jsd_epd_fault_code_t fault_code;  ///< Fault based on Emergency error code.
-  uint16_t emcy_error_code;  ///< Emergency error codes.
+  uint16_t             emcy_error_code;  ///< Emergency error codes.
 
-  double  bus_voltage;           ///< Bus voltage, V
-  double  analog_input_voltage;  ///< Analog input 1, V
+  double   bus_voltage;           ///< Bus voltage, V
+  double   analog_input_voltage;  ///< Analog input 1, V
   uint16_t analog_input_adc;      ///< Analog input 2, raw
 
-  uint8_t digital_inputs[JSD_EPD_NUM_DIGITAL_INPUTS];
-  uint8_t digital_output_cmd[JSD_EPD_NUM_DIGITAL_OUTPUTS];
+  uint8_t digital_inputs[JSD_EPD_NOMINAL_NUM_DIGITAL_INPUTS];
+  uint8_t digital_output_cmd[JSD_EPD_NOMINAL_NUM_DIGITAL_OUTPUTS];
   float   drive_temperature;  ///< deg C
-} jsd_epd_state_t;
+} jsd_epd_nominal_state_t;
 
 /**
  * @brief TxPDO struct used to read device data in SOEM IOmap
@@ -218,19 +147,19 @@ typedef struct {
  * Note: struct order matters and must be packed.
  */
 typedef struct __attribute__((__packed__)) {
-  int32_t actual_position;            ///< 0x6064
-  int32_t velocity_actual_value;      ///< 0x6069
-  int16_t current_actual_value;       ///< 0x6078
-  int8_t  mode_of_operation_display;  ///< 0x6061
-  uint32_t dc_link_circuit_voltage;  ///< 0x6079
-  float    drive_temperature_deg_c;  ///< 0x3610
-  uint32_t digital_inputs;           ///< 0x60FD
-  int16_t  analog_input_1;           ///< 0x2205:01
-  int16_t  analog_input_2;           ///< 0x2205:02
-  uint32_t status_register_1;        ///< 0x3607:01
-  uint32_t status_register_2;        ///< 0x3607:02
-  uint16_t statusword;               ///< 0x6041
-} jsd_epd_txpdo_data_t;
+  int32_t  actual_position;            ///< 0x6064
+  int32_t  velocity_actual_value;      ///< 0x6069
+  int16_t  current_actual_value;       ///< 0x6078
+  int8_t   mode_of_operation_display;  ///< 0x6061
+  uint32_t dc_link_circuit_voltage;    ///< 0x6079
+  float    drive_temperature_deg_c;    ///< 0x3610
+  uint32_t digital_inputs;             ///< 0x60FD
+  int16_t  analog_input_1;             ///< 0x2205:01
+  int16_t  analog_input_2;             ///< 0x2205:02
+  uint32_t status_register_1;          ///< 0x3607:01
+  uint32_t status_register_2;          ///< 0x3607:02
+  uint16_t statusword;                 ///< 0x6041
+} jsd_epd_nominal_txpdo_data_t;
 
 /**
  * @brief RxPDO struct used to set device command data in SOEM IOmap
@@ -250,15 +179,15 @@ typedef struct __attribute__((__packed__)) {
   // - Might need to remove since it does not have an effect on PL.
   // - EGD's Profile rxPDO maps max_current to 0x6072 (Max Torque) instead of
   //   0x6073 (Max Current). But they should be equal in this case.
-  uint32_t digital_outputs;    ///< 0x60FE
+  uint32_t digital_outputs;  ///< 0x60FE
   uint16_t controlword;  ///< 0x6040. NOTE(dloret): bit arrangement is different
                          ///< from Gold line.
-  uint32_t profile_velocity;  ///< 0x6081
-  uint32_t end_velocity;      ///< 0x6082
-  uint32_t profile_accel;     ///< 0x6083
-  uint32_t profile_decel;     ///< 0x6084
+  uint32_t profile_velocity;       ///< 0x6081
+  uint32_t end_velocity;           ///< 0x6082
+  uint32_t profile_accel;          ///< 0x6083
+  uint32_t profile_decel;          ///< 0x6084
   int16_t  gain_scheduling_index;  ///< 0x36E0
-} jsd_epd_rxpdo_data_t;
+} jsd_epd_nominal_rxpdo_data_t;
 
 /**
  * @brief Elmo Platinum Drive JSD private state data
@@ -267,24 +196,24 @@ typedef struct __attribute__((__packed__)) {
  * for client applications.
  */
 typedef struct {
-  jsd_epd_state_t pub;  ///< Public state used by client applications.
+  jsd_epd_nominal_state_t pub;  ///< Public state used by client applications.
 
   // SOEM PDO data
-  jsd_epd_txpdo_data_t txpdo;  ///< Raw TxPDO data
-  jsd_epd_rxpdo_data_t rxpdo;  ///< Raw RxPDO data
+  jsd_epd_nominal_txpdo_data_t txpdo;  ///< Raw TxPDO data
+  jsd_epd_nominal_rxpdo_data_t rxpdo;  ///< Raw RxPDO data
 
   uint32_t motor_rated_current;  ///< Set the same as continuous current limit
                                  ///< (CL[1]), mA
 
   // User input
-  bool                        enabling_operation;
-  bool                        new_reset;
-  bool                        new_halt_command;
-  bool                        new_motion_command;
-  jsd_epd_motion_command_t    motion_command;  ///< Last command from user
-  jsd_epd_mode_of_operation_t requested_mode_of_operation;
-  jsd_epd_mode_of_operation_t last_requested_mode_of_operation;
-  double                      last_reset_time;
+  bool                             enabling_operation;
+  bool                             new_reset;
+  bool                             new_halt_command;
+  bool                             new_motion_command;
+  jsd_epd_nominal_motion_command_t motion_command;  ///< Last command from user
+  jsd_epd_mode_of_operation_t      requested_mode_of_operation;
+  jsd_epd_mode_of_operation_t      last_requested_mode_of_operation;
+  double                           last_reset_time;
 
   uint8_t interlock;  ///< 1 when one or both of STO inputs are disabled.
   uint8_t fault_occured_when_enabled;  ///< From Status Register
@@ -306,7 +235,7 @@ typedef struct {
   uint8_t setpoint_ack;  ///< Setpoint ackowledge (Profiled Position mode),
                          ///< statustword, bit 12
   uint8_t last_setpoint_ack;
-} jsd_epd_private_state_t;
+} jsd_epd_nominal_private_state_t;
 
 #ifdef __cplusplus
 }

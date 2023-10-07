@@ -1,7 +1,7 @@
 #include <assert.h>
 #include <string.h>
 
-#include "jsd/jsd_epd_pub.h"
+#include "jsd/jsd_epd_nominal_pub.h"
 #include "jsd/jsd_time.h"
 #include "jsd_test_utils.h"
 
@@ -68,8 +68,9 @@ void telemetry_data(void* self) {
   double cycle_period_s = rel_time_s - last_rel_time_s;
   last_rel_time_s       = rel_time_s;
 
-  single_device_server_t* sds   = (single_device_server_t*)self;
-  const jsd_epd_state_t*  state = jsd_epd_get_state(sds->jsd, slave_id);
+  single_device_server_t*        sds = (single_device_server_t*)self;
+  const jsd_epd_nominal_state_t* state =
+      jsd_epd_nominal_get_state(sds->jsd, slave_id);
 
   fprintf(file, "%lf, ", rel_time_s);
   fprintf(file, "%lf, ", cycle_period_s);
@@ -112,7 +113,7 @@ void extract_data(void* self) {
   assert(self);
   single_device_server_t* sds = (single_device_server_t*)self;
 
-  jsd_epd_process(sds->jsd, slave_id);
+  jsd_epd_nominal_process(sds->jsd, slave_id);
 }
 
 void command(void* self) {
@@ -123,8 +124,9 @@ void command(void* self) {
 
   double now_s = jsd_time_get_mono_time_sec();
 
-  jsd_epd_read(sds->jsd, slave_id);
-  const jsd_epd_state_t* state = jsd_epd_get_state(sds->jsd, slave_id);
+  jsd_epd_nominal_read(sds->jsd, slave_id);
+  const jsd_epd_nominal_state_t* state =
+      jsd_epd_nominal_get_state(sds->jsd, slave_id);
 
   // Wait 2 seconds after server starts to issue first reset.
   if ((now_s - server_startup_s) < 2.0) {
@@ -134,8 +136,8 @@ void command(void* self) {
   // Reset whenever not in OPERATION ENABLED state.
   if (!state->servo_enabled) {
     MSG("Sending reset.");
-    jsd_epd_reset(sds->jsd, slave_id);
-    iter = 0;
+    jsd_epd_nominal_reset(sds->jsd, slave_id);
+    iter    = 0;
     vel_idx = 0;
     return;
   }
@@ -150,7 +152,7 @@ void command(void* self) {
     cmd.profile_accel   = profile_accel;
     cmd.profile_decel   = profile_decel;
 
-    jsd_epd_set_motion_command_prof_vel(sds->jsd, slave_id, cmd);
+    jsd_epd_nominal_set_motion_command_prof_vel(sds->jsd, slave_id, cmd);
   }
 
   ++iter;
@@ -159,10 +161,11 @@ void command(void* self) {
 int main(int argc, char* argv[]) {
   if (argc != 10) {
     ERROR("Expecting exactly 9 arguments");
-    MSG("Usage: jsd_epd_prof_vel_test <ifname> <epd_slave_index> "
+    MSG("Usage: jsd_epd_nominal_prof_vel_test <ifname> <epd_slave_index> "
         "<loop_freq_hz> <max_target_velocity> <profile_accel> <profile_decel> "
         "<peak_current_amps> <continuous_current_amps> <max_motor_speed> ");
-    MSG("Example: $ jsd_epd_prof_vel_test eth0 2 100 50000 25000 40000 0.5 "
+    MSG("Example: $ jsd_epd_nominal_prof_vel_test eth0 2 100 50000 25000 40000 "
+        "0.5 "
         "0.25 100000");
     return 0;
   }
@@ -206,39 +209,41 @@ int main(int argc, char* argv[]) {
   jsd_slave_config_t config = {0};
 
   snprintf(config.name, JSD_NAME_LEN, "kukulkan");
-  config.configuration_active         = true;
-  config.driver_type                  = JSD_DRIVER_TYPE_EPD;
-  config.epd.max_motor_speed          = max_motor_speed;
-  config.epd.loop_period_ms           = 1000 / loop_freq_hz;
-  config.epd.torque_slope             = 1e7;
-  config.epd.max_profile_accel        = 1e6;
-  config.epd.max_profile_decel        = 1e7;
-  config.epd.velocity_tracking_error  = 1e8;
-  config.epd.position_tracking_error  = 1e9;
-  config.epd.peak_current_limit       = peak_current;
-  config.epd.peak_current_time        = 3.0f;
-  config.epd.continuous_current_limit = continuous_current;
-  config.epd.motor_stuck_current_level_pct =
+  config.configuration_active                 = true;
+  config.driver_type                          = JSD_DRIVER_TYPE_EPD_NOMINAL;
+  config.epd_nominal.max_motor_speed          = max_motor_speed;
+  config.epd_nominal.loop_period_ms           = 1000 / loop_freq_hz;
+  config.epd_nominal.torque_slope             = 1e7;
+  config.epd_nominal.max_profile_accel        = 1e6;
+  config.epd_nominal.max_profile_decel        = 1e7;
+  config.epd_nominal.velocity_tracking_error  = 1e8;
+  config.epd_nominal.position_tracking_error  = 1e9;
+  config.epd_nominal.peak_current_limit       = peak_current;
+  config.epd_nominal.peak_current_time        = 3.0f;
+  config.epd_nominal.continuous_current_limit = continuous_current;
+  config.epd_nominal.motor_stuck_current_level_pct =
       0.0f;  // Disable motor stuck protection.
-  config.epd.motor_stuck_velocity_threshold = 0.0f;
-  config.epd.motor_stuck_timeout            = 0.0f;
-  config.epd.over_speed_threshold = 0.0;  // Disable over speed protection.
-  config.epd.low_position_limit   = 0.0;
-  config.epd.high_position_limit =
-      config.epd.low_position_limit;  // Disable position limits protection.
-  config.epd.brake_engage_msec    = BRAKE_TIME_MSEC;
-  config.epd.brake_disengage_msec = BRAKE_TIME_MSEC;
-  config.epd.smooth_factor        = 0;
-  config.epd.ctrl_gain_scheduling_mode =
+  config.epd_nominal.motor_stuck_velocity_threshold = 0.0f;
+  config.epd_nominal.motor_stuck_timeout            = 0.0f;
+  config.epd_nominal.over_speed_threshold =
+      0.0;  // Disable over speed protection.
+  config.epd_nominal.low_position_limit = 0.0;
+  config.epd_nominal.high_position_limit =
+      config.epd_nominal
+          .low_position_limit;  // Disable position limits protection.
+  config.epd_nominal.brake_engage_msec    = BRAKE_TIME_MSEC;
+  config.epd_nominal.brake_disengage_msec = BRAKE_TIME_MSEC;
+  config.epd_nominal.smooth_factor        = 0;
+  config.epd_nominal.ctrl_gain_scheduling_mode =
       JSD_ELMO_GAIN_SCHEDULING_MODE_PRELOADED;
 
-  MSG("Configuring %i as loop_period_ms", config.epd.loop_period_ms);
+  MSG("Configuring %i as loop_period_ms", config.epd_nominal.loop_period_ms);
 
   jsd_set_slave_config(sds.jsd, slave_id, config);
 
   server_startup_s = jsd_time_get_mono_time_sec();
 
-  sds_run(&sds, ifname, "/tmp/jsd_epd_prof_vel_test.csv");
+  sds_run(&sds, ifname, "/tmp/jsd_epd_nominal_prof_vel_test.csv");
 
   return 0;
 }

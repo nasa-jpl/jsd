@@ -4,6 +4,7 @@ add_library(jsd-lib STATIC
     jsd_error_cirq.c
     jsd_common_device_types.c
     jsd_elmo_common.c
+    jsd_epd_common.c
 
     # Devices
     jsd_el3602.c
@@ -23,7 +24,8 @@ add_library(jsd-lib STATIC
     jsd_el3162.c
     jsd_el4102.c
     jsd_ild1900.c
-    jsd_epd.c
+    jsd_epd_nominal.c
+    jsd_epd_sil.c
     )
 
 message(STATUS "SOEM INCLUDE DIRS: ${SOEM_INCLUDE_DIRS}")
