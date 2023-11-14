@@ -55,7 +55,7 @@ bool jsd_el1008_init(jsd_t* self, uint16_t slave_id) {
 int jsd_el1008_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
   assert(jsd_el1008_product_code_is_compatible(
-      self->ecx_context.slavelist[slave_id].eep_id));
+      ecx_context.slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within the ecx_context and extract it here.
