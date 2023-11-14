@@ -15,6 +15,14 @@ extern "C" {
  */
 bool jsd_el2809_init(jsd_t* self, uint16_t slave_id);
 
+/**
+ * @brief Checks whether a product code is compatible with EL2809.
+ *
+ * @param product_code The product code to be checked
+ * @return True if the product code is compatible, false otherwise.
+ */
+bool jsd_el2809_product_code_is_compatible(uint32_t product_code);
+
 #ifdef __cplusplus
 }
 #endif

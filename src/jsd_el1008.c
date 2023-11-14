@@ -11,8 +11,8 @@
 
 const jsd_el1008_state_t* jsd_el1008_get_state(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL1008_PRODUCT_CODE);
+  assert(jsd_el1008_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_el1008_state_t* state = &self->slave_states[slave_id].el1008;
   return state;
@@ -20,8 +20,8 @@ const jsd_el1008_state_t* jsd_el1008_get_state(jsd_t* self, uint16_t slave_id) {
 
 void jsd_el1008_read(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL1008_PRODUCT_CODE);
+  assert(jsd_el1008_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   jsd_el1008_state_t* state = &self->slave_states[slave_id].el1008;
 
@@ -39,8 +39,8 @@ void jsd_el1008_read(jsd_t* self, uint16_t slave_id) {
 
 bool jsd_el1008_init(jsd_t* self, uint16_t slave_id) {
   assert(self);
-  assert(self->ecx_context.slavelist[slave_id].eep_id ==
-         JSD_EL1008_PRODUCT_CODE);
+  assert(jsd_el1008_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
   assert(self->ecx_context.slavelist[slave_id].eep_man ==
          JSD_BECKHOFF_VENDOR_ID);
 
@@ -54,7 +54,8 @@ bool jsd_el1008_init(jsd_t* self, uint16_t slave_id) {
 
 int jsd_el1008_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
   assert(ecx_context);
-  assert(ecx_context->slavelist[slave_id].eep_id == JSD_EL1008_PRODUCT_CODE);
+  assert(jsd_el1008_product_code_is_compatible(
+      self->ecx_context.slavelist[slave_id].eep_id));
 
   // Since this function prototype is forced by SOEM, we have embedded a
   // reference to jsd.slave_configs within the ecx_context and extract it here.
@@ -69,4 +70,8 @@ int jsd_el1008_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   config->PO2SO_success = true;
   return 1;
+}
+
+bool jsd_el1008_product_code_is_compatible(uint32_t product_code) {
+  return product_code == JSD_EL1008_PRODUCT_CODE;
 }
