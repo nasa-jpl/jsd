@@ -473,6 +473,12 @@ bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
     case JSD_DRIVER_TYPE_EL2124:
       is_compatible = jsd_el2124_product_code_is_compatible(product_code);
       break;
+    case JSD_DRIVER_TYPE_EL1008:
+      is_compatible = jsd_el1008_product_code_is_compatible(product_code);
+      break;
+    case JSD_DRIVER_TYPE_EL2809:
+      is_compatible = jsd_el2809_product_code_is_compatible(product_code);
+      break;
     case JSD_DRIVER_TYPE_EGD:
       is_compatible = jsd_egd_product_code_is_compatible(product_code);
       break;
