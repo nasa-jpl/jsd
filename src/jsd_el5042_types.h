@@ -20,14 +20,13 @@ typedef struct {
  * @brief Read struct for EL5042 device
  */
 typedef struct {
-  double  voltage[JSD_EL5042_NUM_CHANNELS];    ///< Analog input data, converted
-  int16_t adc_value[JSD_EL5042_NUM_CHANNELS];  ///< Analog input data, raw
-  uint8_t underrange[JSD_EL5042_NUM_CHANNELS];  ///< True if value below
-                                                ///< measuring range
-  uint8_t
-          overrange[JSD_EL5042_NUM_CHANNELS];  ///< True if measuring range exceeded
-  uint8_t error[JSD_EL5042_NUM_CHANNELS];  ///< True if channel is over or under
-                                           ///< range
+  int64_t position[JSD_EL5042_NUM_CHANNELS];  ///< Position in counts
+  uint8_t warning[JSD_EL5042_NUM_CHANNELS];
+  uint8_t error[JSD_EL5042_NUM_CHANNELS];
+  uint8_t ready[JSD_EL5042_NUM_CHANNELS];
+  uint8_t diag[JSD_EL5042_NUM_CHANNELS];
+  uint8_t txpdo_state[JSD_EL5042_NUM_CHANNELS];
+  uint8_t input_cycle_counter[JSD_EL5042_NUM_CHANNELS];
 } jsd_el5042_state_t;
 
 #ifdef __cplusplus

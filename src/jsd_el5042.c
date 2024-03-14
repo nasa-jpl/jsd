@@ -29,17 +29,14 @@ void jsd_el5042_read(jsd_t* self, uint16_t slave_id) {
       (jsd_el5042_txpdo_t*)self->ecx_context.slavelist[slave_id].inputs;
 
   for (int ch = 0; ch < JSD_EL5042_NUM_CHANNELS; ++ch) {
-    state->adc_value[ch] = txpdo->channel[ch].value;
+    state->position[ch] = txpdo->channel[ch].position;
 
-    // EL5042 has a 0-10V range and a 16-bit integer ADC value. The available
-    // discrete values for that range are 0x0000 - 0x7FFF:
-    // 1/((10-0)/(2^16/2-1))=3276.7 discrete levels/V.
-    state->voltage[ch] = (double)state->adc_value[ch] / 3276.7;
-
-    // EL5042 status data is 1-byte long.
-    state->underrange[ch] = (txpdo->channel[ch].flags >> 0) & 0x01;
-    state->overrange[ch]  = (txpdo->channel[ch].flags >> 1) & 0x01;
-    state->error[ch]      = (txpdo->channel[ch].flags >> 6) & 0x01;
+    state->warning[ch]             = (txpdo->channel[ch].status >> 0) & 0x01;
+    state->error[ch]               = (txpdo->channel[ch].status >> 1) & 0x01;
+    state->ready[ch]               = (txpdo->channel[ch].status >> 2) & 0x01;
+    state->diag[ch]                = (txpdo->channel[ch].status >> 4) & 0x01;
+    state->txpdo_state[ch]         = (txpdo->channel[ch].status >> 5) & 0x01;
+    state->input_cycle_counter[ch] = (txpdo->channel[ch].status >> 6) & 0x03;
   }
 }
 
@@ -74,36 +71,30 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &slave_configs[slave_id];
 
-  // Reset to factory default.
-  uint32_t reset_word = JSD_BECKHOFF_RESET_WORD;
-  if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, JSD_BECKHOFF_RESET_SDO,
-                                  JSD_BECKHOFF_RESET_SUBIND, JSD_SDO_DATA_U32,
-                                  &reset_word)) {
-    return 0;
-  }
-
-  MSG("Configuring slave no: %u, SII inferred name: %s", slave_id,
-      ecx_context->slavelist[slave_id].name);
-  MSG("\t Configured name: %s", config->name);
-
   for (int ch = 0; ch < JSD_EL5042_NUM_CHANNELS; ++ch) {
-    // Index for settings is 0x80n0, where n is channel number (e.g. ch2 =
-    // 0x8010).
-    uint32_t sdo_channel_index = 0x8000 + (0x10 * ch);
+    // Index for settings is 0x80n8, where n is channel number (e.g. ch2 =
+    // 0x8018).
+    uint32_t sdo_channel_index = 0x8008 + (0x10 * ch);
 
-    // Enable digital filter on read inputs (synchronized with timer inside
-    // terminal).
-    uint8_t enable_filter = 1;
-    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x06, JSD_SDO_DATA_U8, &enable_filter)) {
-      return 0;
-    }
+    // Set the encoder supply voltage, either 50 for 5V or 90 for 9V.
+    //uint8_t supply_voltage = 50; // 5V (default)
+    //if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    //0x12, JSD_SDO_DATA_U8, &supply_voltage)) {
+      //return 0;
+    //}
 
-    // Set filter option.
-    uint16_t filter_opt =
-        2;  // 1 kHz IIR filter, fastest rate. Refer to el31xxen.pdf, page 202.
+    // Set the BiSS clock frequency.
+    // 0 -> 10 MHz
+    // 1 -> 5 MHz
+    // 2 -> 3.33 MHz
+    // 3 -> 2.5 MHz
+    // 4 -> 2 MHz
+    // 9 -> 1 MHz
+    // 17 -> 500 kHz
+    // 19 -> 250 kHz
+    uint8_t clock_frequency = 1; // 5 MHz
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x15, JSD_SDO_DATA_U16, &filter_opt)) {
+                                    0x13, JSD_SDO_DATA_U8, &clock_frequency)) {
       return 0;
     }
   }
