@@ -83,6 +83,13 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
       //return 0;
     //}
 
+    // Set the CRC inversion
+    uint8_t CRC_invert = 1; // True correspond to CRC transmitted inverted
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x03, JSD_SDO_DATA_U8, &CRC_invert)) {
+      return 0;
+    }
+
     // Set the BiSS clock frequency.
     // 0 -> 10 MHz
     // 1 -> 5 MHz
@@ -95,6 +102,13 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     uint8_t clock_frequency = 1; // 5 MHz
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x13, JSD_SDO_DATA_U8, &clock_frequency)) {
+      return 0;
+    }
+
+    // Set the number of multiturn bits
+    uint8_t multiturn_bits = 0;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x15, JSD_SDO_DATA_U8, &multiturn_bits)) {
       return 0;
     }
   }
