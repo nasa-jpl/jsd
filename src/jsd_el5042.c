@@ -77,11 +77,11 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     uint32_t sdo_channel_index = 0x8008 + (0x10 * ch);
 
     // Set the encoder supply voltage, either 50 for 5V or 90 for 9V.
-    //uint8_t supply_voltage = 50; // 5V (default)
-    //if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    //0x12, JSD_SDO_DATA_U8, &supply_voltage)) {
-      //return 0;
-    //}
+    uint8_t supply_voltage = 50; // 5V (default)
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x12, JSD_SDO_DATA_U8, &supply_voltage)) {
+      return 0;
+    }
 
     // Set the CRC inversion
     uint8_t CRC_invert = 1; // True correspond to CRC transmitted inverted
@@ -109,6 +109,13 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     uint8_t multiturn_bits = 0;
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x15, JSD_SDO_DATA_U8, &multiturn_bits)) {
+      return 0;
+    }
+
+    // Set the number of singleturn bits
+    uint8_t singleturn_bits = 19;
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x16, JSD_SDO_DATA_U8, &singleturn_bits)) {
       return 0;
     }
   }
