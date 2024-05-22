@@ -53,7 +53,7 @@ include(FetchContent)
 
 # Updated 2022-09-18
 FetchContent_Declare(soem
-  GIT_REPOSITORY $ENV{LOCAL_REPO_FETCH_PATH}/SOEM
+  GIT_REPOSITORY $ENV{CMAKE_LOCAL_FETCH}/SOEM
   GIT_TAG 26fc5dd8e3c8981b4e8f83d736e691417bebacdb
     )
 FetchContent_MakeAvailable(soem)
