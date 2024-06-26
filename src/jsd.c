@@ -12,6 +12,7 @@
 #include "jsd/jsd_el2124.h"
 #include "jsd/jsd_el2809.h"
 #include "jsd/jsd_el2828.h"
+#include "jsd/jsd_el2798.h"
 #include "jsd/jsd_el3104.h"
 #include "jsd/jsd_el3162.h"
 #include "jsd/jsd_el3202.h"
@@ -377,6 +378,8 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
       return "JSD_DRIVER_TYPE_EL2809";
     case JSD_DRIVER_TYPE_EL2828:
       return "JSD_DRIVER_TYPE_EL2828";
+    case JSD_DRIVER_TYPE_EL2798:
+      return "JSD_DRIVER_TYPE_EL2798";
     case JSD_DRIVER_TYPE_EL3104:
       return "JSD_DRIVER_TYPE_EL3104";
     case JSD_DRIVER_TYPE_EL3162:
@@ -488,6 +491,9 @@ bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
     case JSD_DRIVER_TYPE_EL2828:
       is_compatible = jsd_el2828_product_code_is_compatible(product_code);
       break;
+    case JSD_DRIVER_TYPE_EL2798:
+      is_compatible = jsd_el2798_product_code_is_compatible(product_code);
+      break;
     case JSD_DRIVER_TYPE_EGD:
       is_compatible = jsd_egd_product_code_is_compatible(product_code);
       break;
@@ -563,6 +569,9 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_DRIVER_TYPE_EL2828:
       return jsd_el2828_init(self, slave_id);
+      break;
+    case JSD_DRIVER_TYPE_EL2798:
+      return jsd_el2798_init(self, slave_id);
       break;
     case JSD_DRIVER_TYPE_EL2124:
       return jsd_el2124_init(self, slave_id);
