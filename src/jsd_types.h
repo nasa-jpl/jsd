@@ -177,6 +177,7 @@ typedef struct {
   int          expected_wkc;             ///< Expected Working Counter
   int          wkc;                      ///< processdata Working Counter
   int          last_wkc;                 ///< the previous processdata wkc
+  bool         bad_wkc;                  ///< true if experiencing bad Working Counter
   bool         init_complete;            ///< true after jsd_init(...)
   uint8_t      enable_autorecovery;      ///< enables autorecovery feature
   uint8_t      attempt_manual_recovery;  ///< one-time manual recovery attempt
