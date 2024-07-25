@@ -155,7 +155,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
                        self->ecx_context.grouplist[0].inputsWKC;
 
   self->last_wkc = -1;  // -1 is returned on first read
-  self->bad_wkc = false; // We are currently not experiencing a bad working counter
 
   MSG_DEBUG("Calculated workcounter %d", self->expected_wkc);
 
@@ -233,13 +232,11 @@ void jsd_read(jsd_t* self, int timeout_us) {
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
   self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
-    self->bad_wkc = true;
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
   }
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
-      self->bad_wkc = false;
       MSG("ecx_receive_processdata is no longer reading bad wkc");
     }
   }
