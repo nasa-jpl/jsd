@@ -165,8 +165,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
   ecx_send_overlap_processdata(&self->ecx_context);
-  uint64_t *bad_wkc_indices;
-  *bad_wkc_indices = 0;
+  uint64 bad_wkc_indices_val = 0;
+  uint64* bad_wkc_indices = &bad_wkc_indices_val;
   ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
 
   ecx_writestate(&self->ecx_context, 0);
@@ -174,8 +174,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    uint64_t *bad_wkc_indices;
-    *bad_wkc_indices = 0;
+    uint64 bad_wkc_indices_val = 0;
+    uint64* bad_wkc_indices = &bad_wkc_indices_val;
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
@@ -234,8 +234,8 @@ void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
-  uint64* bad_wkc_indices;
-  *bad_wkc_indices = 0;
+  uint64 bad_wkc_indices_val = 0;
+  uint64* bad_wkc_indices = &bad_wkc_indices_val;
   self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us, bad_wkc_indices);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
@@ -250,7 +250,7 @@ void jsd_read(jsd_t* self, int timeout_us) {
     for (slave_idx = 1; slave_idx < num_slaves; slave_idx++) {
       ec_slavet* slave = &slaves[slave_idx];
       // Go through every bit and see if any device was set to 1 due to bad wkc
-      bool bad_device_wkc = *bad_wkc_indices & (1 << slave_idx); 
+      bool bad_device_wkc = bad_wkc_indices_val & (1 << slave_idx); 
       if (bad_device_wkc) {
         WARNING("Device (%s) index caused a bad working counter: %d", slave->name, slave_idx);
       }
