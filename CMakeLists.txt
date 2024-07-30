@@ -53,7 +53,7 @@ include(FetchContent)
 
 # Updated 2022-09-18
 FetchContent_Declare(soem
-  GIT_REPOSITORY git@github.com:preston-rogers/SOEM.git
+  GIT_REPOSITORY https://github.com/preston-rogers/SOEM.git
   GIT_TAG prestonr-feature-add-wkc-driver-saves
     )
 FetchContent_MakeAvailable(soem)
