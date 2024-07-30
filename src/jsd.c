@@ -241,13 +241,13 @@ void jsd_read(jsd_t* self, int timeout_us) {
     // slavecount does not include the 0 index virtual device master
     assert(num_slaves + 1 <= 64); // We can only keep track of 64 slaves (TODO: check if master is included in this number) 
     ec_slavet* slaves = self->ecx_context.slavelist;
-    uint16_t   slave_idx;
+    uint64_t   slave_idx;
 
     // slavecount does not include the 0 index virtual device master
     for (slave_idx = 1; slave_idx < num_slaves + 1; ++slave_idx) {
       ec_slavet* slave = &slaves[slave_idx];
       // Go through every bit and see if any device was set to 1 due to bad wkc
-      bool bad_device_wkc = bad_wkc_indices & (1 << slave_idx); 
+      bool bad_device_wkc = *bad_wkc_indices & (1 << slave_idx); 
       if (bad_device_wkc) {
         WARNING("Device (%s) index caused a bad working counter: %d", slave->name, device_idx);
       }
