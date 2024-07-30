@@ -230,11 +230,30 @@ void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
-  self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
+  uint64* bad_wkc_indices;
+  *bad_wkc_indices = 0;
+  self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us, bad_wkc_indices);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
+ 
+    uint16_t num_slaves = *(self->ecx_context.slavecount);
+    // slavecount does not include the 0 index virtual device master
+    assert(num_slaves + 1 <= 64); // We can only keep track of 64 slaves (TODO: check if master is included in this number) 
+    ec_slavet* slaves = self->ecx_context.slavelist;
+    uint16_t   slave_idx;
+
+    // slavecount does not include the 0 index virtual device master
+    for (slave_idx = 1; slave_idx < num_slaves + 1; ++slave_idx) {
+      ec_slavet* slave = &slaves[slave_idx];
+      // Go through every bit and see if any device was set to 1 due to bad wkc
+      bool bad_device_wkc = bad_wkc_indices & (1 << slave_idx); 
+      if (bad_device_wkc) {
+        WARNING("Device (%s) index caused a bad working counter: %d", slave->name, device_idx);
+      }
+    }
   }
+  
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
       MSG("ecx_receive_processdata is not longer reading bad wkc");
