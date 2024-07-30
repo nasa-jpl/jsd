@@ -165,14 +165,18 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
   ecx_send_overlap_processdata(&self->ecx_context);
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+  uint64_t *bad_wkc_indices;
+  *bad_wkc_indices = 0;
+  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
 
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    uint64_t *bad_wkc_indices;
+    *bad_wkc_indices = 0;
+    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
