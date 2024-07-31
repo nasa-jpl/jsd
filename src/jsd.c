@@ -237,7 +237,7 @@ void jsd_inspect_context(jsd_t* self) {
 
   ec_state bus_state = jsd_get_device_state(self, 0);
 
-  /* first check if the jsd bus is operational so we can ge tmore info */
+  /* first check if the jsd bus is operational so we can get more info */
   if (bus_state != EC_STATE_OPERATIONAL) {
     ERROR("JSD bus is not OPERATIONAL.");
     return;
