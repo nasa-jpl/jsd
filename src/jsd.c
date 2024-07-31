@@ -197,6 +197,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
+      jsd_inspect_context(self);
+
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
         ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
         return false;
@@ -227,6 +229,48 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   SUCCESS("JSD is Operational");
 
   return true;
+}
+
+void jsd_inspect_context(jsd_t* self) {
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  int     slave;
+  int     total_operational_devices = 0;
+
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can get more info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+    return;
+  }
+
+  /* one or more slaves may not be responding */
+  for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+    if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
+
+    /* re-check bad slave individually */
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+    if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      if (self->ecx_context.slavelist[slave].state ==
+          (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+      } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
+        ERROR("slave[%d] is in SAFE_OP.", slave);
+      } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
+      } else {
+        ERROR("slave[%d] is lost", slave);
+      }
+    }
+    else {
+      MSG("slave[%d] is OPERATIONAL.", slave);
+      total_operational_devices++;
+    }
+  }
+
+  if (total_operational_devices == *self->ecx_context.slavecount) {
+    MSG("All slaves were operational at time of working counter fault.");
+  }
 }
 
 void jsd_read(jsd_t* self, int timeout_us) {
