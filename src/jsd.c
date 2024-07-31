@@ -198,6 +198,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
+      jsd_inspect_context(self);
+
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
         ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
         return false;
