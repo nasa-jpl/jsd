@@ -230,6 +230,54 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   return true;
 }
 
+void jsd_inspect_context(jsd_t* self) {
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  int     slave;
+  int     total_operational_devices = 0;
+
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can ge tmore info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+    return;
+  }
+
+  /* one or more slaves may not be responding */
+  ecx_readstate(&self->ecx_context);
+  for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+
+    if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
+
+    if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      if (self->ecx_context.slavelist[slave].state ==
+          (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+      } else if (self->ecx_context.slavelist[slave].state ==
+                  EC_STATE_SAFE_OP) {
+        ERROR("slave[%d] is in SAFE_OP.", slave);
+      } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
+        ERROR("slave[%d] is in state with hexadecimal: %x", self->ecx_context.slavelist[slave].state);
+      } else {
+        /* re-check bad slave individually */
+        ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL,
+                        EC_TIMEOUTRET);
+        if (self->ecx_context.slavelist[slave].state == EC_STATE_NONE) {
+          ERROR("slave[%d] is lost", slave);
+        }
+      }
+    }
+    else {
+      MSG("slave[%d] is OPERATIONAL.", slave);
+      total_operational_devices++;
+    }
+  }
+
+  if (total_operational_devices == *self->ecx_context.slavecount) {
+    MSG("All slaves were operational at time of working counter fault.", slave);
+  }
+}
+
 void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
@@ -240,21 +288,6 @@ void jsd_read(jsd_t* self, int timeout_us) {
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
- 
-    uint16_t num_slaves = *(self->ecx_context.slavecount) + 1; // slavecount does not include the 0 index virtual device master
-    assert(num_slaves <= 64); // We can only keep track of 64 slaves (TODO: check if master is included in this number) 
-    ec_slavet* slaves = self->ecx_context.slavelist;
-    uint16_t   slave_idx;
-
-    // slavecount does not include the 0 index virtual device master
-    for (slave_idx = 1; slave_idx < num_slaves; slave_idx++) {
-      ec_slavet* slave = &slaves[slave_idx];
-      // Go through every bit and see if any device was set to 1 due to bad wkc
-      bool bad_device_wkc = bad_wkc_indices_val & (1 << slave_idx); 
-      if (bad_device_wkc) {
-        WARNING("Device (%s) index caused a bad working counter: %d", slave->name, slave_idx);
-      }
-    }
   }
   
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
