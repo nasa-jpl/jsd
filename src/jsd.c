@@ -244,27 +244,21 @@ void jsd_inspect_context(jsd_t* self) {
   }
 
   /* one or more slaves may not be responding */
-  ecx_readstate(&self->ecx_context);
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
-
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
 
+    /* re-check bad slave individually */
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
         ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
-      } else if (self->ecx_context.slavelist[slave].state ==
-                  EC_STATE_SAFE_OP) {
+      } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
         ERROR("slave[%d] is in SAFE_OP.", slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
         ERROR("slave[%d] is in state with hexadecimal: %x", self->ecx_context.slavelist[slave].state);
       } else {
-        /* re-check bad slave individually */
-        ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL,
-                        EC_TIMEOUTRET);
-        if (self->ecx_context.slavelist[slave].state == EC_STATE_NONE) {
-          ERROR("slave[%d] is lost", slave);
-        }
+        ERROR("slave[%d] is lost", slave);
       }
     }
     else {
