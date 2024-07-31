@@ -256,7 +256,7 @@ void jsd_inspect_context(jsd_t* self) {
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
         ERROR("slave[%d] is in SAFE_OP.", slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
-        ERROR("slave[%d] is in state with hexadecimal: %x", self->ecx_context.slavelist[slave].state);
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
       } else {
         ERROR("slave[%d] is lost", slave);
       }
@@ -268,7 +268,7 @@ void jsd_inspect_context(jsd_t* self) {
   }
 
   if (total_operational_devices == *self->ecx_context.slavecount) {
-    MSG("All slaves were operational at time of working counter fault.", slave);
+    MSG("All slaves were operational at time of working counter fault.");
   }
 }
 
