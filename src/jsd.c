@@ -248,7 +248,7 @@ void jsd_inspect_context(jsd_t* self) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
 
     /* re-check bad slave individually */
-    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET3);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
