@@ -241,7 +241,6 @@ void jsd_inspect_context(jsd_t* self) {
   /* first check if the jsd bus is operational so we can get more info */
   if (bus_state != EC_STATE_OPERATIONAL) {
     ERROR("JSD bus is not OPERATIONAL. Current bus state: %d", bus_state);
-    return;
   }
 
   /* one or more slaves may not be responding */
