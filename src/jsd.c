@@ -268,7 +268,7 @@ void jsd_inspect_context(jsd_t* self) {
   }
 
   if (total_operational_devices == *self->ecx_context.slavecount) {
-    MSG("All slaves were operational at time of working counter fault.");
+    MSG("All slaves were operational at time of working counter fault. Issue likely due to timeout.");
   }
 }
 
