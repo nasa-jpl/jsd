@@ -246,23 +246,23 @@ void jsd_inspect_context(jsd_t* self) {
   /* one or more slaves may not be responding */
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
-
+    int slave_id = (int)self->ecx_context.slavelist[slave].eep_id;
     /* re-check bad slave individually */
     ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET3);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+        ERROR("slave[%d] (ID: %8.8x) is in SAFE_OP + ERROR.", slave, slave_id);
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
-        ERROR("slave[%d] is in SAFE_OP.", slave);
+        ERROR("slave[%d] (ID: %8.8x) is in SAFE_OP.", slave, slave_id);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
-        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
+        ERROR("slave[%d] (ID: %8.8x) is in state with hexadecimal: %x", slave, slave_id, self->ecx_context.slavelist[slave].state);
       } else {
-        ERROR("slave[%d] is lost", slave);
+        ERROR("slave[%d] (ID: %8.8x) is lost", slave, slave_id);
       }
     }
     else {
-      MSG("slave[%d] is OPERATIONAL.", slave);
+      MSG("slave[%d] (ID: %8.8x) is OPERATIONAL.", slave, slave_id);
       total_operational_devices++;
     }
   }
