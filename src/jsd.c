@@ -271,7 +271,7 @@ void jsd_inspect_context(jsd_t* self) {
     MSG("All slaves were operational at time of working counter fault. Issue likely due to timeout.");
   }
   else {
-    MSG("Some slaves were not operational. Error list displayed below:\n %s", ecx_elist2string(self->ecx_context));
+    MSG("Some slaves were not operational. Error list displayed below:\n %s", ecx_elist2string(&self->ecx_context));
   }
 }
 
