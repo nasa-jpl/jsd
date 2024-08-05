@@ -242,7 +242,6 @@ void jsd_inspect_context(jsd_t* self) {
   /* first check if the jsd bus is operational so we can get more info */
   if (bus_state != EC_STATE_OPERATIONAL) {
     ERROR("JSD bus is not OPERATIONAL.");
-    return;
   }
 
   /* one or more slaves may not be responding */
@@ -271,6 +270,9 @@ void jsd_inspect_context(jsd_t* self) {
 
   if (total_operational_devices == *self->ecx_context.slavecount) {
     MSG("All slaves were operational at time of working counter fault.");
+  }
+  else {
+    MSG("Some slaves were not operational. Error list displayed below:\n %s", ecx_elist2string(self->ecx_context));
   }
 }
 
