@@ -228,17 +228,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   return true;
 }
 
-void jsd_inspect_context(jsd_t* self) {
-  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
-  int     slave;
-  int     total_operational_devices = 0;
-
-  ec_state bus_state = jsd_get_device_state(self, 0);
-
-  /* first check if the jsd bus is operational so we can get more info */
-  if (bus_state != EC_STATE_OPERATIONAL) {
-    ERROR("JSD bus is not OPERATIONAL.");
-  }
+bool jsd_all_slaves_operational(jsd_t* self) {
+  int slave;
+  bool all_slaves_operational = true;
 
   /* one or more slaves may not be responding */
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
@@ -247,6 +239,7 @@ void jsd_inspect_context(jsd_t* self) {
     /* re-check bad slave individually */
     ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      all_slaves_operational = false;
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
         ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
@@ -260,11 +253,22 @@ void jsd_inspect_context(jsd_t* self) {
     }
     else {
       MSG("slave[%d] is OPERATIONAL.", slave);
-      total_operational_devices++;
     }
   }
 
-  if (total_operational_devices == *self->ecx_context.slavecount) {
+  return all_slaves_operational;
+}
+
+void jsd_inspect_context(jsd_t* self) {
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can get more info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+  }
+
+  if (jsd_all_slaves_operational(self)) {
     MSG("All slaves were operational at time of working counter fault.");
   }
   else {
