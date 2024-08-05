@@ -165,18 +165,14 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
   ecx_send_overlap_processdata(&self->ecx_context);
-  uint64 bad_wkc_indices_val = 0;
-  uint64* bad_wkc_indices = &bad_wkc_indices_val;
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
+  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    uint64 bad_wkc_indices_val = 0;
-    uint64* bad_wkc_indices = &bad_wkc_indices_val;
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET, bad_wkc_indices);
+    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
@@ -280,9 +276,7 @@ void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
-  uint64 bad_wkc_indices_val = 0;
-  uint64* bad_wkc_indices = &bad_wkc_indices_val;
-  self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us, bad_wkc_indices);
+  self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
