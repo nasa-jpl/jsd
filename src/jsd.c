@@ -281,7 +281,6 @@ void jsd_read(jsd_t* self, int timeout_us) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
   }
-  
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
       MSG("ecx_receive_processdata is not longer reading bad wkc");
