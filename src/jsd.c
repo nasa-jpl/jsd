@@ -278,7 +278,7 @@ void jsd_inspect_context(jsd_t* self) {
       MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
           "All error information displayed below:\n");
       while (self->ecx_context.ecaterror) {
-        MSG("Information about error idx (%d) on elist stack:\n %s", self->ecx_context.elist->tail, ecx_elist2string(&self->ecx_context));
+        MSG("Head: %d, Tail: %d, Information about error on elist stack:\n %s", self->ecx_context.elist->head, self->ecx_context.elist->tail, ecx_elist2string(&self->ecx_context));
       }
       MSG("Went through all errors in the elist stackQ");
     }
