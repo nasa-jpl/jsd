@@ -231,48 +231,59 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   return true;
 }
 
-void jsd_inspect_context(jsd_t* self) {
-  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
-  int     slave;
-  int     total_operational_devices = 0;
-
-  ec_state bus_state = jsd_get_device_state(self, 0);
-
-  /* first check if the jsd bus is operational so we can get more info */
-  if (bus_state != EC_STATE_OPERATIONAL) {
-    ERROR("JSD bus is not OPERATIONAL. Current bus state: %x", bus_state);
-  }
+bool jsd_all_slaves_operational(jsd_t* self) {
+  int slave;
+  bool all_slaves_operational = true;
 
   /* one or more slaves may not be responding */
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
-    int slave_id = (int)self->ecx_context.slavelist[slave].eep_id;
     /* re-check bad slave individually */
-    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET3);
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      all_slaves_operational = false;
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-        ERROR("slave[%d] (ID: %8.8x) is in SAFE_OP + ERROR.", slave, slave_id);
+        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
-        ERROR("slave[%d] (ID: %8.8x) is in SAFE_OP.", slave, slave_id);
+        ERROR("slave[%d] is in SAFE_OP.", slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
-        ERROR("slave[%d] (ID: %8.8x) is in state with hexadecimal: %x", slave, slave_id, self->ecx_context.slavelist[slave].state);
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
       } else {
-        ERROR("slave[%d] (ID: %8.8x) is lost", slave, slave_id);
+        ERROR("slave[%d] is lost", slave);
       }
     }
     else {
-      MSG("slave[%d] (ID: %8.8x) is OPERATIONAL.", slave, slave_id);
-      total_operational_devices++;
+      MSG("slave[%d] is OPERATIONAL.", slave);
     }
   }
 
-  if (total_operational_devices == *self->ecx_context.slavecount) {
-    MSG("All slaves were operational at time of working counter fault. Issue likely due to timeout.");
+  return all_slaves_operational;
+}
+
+void jsd_inspect_context(jsd_t* self) {
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can get more info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+  }
+
+  if (jsd_all_slaves_operational(self)) {
+    MSG("All slaves were operational at time of working counter fault.");
   }
   else {
-    MSG("Some slaves were not operational. Error list displayed below:\n %s", ecx_elist2string(&self->ecx_context));
+    MSG("Some slaves were not operational.");
+    if (self->ecx_context.ecaterror) {
+      MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
+          "Error list displayed below:\n %s", ecx_elist2string(self->ecx_context));
+    }
+    else {
+      MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
+    }
   }
+
 }
 
 void jsd_read(jsd_t* self, int timeout_us) {
