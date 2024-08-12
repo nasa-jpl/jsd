@@ -282,7 +282,7 @@ void jsd_inspect_context(jsd_t* self) {
       //  MSG("Head: %d, Tail: %d, Information about error on elist stack:\n %s", self->ecx_context.elist->head, self->ecx_context.elist->tail, ecx_elist2string(&self->ecx_context));
       //  total_messages++;
       //}
-      int count = 0;
+      int count =  0;
       while(self->ecx_context.ecaterror && count < 30) {
         MSG("%s", ecx_elist2string(&self->ecx_context));
         count++;
