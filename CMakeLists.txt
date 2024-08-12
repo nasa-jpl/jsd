@@ -13,7 +13,7 @@ add_compile_options(
     -Wno-missing-field-initializers
     )
 
-add_definitions(-DEC_DEBUG)
+#add_definitions(-DEC_DEBUG)
 
 if(DISABLE_DEBUG_PRINTS)
     remove_definitions(-DDEBUG)
