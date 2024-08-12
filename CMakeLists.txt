@@ -91,13 +91,14 @@ else()
 endif()
 
 ######### Install Rules #########
-if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(CMAKE_INSTALL_PREFIX /opt/jsd)
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/include/jsd DESTINATION include)
-    install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION bin)
-    install(TARGETS jsd-lib DESTINATION lib)
-    install(TARGETS jsd_slaveinfo DESTINATION bin)
+if(CMAKE_INSTALL_PREFIX_INITIALIZED_TO_DEFAULT)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_BINARY_DIR}/install")
 endif()
+
+install(DIRECTORY ${CMAKE_BINARY_DIR}/include/jsd DESTINATION include)
+install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION bin)
+install(TARGETS jsd-lib DESTINATION lib)
+install(TARGETS jsd_slaveinfo DESTINATION bin)
 
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
 
