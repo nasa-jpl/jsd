@@ -282,7 +282,12 @@ void jsd_inspect_context(jsd_t* self) {
       //  MSG("Head: %d, Tail: %d, Information about error on elist stack:\n %s", self->ecx_context.elist->head, self->ecx_context.elist->tail, ecx_elist2string(&self->ecx_context));
       //  total_messages++;
       //}
-      MSG("Went through all errors in the elist stack");
+      count = 0;
+      while(self->ecx_context.ecaterror && count < 30) {
+        MSG("%s", ecx_elist2string(&self->ecx_context));
+        count++;
+      }
+      MSG("Went through all errors in the elist stack or count max reached");
     }
     else {
       MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
