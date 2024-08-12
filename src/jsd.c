@@ -165,19 +165,21 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   MSG_DEBUG("Performing first PDO exchange, required before transition to OP");
 
-  for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
-    self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
-  }
+  self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
   ecx_send_overlap_processdata(&self->ecx_context);
   ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
+  for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
+    self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
+  }
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
@@ -190,6 +192,20 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       WARNING("Did not reach %s, actual state is %s",
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
+              
+      for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+        if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+            MSG_DEBUG("ERROR : slave %d is in SAFE_OP + ERROR, attempting ack.\n", sid);
+            self->ecx_context.slavelist[sid].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
+            ecx_writestate(&self->ecx_context, sid);
+        }
+        else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
+            MSG_DEBUG("WARNING : slave %d is in SAFE_OP, change to OPERATIONAL.\n", sid);
+            self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
+            ecx_writestate(&self->ecx_context, sid);      
+        }
+      }
+
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
       }
