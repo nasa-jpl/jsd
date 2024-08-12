@@ -165,7 +165,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   MSG_DEBUG("Performing first PDO exchange, required before transition to OP");
 
-  self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
+  for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
+    self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
+  }
 
   ecx_send_overlap_processdata(&self->ecx_context);
   ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
