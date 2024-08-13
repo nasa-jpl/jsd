@@ -231,7 +231,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 bool jsd_all_slaves_operational(jsd_t* self) {
   int slave;
   bool all_slaves_operational = true;
-
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   /* one or more slaves may not be responding */
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
