@@ -229,9 +229,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       }
     }
     jsd_ecatcheck(self);
-    self->ecx_context.grouplist[currentgroup].docheckstate = true;
+    self->ecx_context.grouplist[0].docheckstate = true;
 
-    if (!self->ecx_context.grouplist[currentgroup].docheckstate) {
+    if (!self->ecx_context.grouplist[0].docheckstate) {
       MSG_DEBUG("jsd_ecatcheck worked! All slaves resumed OPERATIONAL.\n");
       break;
     }
