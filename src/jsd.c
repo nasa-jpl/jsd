@@ -275,13 +275,14 @@ void jsd_inspect_context(jsd_t* self) {
     MSG("Some slaves were not operational.");
     if (self->ecx_context.ecaterror) {
       MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
-          "Error list displayed below:\n %s", ecx_elist2string(self->ecx_context));
+          "Errors in error list displayed below:\n");
+      while(self->ecx_context.ecaterror) MSG("%s\n", ecx_elist2string(&self->ecx_context));
+      MSG("Went through all errors in the elist stack.\n");
     }
     else {
       MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
     }
   }
-
 }
 
 void jsd_read(jsd_t* self, int timeout_us) {
