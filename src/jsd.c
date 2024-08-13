@@ -191,7 +191,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     clock_gettime(CLOCK_REALTIME, &start_processdata_time);
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, timeout_us);
-      
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
