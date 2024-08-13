@@ -86,7 +86,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
   self->slave_configs[slave_id] = slave_config;
 }
 
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int loop_period_us) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
@@ -167,81 +167,35 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
+
+  struct timespec start_processdata_time;
+  clock_gettime(CLOCK_REALTIME, &start_processdata_time);
   ecx_send_overlap_processdata(&self->ecx_context);
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+  ecx_receive_processdata(&self->ecx_context, loop_period_us);
 
   ecx_writestate(&self->ecx_context, 0);
 
-  for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
-    self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
-    sleep(1);
-    ecx_readstate(&self->ecx_context);
-    if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first writestate.\n", sid);
-    }
-    if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first writestate.\n", sid);
-    }
-    else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP after first writestate.\n", sid);
-    }
-    else {
-      MSG_DEBUG("~~ Slave %d is not in the basic three states after first writestate.\n", sid);
-    }
-  }
-
   int attempt = 0;
   while (true) {
-    int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
-
-    for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
-      ecx_readstate(&self->ecx_context);
-      if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first processdata.\n", sid);
-      }
-      if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first processdata.\n", sid);
-      }
-      else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP after first processdata.\n", sid);
-      }
-      else {
-        MSG_DEBUG("~~ Slave %d is not in the basic three states after first processdata.\n", sid);
-      }
-    }
-
-    for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
-      ecx_writestate(&self->ecx_context, sid);
-      sleep(1);
-      ecx_readstate(&self->ecx_context);
-      if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after second writestate.\n", sid);
-      }
-      if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after second writestate.\n", sid);
-      }
-      else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-        MSG_DEBUG("~~ Slave %d is in SAFE_OP after second writestate.\n", sid);
-      }
-      else {
-        MSG_DEBUG("~~ Slave %d is not in the basic three states after second writestate.\n", sid);
-      }
-    }
-    jsd_ecatcheck(self);
-    self->ecx_context.grouplist[0].docheckstate = true;
-
-    if (!self->ecx_context.grouplist[0].docheckstate) {
-      MSG_DEBUG("jsd_ecatcheck worked! All slaves resumed OPERATIONAL.\n");
-      break;
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    if ((start_processdata_time->tv_nsec - current_time->tv_nsec)/1e3 > loop_period_us) {
+      MSG_DEBUG("Went over the loop period!");
     }
     else {
-      MSG_DEBUG("jsd_ecatcheck did not work!\n");
+      struct timespec diff;
+      diff->tv_sec = current_time->tv_sec - start_processdata_time->tv_sec;
+      diff->tv_nsec = current_time->tv_nsec - start_processdata_time->tv_nsec;
+      if (nanosleep(&diff, NULL) < 0) {
+        perror("nanosleep failed");
+        return 1;
+      }
     }
+    
+    clock_gettime(CLOCK_REALTIME, &start_processdata_time);
+    int sent = ecx_send_overlap_processdata(&self->ecx_context);
+    int wkc  = ecx_receive_processdata(&self->ecx_context, loop_period_us);
       
-    sleep(5);
-    MSG_DEBUG("\n\n\n");
-
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
