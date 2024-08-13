@@ -83,7 +83,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
   self->slave_configs[slave_id] = slave_config;
 }
 
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int timeout_us) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
