@@ -170,22 +170,23 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   ecx_send_overlap_processdata(&self->ecx_context);
   ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
+  ecx_writestate(&self->ecx_context, 0);
+
   for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
     self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
-    ecx_writestate(&self->ecx_context, sid);
     sleep(1);
     ecx_readstate(&self->ecx_context);
     if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after writestate.\n", sid);
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first writestate.\n", sid);
     }
     if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after writestate.\n", sid);
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first writestate.\n", sid);
     }
     else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-      MSG_DEBUG("~~ Slave %d is in SAFE_OP after writestate.\n", sid);
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP after first writestate.\n", sid);
     }
     else {
-      MSG_DEBUG("~~ Slave %d is not in the basic three states after writestate.\n", sid);
+      MSG_DEBUG("~~ Slave %d is not in the basic three states after first writestate.\n", sid);
     }
   }
 
@@ -194,7 +195,52 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
-    // jsd_ecatcheck(self);
+    for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
+      ecx_readstate(&self->ecx_context);
+      if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first processdata.\n", sid);
+      }
+      if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after first processdata.\n", sid);
+      }
+      else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP after first processdata.\n", sid);
+      }
+      else {
+        MSG_DEBUG("~~ Slave %d is not in the basic three states after first processdata.\n", sid);
+      }
+    }
+
+    for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
+      ecx_writestate(&self->ecx_context, sid);
+      sleep(1);
+      ecx_readstate(&self->ecx_context);
+      if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after second writestate.\n", sid);
+      }
+      if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after second writestate.\n", sid);
+      }
+      else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
+        MSG_DEBUG("~~ Slave %d is in SAFE_OP after second writestate.\n", sid);
+      }
+      else {
+        MSG_DEBUG("~~ Slave %d is not in the basic three states after second writestate.\n", sid);
+      }
+    }
+    jsd_ecatcheck(self);
+    self->ecx_context.grouplist[currentgroup].docheckstate = true;
+
+    if (!self->ecx_context.grouplist[currentgroup].docheckstate) {
+      MSG_DEBUG("jsd_ecatcheck worked! All slaves resumed OPERATIONAL.\n");
+      break;
+    }
+    else {
+      MSG_DEBUG("jsd_ecatcheck did not work!\n");
+    }
+      
+    sleep(5);
+    MSG_DEBUG("\n\n\n");
 
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
@@ -208,19 +254,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       WARNING("Did not reach %s, actual state is %s",
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
-              
-      //for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
-      //  if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-      //      MSG_DEBUG("ERROR : slave %d is in SAFE_OP + ERROR, attempting ack.\n", sid);
-      //      self->ecx_context.slavelist[sid].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
-      //      ecx_writestate(&self->ecx_context, sid);
-      //  }
-      //  else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-      //      MSG_DEBUG("WARNING : slave %d is in SAFE_OP, change to OPERATIONAL.\n", sid);
-      //      self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
-      //      ecx_writestate(&self->ecx_context, sid);      
-      //  }
-      //}
 
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
