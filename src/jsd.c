@@ -193,18 +193,18 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
               
-      for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
-        if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
-            MSG_DEBUG("ERROR : slave %d is in SAFE_OP + ERROR, attempting ack.\n", sid);
-            self->ecx_context.slavelist[sid].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
-            ecx_writestate(&self->ecx_context, sid);
-        }
-        else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
-            MSG_DEBUG("WARNING : slave %d is in SAFE_OP, change to OPERATIONAL.\n", sid);
-            self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
-            ecx_writestate(&self->ecx_context, sid);      
-        }
-      }
+      //for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+      //  if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+      //      MSG_DEBUG("ERROR : slave %d is in SAFE_OP + ERROR, attempting ack.\n", sid);
+      //      self->ecx_context.slavelist[sid].state = (EC_STATE_SAFE_OP + EC_STATE_ACK);
+      //      ecx_writestate(&self->ecx_context, sid);
+      //  }
+      //  else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
+      //      MSG_DEBUG("WARNING : slave %d is in SAFE_OP, change to OPERATIONAL.\n", sid);
+      //      self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
+      //      ecx_writestate(&self->ecx_context, sid);      
+      //  }
+      //}
 
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
