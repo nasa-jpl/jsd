@@ -208,7 +208,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Did not reach %s, actual state is %s",
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
-
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
       }
@@ -297,24 +296,14 @@ void jsd_inspect_context(jsd_t* self) {
     MSG("Some slaves were not operational.");
     if (self->ecx_context.ecaterror) {
       MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
-          "All error information displayed below:\n");
-      //int total_messages = 0;
-      //while (self->ecx_context.ecaterror && total_messages < EC_MAXELIST) {
-      //  MSG("Head: %d, Tail: %d, Information about error on elist stack:\n %s", self->ecx_context.elist->head, self->ecx_context.elist->tail, ecx_elist2string(&self->ecx_context));
-      //  total_messages++;
-      //}
-      int count =  0;
-      while(self->ecx_context.ecaterror && count < 30) {
-        MSG("%s", ecx_elist2string(&self->ecx_context));
-        count++;
-      }
-      MSG("Went through all errors in the elist stack or count max reached");
+          "Errors in error list displayed below:\n");
+      while(self->ecx_context.ecaterror) MSG("%s\n", ecx_elist2string(&self->ecx_context));
+      MSG("Went through all errors in the elist stack.\n");
     }
     else {
       MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
     }
   }
-
 }
 
 void jsd_read(jsd_t* self, int timeout_us) {
