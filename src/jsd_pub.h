@@ -51,7 +51,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
  * @param enable_autorecovery enables automatic recovery of lost devices
  * @return true on successful SOEM initialization
  */
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery);
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int loop_period_us);
 
 /**
  * @brief Determines if all slaves are operational via individual slave queries
