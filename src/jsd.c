@@ -260,7 +260,6 @@ bool jsd_all_slaves_operational(jsd_t* self) {
 }
 
 void jsd_inspect_context(jsd_t* self) {
-  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   ec_state bus_state = jsd_get_device_state(self, 0);
 
   /* first check if the jsd bus is operational so we can get more info */
