@@ -164,15 +164,34 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
+  struct timespec start_processdata_time;
+  clock_gettime(CLOCK_REALTIME, &start_processdata_time);
   ecx_send_overlap_processdata(&self->ecx_context);
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+  ecx_receive_processdata(&self->ecx_context, timeout_us);
 
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    if ((start_processdata_time.tv_nsec - current_time.tv_nsec)/1e3 > timeout_us) {
+      MSG_DEBUG("Went over the loop period!");
+    }
+    else {
+      struct timespec diff;
+      diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
+      diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      if (nanosleep(&diff, NULL) < 0) {
+        perror("nanosleep failed");
+        return 1;
+      }
+    }
+    
+    clock_gettime(CLOCK_REALTIME, &start_processdata_time);
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    int wkc  = ecx_receive_processdata(&self->ecx_context, timeout_us);
+      
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
@@ -185,6 +204,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       WARNING("Did not reach %s, actual state is %s",
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
+
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
       }
@@ -193,6 +213,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       }
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
+
+      jsd_inspect_context(self);
 
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
         ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
