@@ -172,13 +172,29 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   for (sid = 0; sid <= *self->ecx_context.slavecount; sid++) {
     self->ecx_context.slavelist[sid].state = EC_STATE_OPERATIONAL;
+    ecx_writestate(&self->ecx_context, sid);
+    sleep(1);
+    ecx_readstate(&self->ecx_context);
+    if (self->ecx_context.slavelist[sid].state == (EC_STATE_OPERATIONAL)) {
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after writestate.\n", sid);
+    }
+    if (self->ecx_context.slavelist[sid].state == (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP + ERROR after writestate.\n", sid);
+    }
+    else if(self->ecx_context.slavelist[sid].state == EC_STATE_SAFE_OP) {
+      MSG_DEBUG("~~ Slave %d is in SAFE_OP after writestate.\n", sid);
+    }
+    else {
+      MSG_DEBUG("~~ Slave %d is not in the basic three states after writestate.\n", sid);
+    }
   }
-  ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+
+    // jsd_ecatcheck(self);
 
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
