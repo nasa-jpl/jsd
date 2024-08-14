@@ -23,7 +23,7 @@ int main() {
   jsd_set_slave_config(jsd, slave_id, my_config);
 
   // Slave configuration must come before initialization
-  if (!jsd_init(jsd, "eth9", 1)) {
+  if (!jsd_init(jsd, "eth9", 1, EC_TIMEOUTRET)) {
     ERROR("Could not init jsd");
     return 0;
   }

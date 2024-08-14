@@ -86,7 +86,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
   self->slave_configs[slave_id] = slave_config;
 }
 
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int timeout_us) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
@@ -167,15 +167,35 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
+
+  struct timespec start_processdata_time;
+  clock_gettime(CLOCK_REALTIME, &start_processdata_time);
   ecx_send_overlap_processdata(&self->ecx_context);
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+  ecx_receive_processdata(&self->ecx_context, timeout_us);
 
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    if ((start_processdata_time.tv_nsec - current_time.tv_nsec)/1e3 > timeout_us) {
+      MSG_DEBUG("Went over the loop period!");
+    }
+    else {
+      struct timespec diff;
+      diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
+      diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      if (nanosleep(&diff, NULL) < 0) {
+        perror("nanosleep failed");
+        return 1;
+      }
+    }
+    
+    clock_gettime(CLOCK_REALTIME, &start_processdata_time);
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    int wkc  = ecx_receive_processdata(&self->ecx_context, timeout_us);
+      
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
@@ -196,6 +216,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
       }
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
+
+      jsd_inspect_context(self);
 
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
         ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
@@ -227,6 +249,61 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   SUCCESS("JSD is Operational");
 
   return true;
+}
+
+bool jsd_all_slaves_operational(jsd_t* self) {
+  int slave;
+  bool all_slaves_operational = true;
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  /* one or more slaves may not be responding */
+  for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+    if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
+    /* re-check bad slave individually */
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+    if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      all_slaves_operational = false;
+      if (self->ecx_context.slavelist[slave].state ==
+          (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+      } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
+        ERROR("slave[%d] is in SAFE_OP.", slave);
+      } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
+      } else {
+        ERROR("slave[%d] is lost", slave);
+      }
+    }
+    else {
+      MSG("slave[%d] is OPERATIONAL.", slave);
+    }
+  }
+
+  return all_slaves_operational;
+}
+
+void jsd_inspect_context(jsd_t* self) {
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can get more info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+  }
+
+  if (jsd_all_slaves_operational(self)) {
+    MSG("All slaves were operational at time of working counter fault.");
+  }
+  else {
+    MSG("Some slaves were not operational.");
+    if (self->ecx_context.ecaterror) {
+      MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
+          "Errors in error list displayed below:\n");
+      while(self->ecx_context.ecaterror) MSG("%s\n", ecx_elist2string(&self->ecx_context));
+      MSG("Went through all errors in the elist stack.\n");
+    }
+    else {
+      MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
+    }
+  }
 }
 
 void jsd_read(jsd_t* self, int timeout_us) {
