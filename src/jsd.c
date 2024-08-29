@@ -250,6 +250,8 @@ bool jsd_all_slaves_operational(jsd_t* self) {
         ecx_writestate(&self->ecx_context, slave);
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
         ERROR("slave[%d] is in SAFE_OP.", slave);
+        self->ecx_context.slavelist[slave].state = EC_STATE_OPERATIONAL;
+        ecx_writestate(&self->ecx_context, slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
         ERROR("slave[%d] is in state with hexadecimal: %x", slave,
               self->ecx_context.slavelist[slave].state);
