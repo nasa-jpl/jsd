@@ -278,7 +278,7 @@ void jsd_inspect_context(jsd_t* self) {
           "aught to be saved. "
           "Errors in error list displayed below:\n");
       while (self->ecx_context.ecaterror)
-        MSG("%s\n", ecx_elist2string(&self->ecx_context));
+        MSG("- %s\n", ecx_elist2string(&self->ecx_context));
       MSG("Went through all errors in the elist stack.\n");
     } else {
       MSG("Despite some slaves not being operational, an ECAT error was not "
@@ -293,14 +293,14 @@ void jsd_read(jsd_t* self, int timeout_us) {
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
   self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
-    jsd_inspect_context(self);
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
+    jsd_inspect_context(self);
   }
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
-      jsd_inspect_context(self);
       MSG("ecx_receive_processdata is not longer reading bad wkc");
+      jsd_inspect_context(self);
     }
   }
   self->last_wkc = self->wkc;
