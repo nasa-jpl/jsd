@@ -89,7 +89,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   if (ecx_init(&self->ecx_context, ifname) <= 0) {
     ERROR("Unable to establish socket connection on %s", ifname);
-    if(geteuid() == 0) {
+    if (geteuid() == 0) {
       ERROR("Is the device on and connected?");
     } else {
       ERROR("Execute as root");
@@ -171,8 +171,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   int attempt = 0;
   while (true) {
-    int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    int      sent = ecx_send_overlap_processdata(&self->ecx_context);
+    int      wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
@@ -217,7 +217,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
   jsd_sdo_req_cirq_init(&self->jsd_sdo_res_cirq, "Response Queue");
 
   // Make sure to only start this after the PO2OP hooks have completed
-  if (0 != pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
+  if (0 !=
+      pthread_create(&self->sdo_thread, NULL, sdo_thread_loop, (void*)self)) {
     ERROR("Failed to create SDO thread");
     return false;
   }
@@ -229,15 +230,16 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 }
 
 bool jsd_all_slaves_operational(jsd_t* self) {
-  int slave;
-  bool all_slaves_operational = true;
-  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  int     slave;
+  bool    all_slaves_operational = true;
+  uint8_t currentgroup           = 0;  // only 1 rate group in JSD currently
   /* one or more slaves may not be responding */
   for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
 
     /* re-check bad slave individually */
-    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL,
+                   EC_TIMEOUTRET);
     if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
       all_slaves_operational = false;
       if (self->ecx_context.slavelist[slave].state ==
@@ -246,12 +248,12 @@ bool jsd_all_slaves_operational(jsd_t* self) {
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
         ERROR("slave[%d] is in SAFE_OP.", slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
-        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave,
+              self->ecx_context.slavelist[slave].state);
       } else {
         ERROR("slave[%d] is lost", slave);
       }
-    }
-    else {
+    } else {
       MSG("slave[%d] is OPERATIONAL.", slave);
     }
   }
@@ -269,17 +271,18 @@ void jsd_inspect_context(jsd_t* self) {
 
   if (jsd_all_slaves_operational(self)) {
     MSG("All slaves were operational at time of working counter fault.");
-  }
-  else {
+  } else {
     MSG("Some slaves were not operational.");
     if (self->ecx_context.ecaterror) {
-      MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
+      MSG("We experienced an ECAT error. When this occurs, error information "
+          "aught to be saved. "
           "Errors in error list displayed below:\n");
-      while(self->ecx_context.ecaterror) MSG("%s\n", ecx_elist2string(&self->ecx_context));
+      while (self->ecx_context.ecaterror)
+        MSG("%s\n", ecx_elist2string(&self->ecx_context));
       MSG("Went through all errors in the elist stack.\n");
-    }
-    else {
-      MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
+    } else {
+      MSG("Despite some slaves not being operational, an ECAT error was not "
+          "experienced.");
     }
   }
 }
@@ -290,11 +293,13 @@ void jsd_read(jsd_t* self, int timeout_us) {
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
   self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
+    jsd_inspect_context(self);
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
   }
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
+      jsd_inspect_context(self);
       MSG("ecx_receive_processdata is not longer reading bad wkc");
     }
   }
@@ -305,11 +310,10 @@ void jsd_read(jsd_t* self, int timeout_us) {
     self->attempt_manual_recovery = 0;
   }
 
-  if(self->raise_sdo_thread_cond){
+  if (self->raise_sdo_thread_cond) {
     pthread_cond_signal(&self->sdo_thread_cond);
     self->raise_sdo_thread_cond = false;
   }
-
 }
 
 void jsd_write(jsd_t* self) {
@@ -333,22 +337,22 @@ void jsd_free(jsd_t* self) {
     return;
   }
 
-  if(self->init_complete){
+  if (self->init_complete) {
     struct timespec ts;
 
     self->sdo_join_flag = true;
     MSG("Waiting for SDO Thread to join...");
     pthread_cond_signal(&self->sdo_thread_cond);
 
-    // The following loop should be more robust than just 
+    // The following loop should be more robust than just
     //   a pthread_join blocking wait
-    while(true) {
+    while (true) {
       self->sdo_join_flag = true;
 
       clock_gettime(CLOCK_REALTIME, &ts);
       ts.tv_sec += 1;
 
-      if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
+      if (pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0) {
         break;
       }
     }
