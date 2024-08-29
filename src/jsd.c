@@ -245,6 +245,9 @@ bool jsd_all_slaves_operational(jsd_t* self) {
       if (self->ecx_context.slavelist[slave].state ==
           (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
         ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+        self->ecx_context.slavelist[slave].state =
+            (EC_STATE_SAFE_OP + EC_STATE_ACK);
+        ec_writestate(slave);
       } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
         ERROR("slave[%d] is in SAFE_OP.", slave);
       } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
