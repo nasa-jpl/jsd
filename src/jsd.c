@@ -273,10 +273,19 @@ void jsd_inspect_context(jsd_t* self) {
   else {
     MSG("Some slaves were not operational.");
     if (self->ecx_context.ecaterror) {
-      MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
-          "Errors in error list displayed below:\n");
-      while(self->ecx_context.ecaterror) MSG("%s\n", ecx_elist2string(&self->ecx_context));
-      MSG("Went through all errors in the elist stack.\n");
+      MSG("An ECAT error occurred; the error list is displayed below:");
+      uint8_t i = 0; 
+      while(self->ecx_context.ecaterror && i < JSD_ELIST_MAX_READS) {
+        MSG("%s\n", ecx_elist2string(&self->ecx_context));
+        i++;
+      }
+      if (i == JSD_ELIST_MAX_READS) {
+        MSG("Maximum number of reads from error list experienced."
+            " This is likely a result of indefinite polling.");
+      }
+      else {
+        MSG("Finished reporting errors in error list.");
+      }
     }
     else {
       MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
