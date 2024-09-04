@@ -92,7 +92,7 @@ endif()
 
 ######### Install Rules #########
 if(CMAKE_SOURCE_DIR STREQUAL CMAKE_CURRENT_SOURCE_DIR)
-    set(CMAKE_INSTALL_PREFIX /opt/jsd)
+    set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/jsd")
     install(DIRECTORY ${CMAKE_BINARY_DIR}/include/jsd DESTINATION include)
     install(DIRECTORY ${CMAKE_BINARY_DIR}/bin/ DESTINATION bin)
     install(TARGETS jsd-lib DESTINATION lib)
