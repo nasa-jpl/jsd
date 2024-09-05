@@ -54,6 +54,21 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
 bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery);
 
 /**
+ * @brief Determines if all slaves are operational via individual slave queries
+ * 
+ * @param self pointer JSD context
+ */
+bool jsd_all_slaves_operational(jsd_t* self);
+
+/**
+ * @brief After experiencing a bad working counter it is advised to check the 
+ * context to discover which devices were problematic (if any).
+ *
+ * @param self pointer JSD context
+ */
+void jsd_inspect_context(jsd_t* self);
+
+/**
  * @brief Receive data from slave devices and store on local IOmap.
  *
  * @param self pointer JSD context

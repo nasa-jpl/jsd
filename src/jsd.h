@@ -8,6 +8,7 @@ extern "C" {
 #include "jsd/jsd_pub.h"
 
 #define JSD_PO2OP_MAX_ATTEMPTS 3
+#define JSD_ELIST_MAX_READS 100
 
 /**
  * @brief converts ec_state int to human-readable string
