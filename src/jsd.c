@@ -214,6 +214,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
+      WARNING("Performing inspect context in jsd init.")
       jsd_inspect_context(self);
 
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
@@ -688,7 +689,7 @@ void jsd_ecatcheck(jsd_t* self) {
 
   if ((bus_state == EC_STATE_OPERATIONAL && self->wkc < self->expected_wkc) ||
       self->ecx_context.grouplist[currentgroup].docheckstate) {
-    /* one ore more slaves are not responding */
+    /* one or more slaves are not responding */
     self->ecx_context.grouplist[currentgroup].docheckstate = FALSE;
     ecx_readstate(&self->ecx_context);
     for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
