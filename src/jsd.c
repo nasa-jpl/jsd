@@ -214,7 +214,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
-      WARNING("Performing inspect context in jsd init.")
+      WARNING("Performing inspect context in jsd init.");
       jsd_inspect_context(self);
 
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
