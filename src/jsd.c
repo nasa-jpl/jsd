@@ -450,10 +450,6 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
       return "JSD_DRIVER_TYPE_EL2124";
     case JSD_DRIVER_TYPE_EL2809:
       return "JSD_DRIVER_TYPE_EL2809";
-    case JSD_DRIVER_TYPE_EL2828:
-      return "JSD_DRIVER_TYPE_EL2828";
-    case JSD_DRIVER_TYPE_EL2798:
-      return "JSD_DRIVER_TYPE_EL2798";
     case JSD_DRIVER_TYPE_EL3104:
       return "JSD_DRIVER_TYPE_EL3104";
     case JSD_DRIVER_TYPE_EL3162:
@@ -470,8 +466,6 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
       return "JSD_DRIVER_TYPE_EL3602";
     case JSD_DRIVER_TYPE_EL4102:
       return "JSD_DRIVER_TYPE_EL4102";
-    case JSD_DRIVER_TYPE_EL5042:
-      return "JSD_DRIVER_TYPE_EL5042";
     case JSD_DRIVER_TYPE_EPD_NOMINAL:
       return "JSD_DRIVER_TYPE_EPD_NOMINAL";
     case JSD_DRIVER_TYPE_EPD_SIL:
