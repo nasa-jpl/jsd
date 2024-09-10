@@ -57,8 +57,6 @@ void jsd_epd_nominal_process(jsd_t* self, uint16_t slave_id) {
     controlword_uint = controlword_uint >> 1;
   }
   WARNING("\n");
-  
-  WARNING("Controlword is now ")
 
   // Copy RxPDO data into SOEM's IOmap
   assert(sizeof(jsd_epd_nominal_rxpdo_data_t) ==
