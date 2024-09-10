@@ -49,6 +49,17 @@ void jsd_epd_nominal_process(jsd_t* self, uint16_t slave_id) {
 
   jsd_epd_nominal_process_state_machine(self, slave_id);
 
+  unsigned int controlword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.rxpdo.controlword;
+  WARNING("Bits of rxpdo controlword:\n");
+  for(int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+  {
+    WARNING("%i ", controlword_uint & 0x01);
+    controlword_uint = controlword_uint >> 1;
+  }
+  WARNING("\n");
+  
+  WARNING("Controlword is now ")
+
   // Copy RxPDO data into SOEM's IOmap
   assert(sizeof(jsd_epd_nominal_rxpdo_data_t) ==
          self->ecx_context.slavelist[slave_id].Obytes);
