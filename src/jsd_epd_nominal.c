@@ -10,6 +10,7 @@
 #include "jsd/jsd_sdo.h"
 
 #define JSD_EPD_NOMINAL_MAX_ERROR_POPS_PER_CYCLE (5)
+bool sto_engaged_experienced = false;
 
 /****************************************************
  * Public functions

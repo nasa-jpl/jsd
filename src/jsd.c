@@ -84,7 +84,6 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
 }
 
 bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
-  sto_engaged_experienced = false;
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
