@@ -164,6 +164,8 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
+  struct timespec start_processdata_time;
+  clock_gettime(CLOCK_REALTIME, &start_processdata_time);
   ecx_send_overlap_processdata(&self->ecx_context);
   ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
 
@@ -171,6 +173,22 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   int attempt = 0;
   while (true) {
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    if ((start_processdata_time.tv_nsec - current_time.tv_nsec)/1e3 > timeout_us) {
+      MSG_DEBUG("Went over the loop period!");
+    }
+    else {
+      struct timespec diff;
+      diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
+      diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      if (nanosleep(&diff, NULL) < 0) {
+        perror("nanosleep failed");
+        return 1;
+      }
+    }
+    
+    clock_gettime(CLOCK_REALTIME, &start_processdata_time);
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
     ec_state actual_state = ecx_statecheck(
