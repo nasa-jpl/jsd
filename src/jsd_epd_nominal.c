@@ -50,6 +50,18 @@ void jsd_epd_nominal_read(jsd_t* self, uint16_t slave_id) {
       statusword_uint = statusword_uint >> 1;
     }
     WARNING("\n");
+
+    WARNING("\n We have not gotten STO Engaged! Here's the Status Register:\n");
+    unsigned int status_register_1_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.status_register_1;
+    WARNING("Bits of txpdo status register:\n");
+    for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+    {
+      WARNING("%i ", status_register_1_uint & 0x01);
+      status_register_1_uint = status_register_1_uint >> 1;
+    }
+    WARNING("HEY!\n\n");
+    WARNING("\n");
+
   }
 
 
