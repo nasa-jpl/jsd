@@ -39,15 +39,15 @@ void jsd_epd_nominal_read(jsd_t* self, uint16_t slave_id) {
          self->ecx_context.slavelist[slave_id].inputs,
          self->ecx_context.slavelist[slave_id].Ibytes);
 
-  WARNING("\n Just updated the status register! Values are:\n");
-  unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
-  WARNING("Bits of txpdo statusword:\n");
-  for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
-  {
-    WARNING("%i ", statusword_uint & 0x01);
-    statusword_uint = statusword_uint >> 1;
-  }
-  WARNING("\n");
+  // WARNING("\n Just updated the status register! Values are:\n");
+  // unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
+  // WARNING("Bits of txpdo statusword:\n");
+  // for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+  // {
+  //   WARNING("%i ", statusword_uint & 0x01);
+  //   statusword_uint = statusword_uint >> 1;
+  // }
+  // WARNING("\n");
 
   jsd_epd_nominal_update_state_from_PDO_data(self, slave_id);
 }
@@ -59,14 +59,14 @@ void jsd_epd_nominal_process(jsd_t* self, uint16_t slave_id) {
 
   jsd_epd_nominal_process_state_machine(self, slave_id);
 
-  unsigned int controlword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.rxpdo.controlword;
-  WARNING("Bits of rxpdo controlword:\n");
-  for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
-  {
-    WARNING("%i ", controlword_uint & 0x01);
-    controlword_uint = controlword_uint >> 1;
-  }
-  WARNING("\n");
+  // unsigned int controlword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.rxpdo.controlword;
+  // WARNING("Bits of rxpdo controlword:\n");
+  // for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+  // {
+  //   WARNING("%i ", controlword_uint & 0x01);
+  //   controlword_uint = controlword_uint >> 1;
+  // }
+  // WARNING("\n");
 
   // Copy RxPDO data into SOEM's IOmap
   assert(sizeof(jsd_epd_nominal_rxpdo_data_t) ==
