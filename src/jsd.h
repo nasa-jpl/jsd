@@ -8,7 +8,6 @@ extern "C" {
 #include "jsd/jsd_pub.h"
 
 #define JSD_PO2OP_MAX_ATTEMPTS 3
-bool sto_engaged_experienced;
 
 /**
  * @brief converts ec_state int to human-readable string
