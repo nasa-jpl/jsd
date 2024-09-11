@@ -259,7 +259,7 @@ void jsd_write(jsd_t* self) {
 
   // Write EtherCat frame to slaves, with logic for smart prints
   int transmitted = ecx_send_overlap_processdata(&self->ecx_context);
-  WARNING("\nSENDING THE OVERLAP PROCESSDATA!!!\n");
+  // WARNING("\nSENDING THE OVERLAP PROCESSDATA!!!\n");
   static int last_transmitted = 1;
   if (transmitted <= 0 && last_transmitted != transmitted) {
     WARNING("ecx_send_overlap_processdata is not transmitting");

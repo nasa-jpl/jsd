@@ -821,6 +821,16 @@ void jsd_epd_nominal_update_state_from_PDO_data(jsd_t*   self,
   state->pub.in_motion   = state->txpdo.status_register_1 >> 23 & 0x01;
   state->pub.hall_state  = state->txpdo.status_register_2 >> 0 & 0x07;
 
+  WARNING("\n We got STO Engaged! Here's the SW:\n");
+  unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
+  WARNING("Bits of txpdo statusword:\n");
+  for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+  {
+    WARNING("%i ", statusword_uint & 0x01);
+    statusword_uint = statusword_uint >> 1;
+  }
+  WARNING("\n");
+
   // TODO(dloret): EGD code prints change in sto_engaged here.
 
   // Digital inputs
