@@ -203,6 +203,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Did not reach %s, actual state is %s",
               jsd_ec_state_to_string(EC_STATE_OPERATIONAL),
               jsd_ec_state_to_string(actual_state));
+      ecx_readstate(&self->ecx_context);
       if (sent <= 0) {
         WARNING("Process data could not be transmitted properly.");
       }
