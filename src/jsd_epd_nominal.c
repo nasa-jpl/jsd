@@ -39,15 +39,18 @@ void jsd_epd_nominal_read(jsd_t* self, uint16_t slave_id) {
          self->ecx_context.slavelist[slave_id].inputs,
          self->ecx_context.slavelist[slave_id].Ibytes);
 
-  // WARNING("\n Just updated the status register! Values are:\n");
-  // unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
-  // WARNING("Bits of txpdo statusword:\n");
-  // for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
-  // {
-  //   WARNING("%i ", statusword_uint & 0x01);
-  //   statusword_uint = statusword_uint >> 1;
-  // }
-  // WARNING("\n");
+  if (!sto_engaged_experienced) {
+    WARNING("\n Performing nominal read but have not experienced STO engaged yet.\n Just updated the status register! Values are:\n");
+    unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
+    WARNING("Bits of txpdo statusword:\n");
+    for(long unsigned int bit=0;bit<(sizeof(unsigned int) * 8); bit++)
+    {
+      WARNING("%i ", statusword_uint & 0x01);
+      statusword_uint = statusword_uint >> 1;
+    }
+    WARNING("\n");
+  }
+
 
   jsd_epd_nominal_update_state_from_PDO_data(self, slave_id);
 }
@@ -822,6 +825,7 @@ void jsd_epd_nominal_update_state_from_PDO_data(jsd_t*   self,
   state->pub.hall_state  = state->txpdo.status_register_2 >> 0 & 0x07;
   
   if (state->pub.sto_engaged) {
+    sto_engaged_experienced = true;
     WARNING("\n We got STO Engaged! Here's the SW:\n");
     unsigned int statusword_uint = (unsigned int)self->slave_states[slave_id].epd_nominal.txpdo.statusword;
     WARNING("Bits of txpdo statusword:\n");
