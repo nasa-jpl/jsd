@@ -54,6 +54,21 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
 bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int timeout_us);
 
 /**
+ * @brief Checks every state individually and reports its EC state.
+ *
+ * @param self pointer JSD context
+ * @return Whether all states are operational or not
+ */
+bool jsd_all_slaves_operational(jsd_t* self);
+
+/**
+ * @brief Determines if all slaves are operational. If not, reports errors from error list.
+ *
+ * @param self pointer JSD context
+ */
+void jsd_inspect_context(jsd_t* self);
+
+/**
  * @brief Receive data from slave devices and store on local IOmap.
  *
  * @param self pointer JSD context

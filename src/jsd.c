@@ -212,6 +212,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
+      WARNING("Performing inspect context in jsd init.");
+      jsd_inspect_context(self);
+
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
         ERROR("Max number of attempts to transition to OPERATIONAL exceeded.");
         return false;
@@ -244,6 +247,71 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   return true;
 }
 
+bool jsd_all_slaves_operational(jsd_t* self) {
+  int slave;
+  bool all_slaves_operational = true;
+  uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
+  /* one or more slaves may not be responding */
+  for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+    if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
+    /* re-check bad slave individually */
+    ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
+    if (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL) {
+      all_slaves_operational = false;
+      if (self->ecx_context.slavelist[slave].state ==
+          (EC_STATE_SAFE_OP + EC_STATE_ERROR)) {
+        ERROR("slave[%d] is in SAFE_OP + ERROR.", slave);
+      } else if (self->ecx_context.slavelist[slave].state == EC_STATE_SAFE_OP) {
+        ERROR("slave[%d] is in SAFE_OP.", slave);
+      } else if (self->ecx_context.slavelist[slave].state > EC_STATE_NONE) {
+        ERROR("slave[%d] is in state with hexadecimal: %x", slave, self->ecx_context.slavelist[slave].state);
+      } else {
+        ERROR("slave[%d] is lost", slave);
+      }
+    }
+    else {
+      MSG("slave[%d] is OPERATIONAL.", slave);
+    }
+  }
+
+  return all_slaves_operational;
+}
+
+void jsd_inspect_context(jsd_t* self) {
+  ec_state bus_state = jsd_get_device_state(self, 0);
+
+  /* first check if the jsd bus is operational so we can get more info */
+  if (bus_state != EC_STATE_OPERATIONAL) {
+    ERROR("JSD bus is not OPERATIONAL.");
+  }
+
+  if (jsd_all_slaves_operational(self)) {
+    MSG("All slaves were operational at time of working counter fault.");
+  }
+  else {
+    MSG("Some slaves were not operational.");
+    if (self->ecx_context.ecaterror) {
+      MSG("We experienced an ECAT error. When this occurs, error information aught to be saved. "
+          "Errors in error list displayed below:\n");
+      uint8_t i = 0;
+      while(self->ecx_context.ecaterror && i < JSD_ELIST_MAX_READS) {
+        MSG("%s\n", ecx_elist2string(&self->ecx_context));
+        i++;
+      }
+      if (i == JSD_ELIST_MAX_READS) {
+        MSG("Maximum number of reads from error list experienced."
+            " This is likely a result of indefinite polling.");
+      }
+      else {
+        MSG("Finished reporting errors in error list.");
+      }
+    }
+    else {
+      MSG("Despite some slaves not being operational, an ECAT error was not experienced.");
+    }
+  }
+}
+
 void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
@@ -255,7 +323,7 @@ void jsd_read(jsd_t* self, int timeout_us) {
   }
   if (self->last_wkc != self->expected_wkc && self->wkc == self->expected_wkc) {
     if (self->last_wkc != -1) {
-      MSG("ecx_receive_processdata is not longer reading bad wkc");
+      MSG("ecx_receive_processdata is no longer reading bad wkc");
     }
   }
   self->last_wkc = self->wkc;
@@ -619,7 +687,7 @@ void jsd_ecatcheck(jsd_t* self) {
 
   if ((bus_state == EC_STATE_OPERATIONAL && self->wkc < self->expected_wkc) ||
       self->ecx_context.grouplist[currentgroup].docheckstate) {
-    /* one ore more slaves are not responding */
+    /* one or more slaves are not responding */
     self->ecx_context.grouplist[currentgroup].docheckstate = FALSE;
     ecx_readstate(&self->ecx_context);
     for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
