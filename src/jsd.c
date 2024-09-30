@@ -182,6 +182,9 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       struct timespec diff;
       diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
       diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      
+      // Sleep for period defined by timeout_us before attempting to do a receive_processdata.
+      // LRW packets must be sent at constant interval to encourage a successful transition to OP state/
       if (nanosleep(&diff, NULL) < 0) {
         perror("nanosleep failed");
         return 1;
