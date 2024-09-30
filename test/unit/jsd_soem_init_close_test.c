@@ -12,7 +12,7 @@ int main(int argc, char* argv[]) {
 
   jsd_t* jsd = jsd_alloc();
 
-  if (!jsd_init(jsd, argv[1], 1)) {
+  if (!jsd_init(jsd, argv[1], 1, EC_TIMEOUTRET)) {
     ERROR("Could not init jsd");
     return 0;
   }
