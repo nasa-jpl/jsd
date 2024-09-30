@@ -151,7 +151,7 @@ int main(int argc, char* argv[]) {
   jsd_set_slave_config(jsd, slave_id, my_config);
 
   // slave configuration must come before initialization
-  if (!jsd_init(jsd, ifname, 1)) {
+  if (!jsd_init(jsd, ifname, 1, EC_TIMEOUTRET)) {
     ERROR("Could not init jsd");
     return 0;
   }

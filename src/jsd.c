@@ -83,7 +83,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
   self->slave_configs[slave_id] = slave_config;
 }
 
-bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
+bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int timeout_us) {
   assert(self);
   self->enable_autorecovery = enable_autorecovery;
 
@@ -164,15 +164,36 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery) {
 
   self->ecx_context.slavelist[0].state = EC_STATE_OPERATIONAL;
 
+  struct timespec start_processdata_time;
+  clock_gettime(CLOCK_REALTIME, &start_processdata_time);
   ecx_send_overlap_processdata(&self->ecx_context);
-  ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+  ecx_receive_processdata(&self->ecx_context, timeout_us);
 
   ecx_writestate(&self->ecx_context, 0);
 
   int attempt = 0;
   while (true) {
+    struct timespec current_time;
+    clock_gettime(CLOCK_REALTIME, &current_time);
+    if ((current_time.tv_nsec - start_processdata_time.tv_nsec)/1e3 > timeout_us) {
+      MSG_DEBUG("Went over the loop period!");
+    }
+    else {
+      struct timespec diff;
+      diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
+      diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      
+      // Sleep for period defined by timeout_us before attempting to do a receive_processdata.
+      // LRW packets must be sent at constant interval to encourage a successful transition to OP state/
+      if (nanosleep(&diff, NULL) < 0) {
+        perror("nanosleep failed");
+        return 1;
+      }
+    }
+    
+    clock_gettime(CLOCK_REALTIME, &start_processdata_time);
     int sent = ecx_send_overlap_processdata(&self->ecx_context);
-    int wkc  = ecx_receive_processdata(&self->ecx_context, EC_TIMEOUTRET);
+    int wkc  = ecx_receive_processdata(&self->ecx_context, timeout_us);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
 
