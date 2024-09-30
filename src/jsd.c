@@ -175,7 +175,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   while (true) {
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    if ((start_processdata_time.tv_nsec - current_time.tv_nsec)/1e3 > timeout_us) {
+    if ((current_time.tv_nsec - start_processdata_time.tv_nsec)/1e3 > timeout_us) {
       MSG_DEBUG("Went over the loop period!");
     }
     else {
