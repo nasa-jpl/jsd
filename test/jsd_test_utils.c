@@ -103,7 +103,7 @@ void sds_run(single_device_server_t* self, char* device_name, char* filename) {
 
   uint32_t sds_iter = 0;
 
-  if (!jsd_init(self->jsd, device_name, 1)) {
+  if (!jsd_init(self->jsd, device_name, 1, EC_TIMEOUTRET)) {
     ERROR("Could not init jsd");
     return;
   }
