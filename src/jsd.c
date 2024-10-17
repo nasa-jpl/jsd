@@ -212,7 +212,6 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
       WARNING("Failed OP transition attempt %d of %d", attempt,
               JSD_PO2OP_MAX_ATTEMPTS);
 
-      WARNING("Performing inspect context in jsd init.");
       jsd_inspect_context(self);
 
       if (attempt >= JSD_PO2OP_MAX_ATTEMPTS) {
@@ -248,11 +247,10 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
 }
 
 bool jsd_all_slaves_operational(jsd_t* self) {
-  int slave;
   bool all_slaves_operational = true;
   uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   /* one or more slaves may not be responding */
-  for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+  for (int slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
     /* re-check bad slave individually */
     ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
