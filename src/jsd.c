@@ -19,6 +19,7 @@
 #include "jsd/jsd_el3356.h"
 #include "jsd/jsd_el3602.h"
 #include "jsd/jsd_el4102.h"
+#include "jsd/jsd_el5042.h"
 #include "jsd/jsd_epd_nominal.h"
 #include "jsd/jsd_epd_sil.h"
 #include "jsd/jsd_ild1900.h"
@@ -389,6 +390,8 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
       return "JSD_DRIVER_TYPE_EL3602";
     case JSD_DRIVER_TYPE_EL4102:
       return "JSD_DRIVER_TYPE_EL4102";
+    case JSD_DRIVER_TYPE_EL5042:
+      return "JSD_DRIVER_TYPE_EL5042";
     case JSD_DRIVER_TYPE_EPD_NOMINAL:
       return "JSD_DRIVER_TYPE_EPD_NOMINAL";
     case JSD_DRIVER_TYPE_EPD_SIL:
@@ -509,6 +512,9 @@ bool jsd_driver_is_compatible_with_product_code(jsd_driver_type_t driver_type,
     case JSD_DRIVER_TYPE_EL4102:
       is_compatible = jsd_el4102_product_code_is_compatible(product_code);
       break;
+    case JSD_DRIVER_TYPE_EL5042:
+      is_compatible = jsd_el5042_product_code_is_compatible(product_code);
+      break;
     case JSD_DRIVER_TYPE_ILD1900:
       is_compatible = jsd_ild1900_product_code_is_compatible(product_code);
       break;
@@ -575,6 +581,9 @@ bool jsd_init_single_device(jsd_t* self, uint16_t slave_id) {
       break;
     case JSD_DRIVER_TYPE_EL4102:
       return jsd_el4102_init(self, slave_id);
+      break;
+    case JSD_DRIVER_TYPE_EL5042:
+      return jsd_el5042_init(self, slave_id);
       break;
     case JSD_DRIVER_TYPE_ILD1900:
       return jsd_ild1900_init(self, slave_id);

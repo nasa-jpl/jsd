@@ -22,6 +22,7 @@ extern "C" {
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
+#include "jsd/jsd_el5042_types.h"
 #include "jsd/jsd_epd_nominal_types.h"
 #include "jsd/jsd_epd_sil_types.h"
 #include "jsd/jsd_error_cirq.h"
@@ -43,6 +44,7 @@ typedef enum {
   JSD_DRIVER_TYPE_EL3356,
   JSD_DRIVER_TYPE_EL3602,
   JSD_DRIVER_TYPE_EL4102,
+  JSD_DRIVER_TYPE_EL5042,
   JSD_DRIVER_TYPE_EPD_NOMINAL,
   JSD_DRIVER_TYPE_EPD_SIL,
   JSD_DRIVER_TYPE_ILD1900,
@@ -70,6 +72,7 @@ typedef struct {
     jsd_el3318_config_t  el3318;
     jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
+    jsd_el5042_config_t  el5042;
     jsd_ild1900_config_t ild1900;
     jsd_epd_nominal_config_t epd_nominal;
     jsd_epd_sil_config_t epd_sil;
@@ -95,6 +98,7 @@ typedef struct {
     jsd_el3318_state_t      el3318;
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
+    jsd_el5042_state_t      el5042;
     jsd_ild1900_state_t     ild1900;
     jsd_epd_nominal_private_state_t epd_nominal;
     jsd_epd_sil_private_state_t epd_sil;
