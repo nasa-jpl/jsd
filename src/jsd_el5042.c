@@ -5,6 +5,27 @@
 
 #include "jsd/jsd_sdo.h"
 
+  JSD_EL5042_10MHz = 0,
+  JSD_EL5042_5MHz = 1,    
+  JSD_EL5042_3_33MHz = 2,   
+  JSD_EL5042_2_5MHz = 3,  
+  JSD_EL5042_2MHz = 4,   
+  JSD_EL5042_1MHz = 9,    
+  JSD_EL5042_500KHz = 17,
+  JSD_EL5042_250KHz = 19,
+
+
+const char* jsd_5042_clock_strings[] = {
+    [JSD_EL5042_10MHz]   = "10MHz Frequency",
+    [JSD_EL5042_5MHz]    = "5MHz Frequency",
+    [JSD_EL5042_3_33MHz]  = "3.33MHz Frequency",
+    [JSD_EL5042_2_5MHz] = "2.5MHz Frequency",
+    [JSD_EL5042_2MHz]  = "2MHz Frequency",
+    [JSD_EL5042_1MHz] = "1MHz Frequency",
+    [JSD_EL5042_500KHz] = "500kHz Frequency",
+    [JSD_EL5042_250KHz] = "250kHz Frequency",
+};
+
 /****************************************************
  * Public functions
  ****************************************************/
@@ -76,46 +97,86 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     // 0x8018).
     uint32_t sdo_channel_index = 0x8008 + (0x10 * ch);
 
-    // Set the encoder supply voltage, either 50 for 5V or 90 for 9V.
-    uint8_t supply_voltage = 50; // 5V (default)
+    // Negates the position value 
+    uint8_t invert_feedback_direction = config->el5042.invert_feedback_direction[ch]; // 5V (default)
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x01, JSD_SDO_DATA_U8, &invert_feedback_direction)) {
+      return 0;
+    }
+
+    // Tell the slave whether or not to send status bits 
+    uint8_t disable_status_bits = config->el5042.disable_status_bits[ch]; 
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x02, JSD_SDO_DATA_U8, &disable_status_bits)) {
+      return 0;
+    }
+
+    // Inverts the checksum bits (CRC) received by the encoder
+    uint8_t invert_checksum = config->el5042.invert_checksum[ch]; 
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x03, JSD_SDO_DATA_U8, &invert_checksum)) {
+      return 0;
+    }
+
+    // Polynomial used for calculating checksum
+    uint32_t checksum_polynomial = config->el5042.checksum_polynomial[ch]; 
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x11, JSD_SDO_DATA_U8, &checksum_polynomial)) {
+      return 0;
+    }
+
+    // Set the encoder supply voltage, either 50 for 5V or 90 for 9V
+    uint8_t supply_voltage = config->el5042.supply_voltage[ch]; // 5V (default)
+    if (supply_voltage != 50 && supply_voltage != 90) {
+      MSG("Attempt to set supply voltage on channel %d to value of %d. "
+          "Only a value of 50 (for 5V) and 90 (for 9V) is permitted!", ch, supply_volage);
+      return 0;
+    }
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x12, JSD_SDO_DATA_U8, &supply_voltage)) {
       return 0;
     }
 
-    // Set the CRC inversion
-    uint8_t CRC_invert = 1; // True correspond to CRC transmitted inverted
-    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x03, JSD_SDO_DATA_U8, &CRC_invert)) {
-      return 0;
-    }
-
-    // Set the BiSS clock frequency.
-    // 0 -> 10 MHz
-    // 1 -> 5 MHz
-    // 2 -> 3.33 MHz
-    // 3 -> 2.5 MHz
-    // 4 -> 2 MHz
-    // 9 -> 1 MHz
-    // 17 -> 500 kHz
-    // 19 -> 250 kHz
-    uint8_t clock_frequency = 1; // 5 MHz
+    // Clock frequency for the BiSS-C protocol
+    uint8_t clock_frequency = config->el5042.clock_frequency[ch];
+    MSG("\t clock[%d]: %s", ch, jsd_5042_clock_strings[clock_frequency]); 
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x13, JSD_SDO_DATA_U8, &clock_frequency)) {
       return 0;
     }
 
-    // Set the number of multiturn bits
-    uint8_t multiturn_bits = 0;
+    // Option to either use dual code (0) or gray code (1) for accurate data
+    uint8_t gray_code = config->el5042.gray_code[ch]; 
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x13, JSD_SDO_DATA_U8, &gray_code)) {
+      return 0;
+    }
+
+    // Set the number of multiturn bits (how many complete rotations)
+    uint8_t multiturn_bits = config->el5042.multiturn_bits[ch];
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x15, JSD_SDO_DATA_U8, &multiturn_bits)) {
       return 0;
     }
 
-    // Set the number of singleturn bits
-    uint8_t singleturn_bits = 19;
+    // Set the number of singleturn bits (resolution of a single rotation)
+    uint8_t singleturn_bits = config->el5042.singleturn_bits[ch];
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x16, JSD_SDO_DATA_U8, &singleturn_bits)) {
+      return 0;
+    }
+
+    // If there are addition null bits at the end of the packet, we shift by offset bits to get data
+    uint8_t offset_bits = config->el5042.offset_bits[ch];
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x16, JSD_SDO_DATA_U8, &offset_bits)) {
+      return 0;
+    }
+
+    // Opt for SSI mode (over BiSS-C)
+    uint8_t ssi_mode = config->el5042.ssi_mode[ch];
+    if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
+                                    0x16, JSD_SDO_DATA_U8, &ssi_mode)) {
       return 0;
     }
   }
