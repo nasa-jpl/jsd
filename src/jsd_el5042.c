@@ -5,17 +5,7 @@
 
 #include "jsd/jsd_sdo.h"
 
-  JSD_EL5042_10MHz = 0,
-  JSD_EL5042_5MHz = 1,    
-  JSD_EL5042_3_33MHz = 2,   
-  JSD_EL5042_2_5MHz = 3,  
-  JSD_EL5042_2MHz = 4,   
-  JSD_EL5042_1MHz = 9,    
-  JSD_EL5042_500KHz = 17,
-  JSD_EL5042_250KHz = 19,
-
-
-const char* jsd_5042_clock_strings[] = {
+const char* jsd_el5042_clock_strings[] = {
     [JSD_EL5042_10MHz]   = "10MHz Frequency",
     [JSD_EL5042_5MHz]    = "5MHz Frequency",
     [JSD_EL5042_3_33MHz]  = "3.33MHz Frequency",
@@ -139,7 +129,7 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
 
     // Clock frequency for the BiSS-C protocol
     uint8_t clock_frequency = config->el5042.clock_frequency[ch];
-    MSG("\t clock[%d]: %s", ch, jsd_5042_clock_strings[clock_frequency]); 
+    MSG("\t clock[%d]: %s", ch, jsd_el5042_clock_strings[clock_frequency]); 
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
                                     0x13, JSD_SDO_DATA_U8, &clock_frequency)) {
       return 0;
