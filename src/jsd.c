@@ -175,13 +175,16 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   while (true) {
     struct timespec current_time;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    if ((start_processdata_time.tv_nsec - current_time.tv_nsec)/1e3 > timeout_us) {
+    if ((current_time.tv_nsec - start_processdata_time.tv_nsec)/1e3 > timeout_us) {
       MSG_DEBUG("Went over the loop period!");
     }
     else {
       struct timespec diff;
       diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
       diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      
+      // Sleep for period defined by timeout_us before attempting to do a receive_processdata.
+      // LRW packets must be sent at constant interval to encourage a successful transition to OP state/
       if (nanosleep(&diff, NULL) < 0) {
         perror("nanosleep failed");
         return 1;
