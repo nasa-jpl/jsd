@@ -43,20 +43,6 @@ typedef struct {
   uint8_t ssi_mode[JSD_EL5042_NUM_CHANNELS];
 } jsd_el5042_config_t;
 
-
-typedef struct {
-  jsd_el3202_element_t element[JSD_EL3202_NUM_CHANNELS];  ///< Type of RTD
-  jsd_beckhoff_filter_t
-      filter[JSD_EL3202_NUM_CHANNELS];  ///< Digital Notch Filter Opt
-  jsd_el3202_connection_t
-         connection[JSD_EL3202_NUM_CHANNELS];       ///< 2,3, or 4 wire
-  double wire_resistance[JSD_EL3202_NUM_CHANNELS];  ///< User supplied, in Ohms
-  jsd_el3202_presentation_t
-      presentation[JSD_EL3202_NUM_CHANNELS];  ///< Data presentation, default:
-                                              ///< low rez(1/10 C)
-} jsd_el3202_config_t;
-
-
 /**
  * @brief Read struct for EL5042 device
  */
