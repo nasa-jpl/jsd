@@ -119,7 +119,7 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     uint8_t supply_voltage = config->el5042.supply_voltage[ch]; // 5V (default)
     if (supply_voltage != 50 && supply_voltage != 90) {
       MSG("Attempt to set supply voltage on channel %d to value of %d. "
-          "Only a value of 50 (for 5V) and 90 (for 9V) is permitted!", ch, supply_volage);
+          "Only a value of 50 (for 5V) and 90 (for 9V) is permitted!", ch, supply_voltage);
       return 0;
     }
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
