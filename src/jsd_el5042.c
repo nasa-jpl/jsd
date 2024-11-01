@@ -138,7 +138,7 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     // Option to either use dual code (0) or gray code (1) for accurate data
     uint8_t gray_code = config->el5042.gray_code[ch]; 
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x13, JSD_SDO_DATA_U8, &gray_code)) {
+                                    0x14, JSD_SDO_DATA_U8, &gray_code)) {
       return 0;
     }
 
@@ -159,14 +159,14 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     // If there are addition null bits at the end of the packet, we shift by offset bits to get data
     uint8_t offset_bits = config->el5042.offset_bits[ch];
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x16, JSD_SDO_DATA_U8, &offset_bits)) {
+                                    0x17, JSD_SDO_DATA_U8, &offset_bits)) {
       return 0;
     }
 
     // Opt for SSI mode (over BiSS-C)
     uint8_t ssi_mode = config->el5042.ssi_mode[ch];
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x16, JSD_SDO_DATA_U8, &ssi_mode)) {
+                                    0x18, JSD_SDO_DATA_U8, &ssi_mode)) {
       return 0;
     }
   }
