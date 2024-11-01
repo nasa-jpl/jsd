@@ -111,7 +111,7 @@ int jsd_el5042_PO2SO_config(ecx_contextt* ecx_context, uint16_t slave_id) {
     // Polynomial used for calculating checksum
     uint32_t checksum_polynomial = config->el5042.checksum_polynomial[ch]; 
     if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, sdo_channel_index,
-                                    0x11, JSD_SDO_DATA_U8, &checksum_polynomial)) {
+                                    0x11, JSD_SDO_DATA_U32, &checksum_polynomial)) {
       return 0;
     }
 
