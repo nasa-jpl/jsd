@@ -19,3 +19,5 @@ jobs:
         run: |
           ls ${{ github.workspace }}
       - run: echo "🍏 This job's status is ${{ job.status }}."
+      - name: Uses external action
+        uses: nasa-jpl/patch-version@main
