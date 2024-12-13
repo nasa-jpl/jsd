@@ -9,6 +9,8 @@ jobs:
     steps:
       - name: Check out repository code
         uses: actions/checkout@v4 # by default, only fetches one commit
+        with:
+          ssh-key: ${{ secrets.GHA_DEPLOY_KEY }}
       - name: Patch version information
         id: patching
         uses: nasa-jpl/patch-version@v2
@@ -25,4 +27,4 @@ jobs:
           add: "CMakeLists.txt"
           default_author: github_actions
           tag: "${{ steps.patching.outputs.new_tag }}"
-          message: "[GitHub Actions] Patched version, bumped ${{ steps.patching.outputs.bumped }} number"
+          message: "[GitHub Actions] Patched version, bumped ${{ steps.patching.outputs.bumped }} number. [skip actions]"
