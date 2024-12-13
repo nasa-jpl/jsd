@@ -17,6 +17,11 @@ jobs:
         with:
           version: latest
           platform: x64
+      - uses: ConorMacBride/install-package@v1
+        with:
+          apt: libreadline-dev
+          version: latest
+          platform: x64
       - run: |
           mkdir -p build
           cd build

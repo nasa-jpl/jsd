@@ -16,7 +16,7 @@ jobs:
       - uses: egor-tensin/setup-clang@v1
       - uses: ConorMacBride/install-package@v1
         with:
-          apt: valgrind
+          apt: valgrind libreadline-dev
           version: latest
           platform: x64
       - run: |
