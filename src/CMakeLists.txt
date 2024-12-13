@@ -11,6 +11,8 @@ add_library(jsd-lib STATIC
     jsd_el3208.c
     jsd_el2124.c
     jsd_el2809.c
+    jsd_el2798.c
+    jsd_el2828.c
     jsd_egd.c
     jsd_el3356.c
     jsd_jed0101.c
@@ -23,6 +25,7 @@ add_library(jsd-lib STATIC
     jsd_el3318.c
     jsd_el3162.c
     jsd_el4102.c
+    jsd_el5042.c
     jsd_ild1900.c
     jsd_epd_nominal.c
     jsd_epd_sil.c
