@@ -4,7 +4,8 @@
 # swap files
 *.swp
 *.swo
-
+*.swn
+*.swb
 
 # Ignore folders
 build
