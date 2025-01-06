@@ -5,27 +5,32 @@ add_library(jsd-lib STATIC
     jsd_common_device_types.c
     jsd_elmo_common.c
     jsd_epd_common.c
+    jsd_timer.c
 
     # Devices
-    jsd_el3602.c
-    jsd_el3208.c
-    jsd_el2124.c
-    jsd_el2809.c
     jsd_egd.c
-    jsd_el3356.c
-    jsd_jed0101.c
-    jsd_jed0200.c
-    jsd_timer.c
-    jsd_ati_fts.c
-    jsd_el3104.c
-    jsd_el1008.c
-    jsd_el3202.c
-    jsd_el3318.c
-    jsd_el3162.c
-    jsd_el4102.c
-    jsd_ild1900.c
     jsd_epd_nominal.c
     jsd_epd_sil.c
+
+    jsd_ati_fts.c
+
+    jsd_el1008.c
+    jsd_el2124.c
+    jsd_el2809.c
+    jsd_el3104.c
+    jsd_el3162.c
+    jsd_el3202.c
+    jsd_el3208.c
+    jsd_el3314.c
+    jsd_el3318.c
+    jsd_el3356.c
+    jsd_el3602.c
+    jsd_el4102.c
+
+    jsd_ild1900.c
+
+    jsd_jed0101.c
+    jsd_jed0200.c
     )
 
 message(STATUS "SOEM INCLUDE DIRS: ${SOEM_INCLUDE_DIRS}")
