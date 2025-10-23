@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.11)
 project(jsd
     DESCRIPTION "JPL SOEM Drivers"
-    VERSION 3.1.4
+    VERSION 3.1.5
     LANGUAGES C CXX
     )
 
