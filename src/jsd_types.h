@@ -20,6 +20,7 @@ extern "C" {
 #include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
 #include "jsd/jsd_el3208_types.h"
+#include "jsd/jsd_el3314_types.h"
 #include "jsd/jsd_el3318_types.h"
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
@@ -44,6 +45,7 @@ typedef enum {
   JSD_DRIVER_TYPE_EL3162,
   JSD_DRIVER_TYPE_EL3202,
   JSD_DRIVER_TYPE_EL3208,
+  JSD_DRIVER_TYPE_EL3314,
   JSD_DRIVER_TYPE_EL3318,
   JSD_DRIVER_TYPE_EL3356,
   JSD_DRIVER_TYPE_EL3602,
@@ -75,6 +77,7 @@ typedef struct {
     jsd_ati_fts_config_t ati_fts;
     jsd_el3104_config_t  el3104;
     jsd_el3202_config_t  el3202;
+    jsd_el3314_config_t  el3314;
     jsd_el3318_config_t  el3318;
     jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
@@ -103,6 +106,7 @@ typedef struct {
     jsd_ati_fts_state_t     ati_fts;
     jsd_el3104_state_t      el3104;
     jsd_el3202_state_t      el3202;
+    jsd_el3314_state_t      el3314;
     jsd_el3318_state_t      el3318;
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
