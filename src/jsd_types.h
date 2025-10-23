@@ -14,6 +14,8 @@ extern "C" {
 #include "jsd/jsd_el1008_types.h"
 #include "jsd/jsd_el2124_types.h"
 #include "jsd/jsd_el2809_types.h"
+#include "jsd/jsd_el2798_types.h"
+#include "jsd/jsd_el2828_types.h"
 #include "jsd/jsd_el3104_types.h"
 #include "jsd/jsd_el3162_types.h"
 #include "jsd/jsd_el3202_types.h"
@@ -23,6 +25,7 @@ extern "C" {
 #include "jsd/jsd_el3356_types.h"
 #include "jsd/jsd_el3602_types.h"
 #include "jsd/jsd_el4102_types.h"
+#include "jsd/jsd_el5042_types.h"
 #include "jsd/jsd_epd_nominal_types.h"
 #include "jsd/jsd_epd_sil_types.h"
 #include "jsd/jsd_error_cirq.h"
@@ -36,6 +39,8 @@ typedef enum {
   JSD_DRIVER_TYPE_EL1008,
   JSD_DRIVER_TYPE_EL2124,
   JSD_DRIVER_TYPE_EL2809,
+  JSD_DRIVER_TYPE_EL2798,
+  JSD_DRIVER_TYPE_EL2828,
   JSD_DRIVER_TYPE_EL3104,
   JSD_DRIVER_TYPE_EL3162,
   JSD_DRIVER_TYPE_EL3202,
@@ -45,6 +50,7 @@ typedef enum {
   JSD_DRIVER_TYPE_EL3356,
   JSD_DRIVER_TYPE_EL3602,
   JSD_DRIVER_TYPE_EL4102,
+  JSD_DRIVER_TYPE_EL5042,
   JSD_DRIVER_TYPE_EPD_NOMINAL,
   JSD_DRIVER_TYPE_EPD_SIL,
   JSD_DRIVER_TYPE_ILD1900,
@@ -62,6 +68,8 @@ typedef struct {
     jsd_el3208_config_t  el3208;
     jsd_el2124_config_t  el2124;
     jsd_el2809_config_t  el2809;
+    jsd_el2798_config_t  el2798;
+    jsd_el2828_config_t  el2828;
     jsd_egd_config_t     egd;
     jsd_el3356_config_t  el3356;
     jsd_jed0101_config_t jed0101;
@@ -73,6 +81,7 @@ typedef struct {
     jsd_el3318_config_t  el3318;
     jsd_el3162_config_t  el3162;
     jsd_el4102_config_t  el4102;
+    jsd_el5042_config_t  el5042;
     jsd_ild1900_config_t ild1900;
     jsd_epd_nominal_config_t epd_nominal;
     jsd_epd_sil_config_t epd_sil;
@@ -88,6 +97,8 @@ typedef struct {
     jsd_el3208_state_t      el3208;
     jsd_el2124_state_t      el2124;
     jsd_el2809_state_t      el2809;
+    jsd_el2798_state_t      el2798;
+    jsd_el2828_state_t      el2828;
     jsd_egd_private_state_t egd;
     jsd_el3356_state_t      el3356;
     jsd_jed0101_state_t     jed0101;
@@ -99,6 +110,7 @@ typedef struct {
     jsd_el3318_state_t      el3318;
     jsd_el3162_state_t      el3162;
     jsd_el4102_state_t      el4102;
+    jsd_el5042_state_t      el5042;
     jsd_ild1900_state_t     ild1900;
     jsd_epd_nominal_private_state_t epd_nominal;
     jsd_epd_sil_private_state_t epd_sil;
