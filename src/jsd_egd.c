@@ -369,8 +369,8 @@ char* jsd_egd_fault_code_to_string(jsd_egd_fault_code_t fault_code) {
     case JSD_EGD_FAULT_RESERVED:
       return "JSD_EGD_FAULT_RESERVED";
       break;
-    case JSD_EGD_FAULT_OVER_CURRENT:
-      return "JSD_EGD_FAULT_OVER_CURRENT";
+    case JSD_EGD_FAULT_SERIAL_FEEDBACK_ERROR:
+      return "JSD_EGD_FAULT_SERIAL_FEEDBACK_ERROR";
       break;
     case JSD_EGD_FAULT_SHORT_CIRCUIT:
       return "JSD_EGD_FAULT_SHORT_CIRCUIT";
@@ -1625,7 +1625,7 @@ jsd_egd_fault_code_t jsd_egd_get_fault_code_from_ec_error(ec_errort error) {
       return JSD_EGD_FAULT_RESERVED;
       break;
     case 0x2311:
-      return JSD_EGD_FAULT_OVER_CURRENT;
+      return JSD_EGD_FAULT_SERIAL_FEEDBACK_ERROR;
       break;
     case 0x2340:
       return JSD_EGD_FAULT_SHORT_CIRCUIT;
