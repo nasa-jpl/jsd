@@ -596,7 +596,7 @@ bool jsd_egd_init(jsd_t* self, uint16_t slave_id) {
   // This was needed to make PDO mapping work
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
-  slave->PO2SOconfigx = jsd_egd_PO2SO_config;
+  slave->PO2SOconfig = jsd_egd_PO2SO_config;
 
   jsd_egd_private_state_t* state = &self->slave_states[slave_id].egd;
   state->last_reset_time         = 0;

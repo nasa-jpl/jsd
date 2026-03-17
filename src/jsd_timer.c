@@ -158,6 +158,7 @@ static int jsd_timer_setup_process(jsd_timer_t* self, int16_t cpu,
   }
 
   // migrate this process (pid=0) to the specified CPU
+#ifndef __ZEPHYR__
   if (cpu != JSD_TIMER_ANY_CPU) {
     cpu_set_t ded_mask;
     CPU_ZERO(&ded_mask);
@@ -167,6 +168,9 @@ static int jsd_timer_setup_process(jsd_timer_t* self, int16_t cpu,
       return -1;
     }
   }
+#else
+  (void)cpu;
+#endif
 
   return 0;
 }

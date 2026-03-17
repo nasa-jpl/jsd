@@ -1,6 +1,7 @@
 #include "jsd/jsd_sdo.h"
 
 #include <assert.h>
+#include <inttypes.h>
 #include <string.h>
 #include <unistd.h>
 
@@ -112,7 +113,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
       break;
 
     case JSD_SDO_DATA_I64:
-      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I64) = %ld", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (I64) = %" PRId64, slave_id, verb, index, subindex,
           data.as_i64);
       break;
 
@@ -142,7 +143,7 @@ static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
       break;
 
     case JSD_SDO_DATA_U64:
-      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U64) = %lu", slave_id, verb, index, subindex,
+      MSG_DEBUG("Slave[%d] %s 0x%X:%d (U64) = %" PRIu64, slave_id, verb, index, subindex,
           data.as_u64);
       break;
 
@@ -174,9 +175,10 @@ void* sdo_thread_loop(void* void_data) {
       }
 
       ec_mbxbuft MbxIn;
+      ec_mbxbuft* pMbxIn = &MbxIn;
       int sid;
-      for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
-        ecx_mbxreceive(&self->ecx_context, sid, &MbxIn, 0);
+      for (sid = 1; sid <= self->ecx_context.slavecount; sid++) {
+        ecx_mbxreceive(&self->ecx_context, sid, &pMbxIn, 0);
       }
 
       handled_errors = 0;
@@ -469,4 +471,3 @@ bool jsd_sdo_pop_response_queue(jsd_t* self, jsd_sdo_req_t* res) {
 
   return retval;
 }
-

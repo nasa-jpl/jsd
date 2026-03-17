@@ -36,7 +36,7 @@ static inline double jsd_time_get_mono_time_sec() {
  * @return Seconds representation of SOEM's time type object.
  */
 static inline double ectime_to_sec(ec_timet t) {
-  return (double)t.sec + (double)(t.usec) * 1.0e-6;
+  return (double)t.tv_sec + (double)t.tv_nsec / 1000000000.0;
 }
 
 #ifdef __cplusplus

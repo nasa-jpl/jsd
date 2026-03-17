@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <inttypes.h>
+#include <errno.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
@@ -38,32 +39,6 @@
 jsd_t* jsd_alloc() {
   jsd_t* self;
   self = (jsd_t*)calloc(1, sizeof(jsd_t));
-
-  self->ecx_context.port = (ecx_portt*)calloc(1, sizeof(ecx_portt));
-  self->ecx_context.slavelist =
-      (ec_slavet*)malloc(EC_MAXSLAVE * sizeof(ec_slavet));
-  self->ecx_context.slavecount = (int*)calloc(1, sizeof(int));
-  self->ecx_context.maxslave   = EC_MAXSLAVE;
-  self->ecx_context.grouplist =
-      (ec_groupt*)calloc(1, EC_MAXGROUP * sizeof(ec_groupt));
-  self->ecx_context.maxgroup = EC_MAXGROUP;
-  self->ecx_context.esibuf   = (uint8*)calloc(1, EC_MAXEEPBUF * sizeof(uint8));
-  self->ecx_context.esimap =
-      (uint32*)calloc(1, EC_MAXEEPBITMAP * sizeof(uint32));
-  self->ecx_context.esislave  = 0;
-  self->ecx_context.elist     = (ec_eringt*)calloc(1, sizeof(ec_eringt));
-  self->ecx_context.idxstack  = (ec_idxstackT*)calloc(1, sizeof(ec_idxstackT));
-  self->ecx_context.ecaterror = (boolean*)calloc(1, sizeof(boolean));
-  self->ecx_context.DCtime    = (int64*)calloc(1, sizeof(int64));
-  self->ecx_context.SMcommtype =
-      (ec_SMcommtypet*)calloc(1, EC_MAX_MAPT * sizeof(ec_SMcommtypet));
-  self->ecx_context.PDOassign =
-      (ec_PDOassignt*)calloc(1, EC_MAX_MAPT * sizeof(ec_PDOassignt));
-  self->ecx_context.PDOdesc =
-      (ec_PDOdesct*)calloc(1, EC_MAX_MAPT * sizeof(ec_PDOdesct));
-  self->ecx_context.eepSM = (ec_eepromSMt*)calloc(1, sizeof(ec_eepromSMt));
-  self->ecx_context.eepFMMU =
-      (ec_eepromFMMUt*)calloc(1, sizeof(ec_eepromFMMUt));
   self->ecx_context.FOEhook           = NULL;
   self->ecx_context.EOEhook           = NULL;
   self->ecx_context.manualstatechange = 0;
@@ -93,22 +68,27 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
 
   if (ecx_init(&self->ecx_context, ifname) <= 0) {
     ERROR("Unable to establish socket connection on %s", ifname);
+#ifdef __ZEPHYR__
+    ERROR("Verify that the selected Zephyr network interface exists and that EtherCAT hardware is connected.");
+#else
     if(geteuid() == 0) {
       ERROR("Is the device on and connected?");
     } else {
       ERROR("Execute as root");
     }
+#endif
     return false;
   }
 
   MSG("ecx_init on %s succeeded", ifname);
 
   // find and auto-config slaves
-  if (ecx_config_init(&self->ecx_context, FALSE) <= 0) {
+  self->ecx_context.overlappedMode = TRUE;
+  if (ecx_config_init(&self->ecx_context) <= 0) {
     WARNING("No slaves found on %s", ifname);
     return false;
   }
-  MSG("%d slaves found on bus", *self->ecx_context.slavecount + 1);
+  MSG("%d slaves found on bus", self->ecx_context.slavecount);
 
   // We need to register the SO2PO callbacks before mapping the PDOs
   if (!jsd_init_all_devices(self)) {
@@ -118,14 +98,14 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
 
   // configure IOMap
   int iomap_size =
-      ecx_config_overlap_map_group(&self->ecx_context, &self->IOmap, 0);
+      ecx_config_map_group(&self->ecx_context, &self->IOmap, 0);
   if (iomap_size > (int)sizeof(self->IOmap)) {
     ERROR("IO Map is not large enough for this application");
     return false;
   }
   // Print the IOMap input and output pointers for debugging
   int sid;
-  for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+  for (sid = 1; sid <= self->ecx_context.slavecount; sid++) {
     MSG_DEBUG(
         "slave[%d] \tInputPtr: %p \tIBytes: %u \t IBits: %u \tOutputPtr: "
         "%p \tOBytes: %u \t OBits: %u",
@@ -141,7 +121,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   ecx_statecheck(&self->ecx_context, 0, EC_STATE_SAFE_OP, EC_TIMEOUTSTATE);
 
   // verify the PO2SO callback executed completely
-  for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+  for (sid = 1; sid <= self->ecx_context.slavecount; sid++) {
     jsd_slave_config_t* config = &self->slave_configs[sid];
     if (config->configuration_active && !config->PO2SO_success) {
       ERROR("PO2SO callback did not execute successfully, failed on slave %d",
@@ -170,7 +150,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
 
   struct timespec start_processdata_time;
   clock_gettime(CLOCK_REALTIME, &start_processdata_time);
-  ecx_send_overlap_processdata(&self->ecx_context);
+  ecx_send_processdata(&self->ecx_context);
   ecx_receive_processdata(&self->ecx_context, timeout_us);
 
   ecx_writestate(&self->ecx_context, 0);
@@ -178,25 +158,30 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   int attempt = 0;
   while (true) {
     struct timespec current_time;
+    int64_t elapsed_ns;
     clock_gettime(CLOCK_REALTIME, &current_time);
-    if ((current_time.tv_nsec - start_processdata_time.tv_nsec)/1e3 > timeout_us) {
+    elapsed_ns = ((int64_t)(current_time.tv_sec - start_processdata_time.tv_sec) *
+                  1000000000LL) +
+                 (int64_t)(current_time.tv_nsec - start_processdata_time.tv_nsec);
+    if (elapsed_ns > ((int64_t)timeout_us * 1000LL)) {
       MSG_DEBUG("Went over the loop period!");
     }
     else {
-      struct timespec diff;
-      diff.tv_sec = current_time.tv_sec - start_processdata_time.tv_sec;
-      diff.tv_nsec = current_time.tv_nsec - start_processdata_time.tv_nsec;
+      struct timespec remaining;
+      int64_t remaining_ns = ((int64_t)timeout_us * 1000LL) - elapsed_ns;
+      remaining.tv_sec = remaining_ns / 1000000000LL;
+      remaining.tv_nsec = remaining_ns % 1000000000LL;
       
       // Sleep for period defined by timeout_us before attempting to do a receive_processdata.
       // LRW packets must be sent at constant interval to encourage a successful transition to OP state/
-      if (nanosleep(&diff, NULL) < 0) {
+      if (nanosleep(&remaining, NULL) < 0) {
         perror("nanosleep failed");
-        return 1;
+        return false;
       }
     }
     
     clock_gettime(CLOCK_REALTIME, &start_processdata_time);
-    int sent = ecx_send_overlap_processdata(&self->ecx_context);
+    int sent = ecx_send_processdata(&self->ecx_context);
     int wkc  = ecx_receive_processdata(&self->ecx_context, timeout_us);
     ec_state actual_state = ecx_statecheck(
         &self->ecx_context, 0, EC_STATE_OPERATIONAL, EC_TIMEOUTSTATE);
@@ -231,7 +216,7 @@ bool jsd_init(jsd_t* self, const char* ifname, uint8_t enable_autorecovery, int 
   }
 
   // Initialize the error queues used between threads
-  for (sid = 1; sid <= *self->ecx_context.slavecount; sid++) {
+  for (sid = 1; sid <= self->ecx_context.slavecount; sid++) {
     char qname[JSD_NAME_LEN];
     snprintf(qname, JSD_NAME_LEN, "Slave %d error cirq", sid);
     jsd_error_cirq_init(&self->slave_errors[sid], qname);
@@ -257,7 +242,7 @@ bool jsd_all_slaves_operational(jsd_t* self) {
   bool all_slaves_operational = true;
   uint8_t currentgroup = 0;  // only 1 rate group in JSD currently
   /* one or more slaves may not be responding */
-  for (int slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+  for (int slave = 1; slave <= self->ecx_context.slavecount; slave++) {
     if (self->ecx_context.slavelist[slave].group != currentgroup) continue;
     /* re-check bad slave individually */
     ecx_statecheck(&self->ecx_context, slave, EC_STATE_OPERATIONAL, EC_TIMEOUTRET);
@@ -349,14 +334,14 @@ void jsd_write(jsd_t* self) {
   assert(self);
 
   // Write EtherCat frame to slaves, with logic for smart prints
-  int transmitted = ecx_send_overlap_processdata(&self->ecx_context);
+  int transmitted = ecx_send_processdata(&self->ecx_context);
 
   static int last_transmitted = 1;
   if (transmitted <= 0 && last_transmitted != transmitted) {
-    WARNING("ecx_send_overlap_processdata is not transmitting");
+    WARNING("ecx_send_processdata is not transmitting");
   }
   if (last_transmitted <= 0 && transmitted > 0) {
-    MSG("ecx_send_overlap_processdata has resumed transmission");
+    MSG("ecx_send_processdata has resumed transmission");
   }
   last_transmitted = transmitted;
 }
@@ -367,44 +352,37 @@ void jsd_free(jsd_t* self) {
   }
 
   if(self->init_complete){
-    struct timespec ts;
-
     self->sdo_join_flag = true;
     MSG("Waiting for SDO Thread to join...");
     pthread_cond_signal(&self->sdo_thread_cond);
 
-    // The following loop should be more robust than just 
-    //   a pthread_join blocking wait
-    while(true) {
-      self->sdo_join_flag = true;
+#ifdef __ZEPHYR__
+    (void)pthread_join(self->sdo_thread, NULL);
+#else
+    {
+      struct timespec ts;
 
-      clock_gettime(CLOCK_REALTIME, &ts);
-      ts.tv_sec += 1;
+      // The following loop should be more robust than just
+      //   a pthread_join blocking wait
+      while(true) {
+        self->sdo_join_flag = true;
 
-      if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
-        break;
+        clock_gettime(CLOCK_REALTIME, &ts);
+        ts.tv_sec += 1;
+
+        if(pthread_timedjoin_np(self->sdo_thread, NULL, &ts) == 0){
+          break;
+        }
+        if (errno != ETIMEDOUT) {
+          break;
+        }
       }
     }
+#endif
   }
 
   MSG_DEBUG("Closing SOEM socket connection...");
   ecx_close(&self->ecx_context);
-
-  free(self->ecx_context.port);
-  free(self->ecx_context.slavelist);
-  free(self->ecx_context.slavecount);
-  free(self->ecx_context.grouplist);
-  free(self->ecx_context.esibuf);
-  free(self->ecx_context.esimap);
-  free(self->ecx_context.elist);
-  free(self->ecx_context.idxstack);
-  free(self->ecx_context.ecaterror);
-  free(self->ecx_context.DCtime);
-  free(self->ecx_context.SMcommtype);
-  free(self->ecx_context.PDOassign);
-  free(self->ecx_context.PDOdesc);
-  free(self->ecx_context.eepSM);
-  free(self->ecx_context.eepFMMU);
   free(self);
   MSG_DEBUG("Freed JSD context");
 }
@@ -506,7 +484,7 @@ const char* jsd_driver_type_to_string(jsd_driver_type_t driver_type) {
 bool jsd_init_all_devices(jsd_t* self) {
   assert(self);
 
-  uint16_t num_found_slaves = *(self->ecx_context.slavecount);
+  uint16_t num_found_slaves = self->ecx_context.slavecount;
   assert(num_found_slaves < EC_MAXSLAVE);
 
   MSG("Configuring Slaves:");
@@ -727,7 +705,7 @@ void jsd_ecatcheck(jsd_t* self) {
     /* one or more slaves are not responding */
     self->ecx_context.grouplist[currentgroup].docheckstate = FALSE;
     ecx_readstate(&self->ecx_context);
-    for (slave = 1; slave <= *self->ecx_context.slavecount; slave++) {
+    for (slave = 1; slave <= self->ecx_context.slavecount; slave++) {
       if ((self->ecx_context.slavelist[slave].group == currentgroup) &&
           (self->ecx_context.slavelist[slave].state != EC_STATE_OPERATIONAL)) {
         self->ecx_context.grouplist[currentgroup].docheckstate = TRUE;

@@ -294,7 +294,7 @@ bool jsd_epd_nominal_init(jsd_t* self, uint16_t slave_id) {
   // drives.
   slave->CoEdetails &= ~ECT_COEDET_SDOCA;
 
-  slave->PO2SOconfigx = jsd_epd_nominal_PO2SO_config;
+  slave->PO2SOconfig = jsd_epd_nominal_PO2SO_config;
 
   jsd_epd_nominal_private_state_t* state =
       &self->slave_states[slave_id].epd_nominal;

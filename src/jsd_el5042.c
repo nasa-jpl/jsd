@@ -65,7 +65,7 @@ bool jsd_el5042_init(jsd_t* self, uint16_t slave_id) {
   ec_slavet* slaves = self->ecx_context.slavelist;
   ec_slavet* slave  = &slaves[slave_id];
 
-  slave->PO2SOconfigx = jsd_el5042_PO2SO_config;
+  slave->PO2SOconfig = jsd_el5042_PO2SO_config;
 
   return true;
 }

@@ -74,7 +74,7 @@ bool jsd_jed0101_init(jsd_t* self, uint16_t slave_id) {
 
   jsd_slave_config_t* config = &self->slave_configs[slave_id];
 
-  slave->PO2SOconfigx   = jsd_jed0101_PO2SO_config;
+  slave->PO2SOconfig   = jsd_jed0101_PO2SO_config;
   config->PO2SO_success = false;  // only set true in PO2SO callback
 
   jsd_jed0101_state_t* state = &self->slave_states[slave_id].jed0101;

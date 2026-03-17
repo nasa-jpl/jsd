@@ -18,6 +18,7 @@
 #include <string.h>
 
 #include "jsd/jsd.h"
+#include "jsd_slaveinfo.h"
 
 ec_ODlistt ODlist;
 ec_OElistt OElist;
@@ -121,7 +122,7 @@ char* SDO2string(uint16 slave, uint16 index, uint8 subidx, uint16 dtype) {
   memset(&usdo, 0, 128);
   ecx_SDOread(&jsd->ecx_context, slave, index, subidx, FALSE, &l, &usdo,
               EC_TIMEOUTRXM);
-  if (*jsd->ecx_context.ecaterror) {
+  if (jsd->ecx_context.ecaterror) {
     return ecx_elist2string(&jsd->ecx_context);
   } else {
     switch (dtype) {
@@ -489,14 +490,14 @@ void si_sdo(int cnt) {
     printf(" CoE Object Description found, %d entries.\n", ODlist.Entries);
     for (i = 0; i < ODlist.Entries; i++) {
       ecx_readODdescription(&jsd->ecx_context, i, &ODlist);
-      while (*jsd->ecx_context.ecaterror)
+      while (jsd->ecx_context.ecaterror)
         printf("%s", ecx_elist2string(&jsd->ecx_context));
       printf(" Index: %4.4x Datatype: %4.4x Objectcode: %2.2x Name: %s\n",
              ODlist.Index[i], ODlist.DataType[i], ODlist.ObjectCode[i],
              ODlist.Name[i]);
       memset(&OElist, 0, sizeof(OElist));
       ecx_readOE(&jsd->ecx_context, i, &ODlist, &OElist);
-      while (*jsd->ecx_context.ecaterror)
+      while (jsd->ecx_context.ecaterror)
         printf("%s", ecx_elist2string(&jsd->ecx_context));
       for (j = 0; j < ODlist.MaxSub[i] + 1; j++) {
         if ((OElist.DataType[j] > 0) && (OElist.BitLength[j] > 0)) {
@@ -513,7 +514,7 @@ void si_sdo(int cnt) {
       }
     }
   } else {
-    while (*jsd->ecx_context.ecaterror)
+    while (jsd->ecx_context.ecaterror)
       printf("%s", ecx_elist2string(&jsd->ecx_context));
   }
 }
@@ -529,8 +530,8 @@ void slaveinfo(char* ifname) {
   if (ecx_init(&jsd->ecx_context, ifname)) {
     printf("ec_init on %s succeeded.\n", ifname);
     /* find and auto-config slaves */
-    if (ecx_config_init(&jsd->ecx_context, FALSE) > 0) {
-      printf("%d slaves found and configured.\n", *jsd->ecx_context.slavecount);
+    if (ecx_config_init(&jsd->ecx_context) > 0) {
+      printf("%d slaves found and configured.\n", jsd->ecx_context.slavecount);
 
       ecx_config_map_group(&jsd->ecx_context, &jsd->IOmap, 0);
 
@@ -546,7 +547,7 @@ void slaveinfo(char* ifname) {
 
       ecx_readstate(&jsd->ecx_context);
 
-      for (cnt = 1; cnt <= *jsd->ecx_context.slavecount; cnt++) {
+      for (cnt = 1; cnt <= jsd->ecx_context.slavecount; cnt++) {
         printf(
             "\nSlave:%d\n Name:%s\n Output size: %dbits\n Input size: %dbits\n "
             "State: %d\n Delay: %d[ns]\n Has DC: %d\n",
@@ -658,34 +659,68 @@ void slaveinfo(char* ifname) {
   }
 }
 
-int main(int argc, char* argv[]) {
+void jsd_slaveinfo_print_usage(void) {
   ec_adaptert* adapter = NULL;
-  printf("jsd (Simple Open EtherCAT Master)\nSlaveinfo\n");
+  ec_adaptert* head = NULL;
+
+  printf("Usage: slaveinfo ifname [options]\n");
+  printf("ifname = network interface name, for example eth0\n");
+  printf("Options :\n -sdo : print SDO info\n -map : print mapping\n");
+
+  printf("Available adapters\n");
+  head = adapter = ec_find_adapters();
+  while (adapter != NULL) {
+    printf("Description : %s, Device to use for wpcap: %s\n", adapter->desc,
+           adapter->name);
+    adapter = adapter->next;
+  }
+  ec_free_adapters(head);
+}
+
+int jsd_slaveinfo_run(const char* ifname, bool enable_print_sdo,
+                      bool enable_print_map) {
   char ifbuf[1024];
-  jsd = jsd_alloc();
 
-  if (argc > 1) {
-    if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0))
-      printSDO = TRUE;
-    if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0))
-      printMAP = TRUE;
-    /* start slaveinfo */
-    strcpy(ifbuf, argv[1]);
-    slaveinfo(ifbuf);
-  } else {
-    printf("Usage: slaveinfo ifname [options]\nifname = eth0 for example\n");
-    printf("Options :\n -sdo : print SDO info\n -map : print mapping\n");
-
-    printf("Available adapters\n");
-    adapter = ec_find_adapters();
-    while (adapter != NULL) {
-      printf("Description : %s, Device to use for wpcap: %s\n", adapter->desc,
-             adapter->name);
-      adapter = adapter->next;
-    }
+  if (ifname == NULL || ifname[0] == '\0') {
+    jsd_slaveinfo_print_usage();
+    return 1;
   }
 
+  printSDO = enable_print_sdo ? TRUE : FALSE;
+  printMAP = enable_print_map ? TRUE : FALSE;
+
+  jsd = jsd_alloc();
+  snprintf(ifbuf, sizeof(ifbuf), "%s", ifname);
+  slaveinfo(ifbuf);
   jsd_free(jsd);
-  printf("End program\n");
-  return (0);
+  jsd = NULL;
+
+  return 0;
 }
+
+#ifndef __ZEPHYR__
+int main(int argc, char* argv[]) {
+  int  rc        = 0;
+  bool print_sdo = false;
+  bool print_map = false;
+
+  printf("jsd (Simple Open EtherCAT Master)\nSlaveinfo\n");
+
+  if (argc > 1) {
+    if ((argc > 2) && (strncmp(argv[2], "-sdo", sizeof("-sdo")) == 0)) {
+      print_sdo = true;
+    }
+    if ((argc > 2) && (strncmp(argv[2], "-map", sizeof("-map")) == 0)) {
+      print_map = true;
+    }
+
+    rc = jsd_slaveinfo_run(argv[1], print_sdo, print_map);
+  } else {
+    jsd_slaveinfo_print_usage();
+    rc = 1;
+  }
+
+  printf("End program\n");
+  return rc;
+}
+#endif

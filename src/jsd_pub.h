@@ -17,8 +17,6 @@ extern "C" {
 /**
  * @brief Allocates JSD context
  *
- * The ecx_context struct is currently using some heap allocated memory
- *
  * @return Pointer to new JSD context
  */
 jsd_t* jsd_alloc();
@@ -47,7 +45,7 @@ void jsd_set_slave_config(jsd_t* self, uint16_t slave_id,
  * the auto recovery functions are being performed.
  *
  * @param self pointer JSD context
- * @param ifname specified name of NIC e.g. "eth0"
+ * @param ifname specified network interface name
  * @param enable_autorecovery enables automatic recovery of lost devices
  * @return true on successful SOEM initialization
  */

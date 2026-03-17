@@ -51,6 +51,16 @@ add_definitions(-D_GNU_SOURCE)
 
 include(FetchContent)
 
+# Prefer a sibling SOEM checkout when available so local integrations and
+# offline builds do not depend on fetching upstream sources.
+if(NOT DEFINED FETCHCONTENT_SOURCE_DIR_SOEM)
+    set(JSD_LOCAL_SOEM_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../SOEM")
+    if(EXISTS "${JSD_LOCAL_SOEM_ROOT}/CMakeLists.txt")
+        set(FETCHCONTENT_SOURCE_DIR_SOEM "${JSD_LOCAL_SOEM_ROOT}")
+        message(STATUS "Using local SOEM checkout at ${FETCHCONTENT_SOURCE_DIR_SOEM}")
+    endif()
+endif()
+
 # Updated 2022-09-18
 FetchContent_Declare(soem
   GIT_REPOSITORY https://github.com/OpenEtherCATsociety/SOEM.git
