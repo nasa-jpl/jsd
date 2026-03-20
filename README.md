@@ -74,6 +74,8 @@ most useful devices. The following table represents the latest state of the JSD 
 | EL2828                    | 3    | 3.1.5                        |
 | EL5042                    | 3    | 3.1.5                        |
 
+For a detailed list of supported devices and their features, see the [Supported Devices](docs/device-catalog.md) page.
+
 # Using JSD in your Project 
 For the software package to utilize JSD, an alternate way is to fetch JSD while building using FetchContent.
 For the case, include the following to your CMakeLists.txt
