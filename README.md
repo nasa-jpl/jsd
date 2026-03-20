@@ -57,22 +57,22 @@ most useful devices. The following table represents the latest state of the JSD 
 | EL3208                    | 1    | 1.0.0                        |
 | EL3602                    | 1    | 1.0.0                        |
 | Elmo Gold Drives          | 1    | 1.0.0                        |
-| Elmo Platinum Drives      | 1    | TBD                          |
+| Elmo Platinum Drives      | 1    | 2.2.0                        |
 | EL3356                    | 2    | 1.1.0                        |
 | JED (JPL EtherCat Device) | 2    | 1.2.0                        |
 | ATI Force-Torque Sensor   | 2    | 1.4.0                        |
 | EL1008                    | 2    | 2.3.4                        |
 | EL3202-0010               | 2    | 1.5.0                        |
-| EL3255                    | 2    | TBD                          |
+| EL3162                    | 2    | 1.6.0                        |
 | EL3318                    | 2    | 1.5.0                        |
-| EL3202                    | 2    | TBD                          |
+| EL3314                    | 2    | 3.1.4                        |
 | EL3104                    | 2    | 1.5.0                        |
-| EL2624                    | 3    | By Request Only              |
+| EL4102                    | 2    | 1.6.0                        |
+| ILD1900                   | 2    | 1.8.0                        |
+| EL2798                    | 3    | 3.1.5                        |
 | EL2809                    | 3    | By Request Only              |
-| EL3008                    | 3    | By Request Only              |
-| EL3058                    | 3    | By Request Only              |
-| EL5101                    | 3    | By Request Only              |
-| EL6001                    | 3    | By Request Only              |
+| EL2828                    | 3    | 3.1.5                        |
+| EL5042                    | 3    | 3.1.5                        |
 
 # Using JSD in your Project 
 For the software package to utilize JSD, an alternate way is to fetch JSD while building using FetchContent.
