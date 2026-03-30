@@ -20,6 +20,14 @@
 #include "jsd/jsd.h"
 #include "jsd_slaveinfo.h"
 
+#ifdef __ZEPHYR__
+#include <zephyr/kernel.h>
+#include <zephyr/net/net_if.h>
+#include <zephyr/sys/printk.h>
+#define JSD_SLAVEINFO_PRINT(...) printk(__VA_ARGS__)
+#define printf(...) JSD_SLAVEINFO_PRINT(__VA_ARGS__)
+#endif
+
 ec_ODlistt ODlist;
 ec_OElistt OElist;
 boolean    printSDO = FALSE;
@@ -27,6 +35,121 @@ boolean    printMAP = FALSE;
 char       usdo[128];
 char       hstr[1024];
 jsd_t*     jsd;
+
+#ifdef __ZEPHYR__
+/*
+ * The Zephyr sample parks forever after a successful run, and current packet
+ * socket teardown still appears to trip a post-success fault on this platform.
+ * Retain the successful context instead of closing/freeing it immediately.
+ */
+static jsd_t* jsd_retained_on_success;
+#endif
+
+#ifdef __ZEPHYR__
+#define JSD_SLAVEINFO_POST_INIT_LINK_WAIT_MS 3000
+#define JSD_SLAVEINFO_POST_CARRIER_SETTLE_MS 1000
+#define JSD_SLAVEINFO_CONFIG_INIT_RETRIES 2
+#define JSD_SLAVEINFO_CONFIG_INIT_RETRY_DELAY_MS 250
+
+static void jsd_slaveinfo_log_stack_space(const char* label) {
+  size_t unused = 0U;
+  int err = k_thread_stack_space_get(k_current_get(), &unused);
+
+  if (err == 0) {
+    printf("slaveinfo: stack unused %s: %zu bytes\n", label, unused);
+  } else {
+    printf("slaveinfo: stack probe failed %s: %d\n", label, err);
+  }
+}
+
+static struct net_if* jsd_slaveinfo_find_iface_by_name(const char* ifname) {
+  STRUCT_SECTION_FOREACH(net_if, iface) {
+    char name[IFNAMSIZ] = {0};
+
+    if (net_if_get_name(iface, name, sizeof(name)) > 0 &&
+        strcmp(name, ifname) == 0) {
+      return iface;
+    }
+  }
+
+  return NULL;
+}
+
+static bool jsd_slaveinfo_wait_for_zephyr_carrier_after_ec_init(
+    const char* ifname) {
+  struct net_if* iface;
+  int64_t        deadline;
+
+  iface = jsd_slaveinfo_find_iface_by_name(ifname);
+  if (iface == NULL) {
+    printf("Unable to find Zephyr net_if named %s after ec_init().\n", ifname);
+    return false;
+  }
+
+  if (net_if_is_carrier_ok(iface)) {
+    printf("Carrier is already on for %s after ec_init().\n", ifname);
+    printf("Waiting %d ms for %s link to settle after carrier.\n",
+           JSD_SLAVEINFO_POST_CARRIER_SETTLE_MS, ifname);
+    k_msleep(JSD_SLAVEINFO_POST_CARRIER_SETTLE_MS);
+    return true;
+  }
+
+  printf("Waiting up to %d ms for carrier on %s after ec_init().\n",
+         JSD_SLAVEINFO_POST_INIT_LINK_WAIT_MS, ifname);
+  deadline = k_uptime_get() + JSD_SLAVEINFO_POST_INIT_LINK_WAIT_MS;
+
+  while (k_uptime_get() < deadline) {
+    if (net_if_is_carrier_ok(iface)) {
+      printf("Carrier became active on %s after ec_init().\n", ifname);
+      printf("Waiting %d ms for %s link to settle after carrier.\n",
+             JSD_SLAVEINFO_POST_CARRIER_SETTLE_MS, ifname);
+      k_msleep(JSD_SLAVEINFO_POST_CARRIER_SETTLE_MS);
+      return true;
+    }
+
+    k_msleep(100);
+  }
+
+  printf("Carrier is still off on %s after ec_init(); continuing with EtherCAT "
+         "discovery.\n",
+         ifname);
+  return false;
+}
+#endif
+
+static int jsd_slaveinfo_config_init_with_logging(const char* ifname) {
+  int slave_count = -1;
+  int attempt_count = 1;
+
+#ifdef __ZEPHYR__
+  attempt_count = JSD_SLAVEINFO_CONFIG_INIT_RETRIES;
+#endif
+
+  for (int attempt = 1; attempt <= attempt_count; ++attempt) {
+    printf("Running ecx_config_init attempt %d on %s.\n", attempt, ifname);
+    slave_count = ecx_config_init(&jsd->ecx_context);
+    printf("ecx_config_init attempt %d on %s returned %d.\n",
+           attempt, ifname, slave_count);
+
+    if (slave_count > 0) {
+      return slave_count;
+    }
+
+    while (jsd->ecx_context.ecaterror) {
+      printf("%s", ecx_elist2string(&jsd->ecx_context));
+    }
+
+#ifdef __ZEPHYR__
+    if (attempt < attempt_count) {
+      printf("Waiting %d ms before retrying ecx_config_init on %s.\n",
+             JSD_SLAVEINFO_CONFIG_INIT_RETRY_DELAY_MS, ifname);
+      k_msleep(JSD_SLAVEINFO_CONFIG_INIT_RETRY_DELAY_MS);
+    }
+#endif
+  }
+
+  return slave_count;
+}
 
 char* dtype2string(uint16 dtype) {
   switch (dtype) {
@@ -519,25 +642,52 @@ void si_sdo(int cnt) {
   }
 }
 
-void slaveinfo(char* ifname) {
+static int slaveinfo(char* ifname) {
   int    cnt, j, nSM;
   uint16 ssigen;
   int    expectedWKC;
+  int    rc = 1;
 
   printf("Starting slaveinfo\n");
 
   /* initialise SOEM, bind socket to ifname */
   if (ecx_init(&jsd->ecx_context, ifname)) {
     printf("ec_init on %s succeeded.\n", ifname);
+#ifdef __ZEPHYR__
+    jsd_slaveinfo_wait_for_zephyr_carrier_after_ec_init(ifname);
+#endif
     /* find and auto-config slaves */
-    if (ecx_config_init(&jsd->ecx_context) > 0) {
+    int slave_count = jsd_slaveinfo_config_init_with_logging(ifname);
+
+    if (slave_count > 0) {
       printf("%d slaves found and configured.\n", jsd->ecx_context.slavecount);
+      rc = 0;
 
-      ecx_config_map_group(&jsd->ecx_context, &jsd->IOmap, 0);
+#ifdef __ZEPHYR__
+      printf("slaveinfo: configuring PDO map\n");
+      jsd_slaveinfo_log_stack_space("before PDO map");
+#endif
+      int iomap_size = ecx_config_map_group(&jsd->ecx_context, &jsd->IOmap, 0);
 
+#ifdef __ZEPHYR__
+      printf("slaveinfo: PDO map size %d bytes\n", iomap_size);
+      jsd_slaveinfo_log_stack_space("after PDO map");
+      printf("slaveinfo: waiting for SAFE-OP\n");
+#endif
+      if (iomap_size <= 0 || iomap_size > (int)sizeof(jsd->IOmap)) {
+        printf("slaveinfo: invalid PDO map size %d (buffer=%zu)\n",
+               iomap_size, sizeof(jsd->IOmap));
+        rc = 3;
+        printf("End slaveinfo\n");
+        return rc;
+      }
       ecx_statecheck(&jsd->ecx_context, 0, EC_STATE_SAFE_OP,
                      EC_TIMEOUTSTATE * 3);
 
+#ifdef __ZEPHYR__
+      jsd_slaveinfo_log_stack_space("before configdc");
+      printf("slaveinfo: configuring distributed clocks\n");
+#endif
       ecx_configdc(&jsd->ecx_context);
 
       expectedWKC = (jsd->ecx_context.grouplist[0].outputsWKC * 2) +
@@ -545,6 +695,10 @@ void slaveinfo(char* ifname) {
 
       printf("Calculated workcounter %d\n", expectedWKC);
 
+#ifdef __ZEPHYR__
+      jsd_slaveinfo_log_stack_space("before readstate");
+      printf("slaveinfo: reading slave states\n");
+#endif
       ecx_readstate(&jsd->ecx_context);
 
       for (cnt = 1; cnt <= jsd->ecx_context.slavecount; cnt++) {
@@ -648,15 +802,18 @@ void slaveinfo(char* ifname) {
             si_map_sii(cnt);
         }
       }
-    } else {
+    } else if (slave_count == 0) {
       printf("No slaves found!\n");
+      rc = 2;
+    } else {
+      printf("Slave discovery failed on %s\n", ifname);
     }
-    printf("End slaveinfo, close socket\n");
-    /* stop SOEM, close socket */
-    ecx_close(&jsd->ecx_context);
+    printf("End slaveinfo\n");
   } else {
     printf("No socket connection on %s\nExcecute as root\n", ifname);
   }
+
+  return rc;
 }
 
 void jsd_slaveinfo_print_usage(void) {
@@ -680,6 +837,7 @@ void jsd_slaveinfo_print_usage(void) {
 int jsd_slaveinfo_run(const char* ifname, bool enable_print_sdo,
                       bool enable_print_map) {
   char ifbuf[1024];
+  int  rc = 1;
 
   if (ifname == NULL || ifname[0] == '\0') {
     jsd_slaveinfo_print_usage();
@@ -691,11 +849,21 @@ int jsd_slaveinfo_run(const char* ifname, bool enable_print_sdo,
 
   jsd = jsd_alloc();
   snprintf(ifbuf, sizeof(ifbuf), "%s", ifname);
-  slaveinfo(ifbuf);
+  rc = slaveinfo(ifbuf);
+
+#ifdef __ZEPHYR__
+  if (rc == 0) {
+    jsd_retained_on_success = jsd;
+    jsd = NULL;
+    printf("Retaining JSD context on Zephyr after successful slaveinfo.\n");
+    return rc;
+  }
+#endif
+
   jsd_free(jsd);
   jsd = NULL;
 
-  return 0;
+  return rc;
 }
 
 #ifndef __ZEPHYR__
