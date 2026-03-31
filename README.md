@@ -2,7 +2,7 @@
 Just 'SOEM' Drivers - C drivers for Simple Open Ethercat Master(SOEM) devices
 
 # Prerequisites
-JSD has only be tested only on Ubuntu 16.04, 18.04, 20.04 and Raspberry Pi. The use of PThreads invalidates JSD on some platforms that SOEM can support. The JSD maintainers do not have non-posix platforms in-scope for JSD, but feel free to open an issue and let your voice be heard.
+JSD has only be tested only on Ubuntu 16.04, 18.04, 20.04, 22.04, 24.04, and Raspberry Pi. The use of `PThreads` invalidates JSD on some platforms that SOEM can support. The JSD maintainers do not have non-posix platforms in-scope for JSD, but feel free to open an issue.
 
 Required:
 
@@ -57,22 +57,24 @@ most useful devices. The following table represents the latest state of the JSD 
 | EL3208                    | 1    | 1.0.0                        |
 | EL3602                    | 1    | 1.0.0                        |
 | Elmo Gold Drives          | 1    | 1.0.0                        |
-| Elmo Platinum Drives      | 1    | TBD                          |
+| Elmo Platinum Drives      | 1    | 2.2.0                        |
 | EL3356                    | 2    | 1.1.0                        |
 | JED (JPL EtherCat Device) | 2    | 1.2.0                        |
 | ATI Force-Torque Sensor   | 2    | 1.4.0                        |
 | EL1008                    | 2    | 2.3.4                        |
 | EL3202-0010               | 2    | 1.5.0                        |
-| EL3255                    | 2    | TBD                          |
+| EL3162                    | 2    | 1.6.0                        |
 | EL3318                    | 2    | 1.5.0                        |
-| EL3202                    | 2    | TBD                          |
+| EL3314                    | 2    | 3.1.4                        |
 | EL3104                    | 2    | 1.5.0                        |
-| EL2624                    | 3    | By Request Only              |
+| EL4102                    | 2    | 1.6.0                        |
+| ILD1900                   | 2    | 1.8.0                        |
+| EL2798                    | 3    | 3.1.5                        |
 | EL2809                    | 3    | By Request Only              |
-| EL3008                    | 3    | By Request Only              |
-| EL3058                    | 3    | By Request Only              |
-| EL5101                    | 3    | By Request Only              |
-| EL6001                    | 3    | By Request Only              |
+| EL2828                    | 3    | 3.1.5                        |
+| EL5042                    | 3    | 3.1.5                        |
+
+For a detailed list of supported devices and their features, see the [Supported Devices](docs/device-catalog.md) page.
 
 # Using JSD in your Project 
 For the software package to utilize JSD, an alternate way is to fetch JSD while building using FetchContent.
@@ -82,21 +84,12 @@ For the case, include the following to your CMakeLists.txt
 include(FetchContent)
 FetchContent_Declare(jsd
     GIT_REPOSITORY git@github.com:nasa-jpl/jsd.git
-    GIT_TAG v1.4.0
+    GIT_TAG v3.1.6
     )
 FetchContent_MakeAvailable(jsd)
 ```
-It is always recommend you specify your jsd dependency to a tagged release (`GIT_TAG v1.4.0`) so updates to master cannot break your build (NOT `GIT_TAG master`). 
+It is always recommend you specify your jsd dependency to a tagged release (`GIT_TAG v3.1.6`) so updates to master cannot break your build (NOT `GIT_TAG master`). 
 
-### Semantic Versioning
-
-JSD uses Semantic versioning to help applications reason about the software as updates are continuously rolled out. Tailored to JSD, the Semver rules are as follows:
-
-* Major Versions will denote changes to the API, which may break some user applications.
-* Minor Versions will denote new features or driver additions that do not break user applications.
-* Patch Versions will denote bug fixes or minor improvements and will not break user applications.
-
-Violations of these rules will be considered errors and should be patched immediately. Please open an issue if you find a violation.
 
 # JSD Utilities
 
@@ -107,14 +100,14 @@ A slave introspection tool is provided by JSD. This tool is offered in a version
 The most useful invocation is shown here.
 
 ```
-$ sudo ./build/jsd_slaveinfo <NIC_Device_Name> -map
+$ sudo ./build/bin/jsd_slaveinfo <NIC_Device_Name> -map
 ```
 
 The -map option lists the PDO mapping active on the device. When ELMO Gold 
 Drives are powered on they have the default PDO mapping. The following example 
 simply has a single ELMO device on the EtherCAT bus.
 ``` 
-$ sudo ./build/jsd_slaveinfo eth9 -map
+$ sudo ./build/bin/jsd_slaveinfo eth9 -map
 
 jsd (Simple Open EtherCAT Master)
 Slaveinfo
@@ -172,18 +165,18 @@ Elmo Application Studio (EAS) TTY to help reduce dependence on Windows computers
 The utility uses the FSF Readline library to parse user inputs. This library can be installed with the following:
 
 ```bash
-# Tested on Ubuntu 16.04
+# Tested on Ubuntu 24.04
 $ sudo apt install libreadline-dev
 ```
 If this system library cannot be found, the build will ignore this program and continue making the jsd library. 
 
 ```bash
-$ sudo ./bin/jsd_egd_tlc_tty 
+$ sudo ./build/bin/jsd_egd_tlc_tty 
 [ ERROR ](/home/dev/src/jsd/tools/jsd_egd_tlc_tty.c:112) Expecting exactly 2 arguments
 [ INFO  ](/home/dev/src/jsd/tools/jsd_egd_tlc_tty.c:113) Usage: jsd_egd_tlc_tty <ifname> <egd_slave_index> 
 [ INFO  ](/home/dev/src/jsd/tools/jsd_egd_tlc_tty.c:114) Example: $ jsd_egd_tlc_tty eth0 2
 
-$ sudo ./bin/jsd_egd_tlc_tty eth0 6
+$ sudo ./build/bin/jsd_egd_tlc_tty eth0 6
 
 ...
 
@@ -224,13 +217,13 @@ Either way, these programs serve as a minimum working example and allow driver d
 For example, The EL3602 test can be queried and called according to the following commands:
 
 ```bash
-$ ./jsd_el3602_test -h
+$ ./test/device/jsd_el3602_test -h
 
 [ERROR] (/home/dev/src/jsd/test/device/jsd_el3602_test.c:63) Expecting exactly 3 arguments
 [INFO] (/home/dev/src/jsd/test/device/jsd_el3602_test.c:64) Usage: jsd_el3602_test <ifname> <el3602_slave_index> <loop_freq_hz>
 [INFO] (/home/dev/src/jsd/test/device/jsd_el3602_test.c:65) Example: $ jsd_el3602_test eth0 2 1000
 
-$ sudo ./jsd_el3602_test eth9 5 2000
+$ sudo ./test/device/jsd_el3602_test eth9 5 2000
 ```
 
 # Documentation
@@ -240,15 +233,13 @@ The API documentation can be built using the source code locally using doxygen.
 The .doxygen.in file is converted to .doxygen during build to ensure semantic versioning number of the documentation is accurate. The output documentation is created in the directory 'doxygen_html' and can be opened by any web browser from the root index.html webpage.
 
 ```bash
-# Install dependencies for Ubuntu 14.04, 16.04, and 18.04 
+# Install dependencies for Ubuntu 22.04 and 24.04 
 $ sudo apt install doxygen graphviz
-
-# use the build system to generate the code for you!
 $ cd build
 $ make doc
 ```
 
-# Contributing
+## Contributing
 
 * Do all development on a new branch prefixed with <your-username>-* branched from  "master" e.g. ("USER-my-widget")
   * All enums, structs, and functions should be prefixed with `jsd_` as necessary
@@ -267,12 +258,19 @@ $ make doc
 * The "master" branch will be occasionally be given a tagged release as required
   * semantic versioning will updated to "master" and the git commit will be tagged
   
-    
+## Semantic Versioning
 
+JSD uses Semantic versioning to help applications reason about the software as updates are continuously rolled out. Tailored to JSD, the Semver rules are as follows:
 
-# Code Format
+* Major Versions will denote changes to the API, which may break some user applications.
+* Minor Versions will denote new features or driver additions that do not break user applications.
+* Patch Versions will denote bug fixes or minor improvements and will not break user applications.
 
-before applying a commit, please run clang-format on all files using the default Google style. This can be achieved by running `make format` in the build directory that uses a CMake command to invoke the shell script from the project root directory. This is the prefered over the shell script since it ensures the working directory is properly set.
+Violations of these rules will be considered errors and should be patched immediately. Please open an issue if you find a violation.
+
+## Code Format
+
+Before applying a commit, please run clang-format on all files using the default Google style. This can be achieved by running `make format` in the build directory that uses a CMake command to invoke the shell script from the project root directory. This is the prefered over the shell script since it ensures the working directory is properly set.
 ```
 $ make format
 ```
