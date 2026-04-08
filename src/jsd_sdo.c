@@ -88,7 +88,9 @@ bool jsd_sdo_req_cirq_is_empty(jsd_sdo_req_cirq_t* self) {
 static void print_sdo_param(jsd_sdo_data_type_t data_type, uint16_t slave_id,
                             uint16_t index, uint8_t subindex, void* void_data,
                             char* verb) {
-  jsd_sdo_data_t data = *(jsd_sdo_data_t*)void_data;
+  jsd_sdo_data_t data;
+  memset(&data, 0, sizeof(data));
+  memcpy(&data, void_data, jsd_sdo_data_type_size(data_type));
 
   (void)data;
   (void)slave_id;

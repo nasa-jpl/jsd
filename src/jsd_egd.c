@@ -841,8 +841,8 @@ int jsd_egd_config_COE_params(ecx_contextt* ecx_context, uint16_t slave_id,
     return 0;
   }
 
-  // set Extrapolation cycles timeout (5 cycles based on ECAT lib testing)
-  int16_t extra_cycles = 5;
+  // set Extrapolation cycles timeout
+  int16_t extra_cycles = 15;
   if (!jsd_sdo_set_param_blocking(ecx_context, slave_id, 0x2F75, 0,
                                   JSD_SDO_DATA_I16, (void*)&extra_cycles)) {
     return 0;
