@@ -7,6 +7,10 @@
 #include <time.h>
 #include <unistd.h>
 
+#ifdef __ZEPHYR__
+#include <zephyr/kernel.h>
+#endif
+
 #include "jsd/jsd_ati_fts.h"
 #include "jsd/jsd_egd.h"
 #include "jsd/jsd_el1008.h"
@@ -35,6 +39,12 @@
 /****************************************************
  * Public functions
  ****************************************************/
+
+#ifdef __ZEPHYR__
+static double jsd_cycles_to_sec(uint64_t cycles) {
+  return (double)k_cyc_to_ns_floor64(cycles) / 1.0e9;
+}
+#endif
 
 jsd_t* jsd_alloc() {
   jsd_t* self;
@@ -305,8 +315,29 @@ void jsd_inspect_context(jsd_t* self) {
 void jsd_read(jsd_t* self, int timeout_us) {
   assert(self);
 
+#ifdef __ZEPHYR__
+  const uint64_t read_start_cycles = k_cycle_get_64();
+  uint64_t receive_processdata_cycles = 0U;
+  uint64_t ecatcheck_cycles = 0U;
+#else
+  const double read_start_time = jsd_time_get_mono_time_sec();
+  double receive_processdata_duration_sec = 0.0;
+  double ecatcheck_duration_sec = 0.0;
+#endif
+  bool ran_ecatcheck = false;
+
   // Wait for EtherCat frame to return from slaves, with logic for smart prints
+#ifdef __ZEPHYR__
+  const uint64_t receive_processdata_start_cycles = k_cycle_get_64();
   self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
+  receive_processdata_cycles =
+      k_cycle_get_64() - receive_processdata_start_cycles;
+#else
+  const double receive_processdata_start_time = jsd_time_get_mono_time_sec();
+  self->wkc = ecx_receive_processdata(&self->ecx_context, timeout_us);
+  receive_processdata_duration_sec =
+      jsd_time_get_mono_time_sec() - receive_processdata_start_time;
+#endif
   if (self->wkc != self->expected_wkc && self->last_wkc != self->wkc) {
     WARNING("ecx_receive_processdata returning bad wkc: %d (expected: %d)",
             self->wkc, self->expected_wkc);
@@ -319,7 +350,17 @@ void jsd_read(jsd_t* self, int timeout_us) {
   self->last_wkc = self->wkc;
 
   if (self->enable_autorecovery || self->attempt_manual_recovery) {
+#ifdef __ZEPHYR__
+    const uint64_t ecatcheck_start_cycles = k_cycle_get_64();
     jsd_ecatcheck(self);
+    ecatcheck_cycles = k_cycle_get_64() - ecatcheck_start_cycles;
+#else
+    const double ecatcheck_start_time = jsd_time_get_mono_time_sec();
+    jsd_ecatcheck(self);
+    ecatcheck_duration_sec =
+        jsd_time_get_mono_time_sec() - ecatcheck_start_time;
+#endif
+    ran_ecatcheck = true;
     self->attempt_manual_recovery = 0;
   }
 
@@ -327,6 +368,35 @@ void jsd_read(jsd_t* self, int timeout_us) {
     pthread_cond_signal(&self->sdo_thread_cond);
     self->raise_sdo_thread_cond = false;
   }
+
+#ifdef __ZEPHYR__
+  const uint64_t total_read_cycles = k_cycle_get_64() - read_start_cycles;
+  uint64_t post_read_cycles = 0U;
+  if (total_read_cycles >
+      receive_processdata_cycles + ecatcheck_cycles) {
+    post_read_cycles =
+        total_read_cycles - receive_processdata_cycles - ecatcheck_cycles;
+  }
+  self->last_receive_processdata_duration_sec =
+      jsd_cycles_to_sec(receive_processdata_cycles);
+  self->last_ecatcheck_duration_sec = jsd_cycles_to_sec(ecatcheck_cycles);
+  self->last_post_read_bookkeeping_duration_sec =
+      jsd_cycles_to_sec(post_read_cycles);
+#else
+  const double total_read_duration_sec =
+      jsd_time_get_mono_time_sec() - read_start_time;
+  double post_read_duration_sec =
+      total_read_duration_sec - receive_processdata_duration_sec -
+      ecatcheck_duration_sec;
+  if (post_read_duration_sec < 0.0) {
+    post_read_duration_sec = 0.0;
+  }
+  self->last_receive_processdata_duration_sec =
+      receive_processdata_duration_sec;
+  self->last_ecatcheck_duration_sec = ecatcheck_duration_sec;
+  self->last_post_read_bookkeeping_duration_sec = post_read_duration_sec;
+#endif
+  self->last_jsd_read_ran_ecatcheck = ran_ecatcheck ? 1U : 0U;
 
 }
 

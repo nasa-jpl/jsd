@@ -193,6 +193,10 @@ typedef struct {
   int          expected_wkc;             ///< Expected Working Counter
   int          wkc;                      ///< processdata Working Counter
   int          last_wkc;                 ///< the previous processdata wkc
+  double       last_receive_processdata_duration_sec;      ///< time in ecx_receive_processdata()
+  double       last_ecatcheck_duration_sec;                ///< time in jsd_ecatcheck()
+  double       last_post_read_bookkeeping_duration_sec;    ///< time after receive/recovery inside jsd_read()
+  uint8_t      last_jsd_read_ran_ecatcheck;               ///< whether jsd_ecatcheck() ran in the last jsd_read()
   bool         init_complete;            ///< true after jsd_init(...)
   uint8_t      enable_autorecovery;      ///< enables autorecovery feature
   uint8_t      attempt_manual_recovery;  ///< one-time manual recovery attempt
