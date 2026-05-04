@@ -276,3 +276,7 @@ $ make format
 ```
 
 It is highly recommended you integrate clang-format into your text editor of choice. [Clang Format Integration](https://clang.llvm.org/docs/ClangFormat.html)
+
+## License
+
+See our: [LICENSE](LICENSE)
